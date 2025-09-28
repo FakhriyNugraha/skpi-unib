@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\SkpiData;
 use App\Models\Jurusan;
-// use App\Models\Document; // opsional: tak perlu jika upload dihapus total
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
@@ -27,192 +26,217 @@ class SkpiController extends Controller
     public function create()
     {
         $user = Auth::user();
-        $existingSkpi = SkpiData::where('user_id', $user->id)->first();
 
+        // Paksa isi phone (opsional kalau kamu sudah buat middleware, lewati ini)
+        if (empty($user->phone)) {
+            return redirect()->route('profile.edit')
+                ->with('warning', 'Lengkapi nomor telepon Anda sebelum membuat SKPI.');
+        }
+
+        $existingSkpi = SkpiData::where('user_id', $user->id)->first();
         if ($existingSkpi && !$existingSkpi->canBeEdited()) {
             return redirect()->route('skpi.index')->with('error', 'Data SKPI Anda sudah disubmit dan tidak dapat diedit.');
         }
 
         $jurusans = Jurusan::active()->orderBy('nama_jurusan')->get();
 
-        return view('skpi.create', compact('jurusans', 'existingSkpi'));
+        // kunci prodi & gelar berdasarkan user/jurusan (logika contoh)
+        $lockedProgramStudi = optional($user->jurusan)->nama_jurusan ?? ($existingSkpi->program_studi ?? '');
+        $lockedGelar = $this->tentukanGelar($lockedProgramStudi);
+
+        return view('skpi.create', compact('jurusans', 'existingSkpi', 'lockedProgramStudi', 'lockedGelar'));
     }
 
     public function store(Request $request)
-{
-    $user = Auth::user();
+    {
+        $user = Auth::user();
 
-    $validator = Validator::make($request->all(), [
-        'nama_lengkap'          => 'nullable|string|max:255', // akan diisi dari user->name
-        'npm'                   => 'required|string|max:20',
-        'tempat_lahir'          => 'required|string|max:255',
-        'tanggal_lahir'         => 'required|date',
-        'nomor_ijazah'          => 'required|string|max:255',
-        'tanggal_lulus'         => 'required|date',
-        'gelar'                 => 'required|string|max:50',
-        'jurusan_id'            => 'required|exists:jurusans,id',
-        'ipk'                   => 'required|numeric|min:0|max:4',
-        'prestasi_akademik'     => 'nullable|string',
-        'prestasi_non_akademik' => 'nullable|string',
-        'organisasi'            => 'nullable|string',
-        'pengalaman_kerja'      => 'nullable|string',
-        'sertifikat_kompetensi' => 'nullable|string',
-        'catatan_khusus'        => 'nullable|string',
+        $validator = Validator::make($request->all(), [
+            'nama_lengkap'          => 'required|string|max:255',
+            'npm'                   => 'required|string|max:50',
+            'tempat_lahir'          => 'required|string|max:255',
+            'tanggal_lahir'         => 'required|date',
+            'nomor_ijazah'          => 'required|string|max:255',
+            'tanggal_lulus'         => 'required|date',
+            'gelar'                 => 'required|string|max:50',
+            'program_studi'         => 'required|string|max:255',
+            'jurusan_id'            => 'required|exists:jurusans,id',
+            'ipk'                   => 'required|numeric|min:0|max:4',
+            'prestasi_akademik'     => 'nullable|string',
+            'prestasi_non_akademik' => 'nullable|string',
+            'organisasi'            => 'nullable|string',
+            'pengalaman_kerja'      => 'nullable|string',
+            'sertifikat_kompetensi' => 'nullable|string',
+            'catatan_khusus'        => 'nullable|string',
+            'drive_link'            => ['required','url','regex:/^https?:\/\/(drive\.google\.com|docs\.google\.com)\/.+/i'],
+        ], [
+            'drive_link.regex'      => 'Link Google Drive tidak valid (harus drive.google.com / docs.google.com).',
+        ]);
 
-        // 1 link Google Drive
-        'drive_link'            => [
-            'required',
-            'url',
-            'max:2048',
-            function ($attr, $value, $fail) {
-                // cek https + domain drive.google.com + pola path umum
-                $parts = parse_url($value);
-                if (!$parts || !isset($parts['scheme'], $parts['host'])) {
-                    return $fail('Link Google Drive tidak valid.');
-                }
-                if (strtolower($parts['scheme']) !== 'https') {
-                    return $fail('Link harus menggunakan HTTPS.');
-                }
-                $host = strtolower($parts['host']);
-                if ($host !== 'drive.google.com') {
-                    return $fail('Link harus dari domain drive.google.com.');
-                }
-                $path = $parts['path'] ?? '';
-                // pola yang umum: /file/d/{id}/..., /open, /uc, /drive/folders/{id}
-                $ok = preg_match('#^/file/d/[^/]+#', $path)
-                   || preg_match('#^/drive/folders/[^/]+#', $path)
-                   || $path === '/open'
-                   || $path === '/uc'
-                   || $path === '/drive/u/0/folders' // beberapa variasi UI
-                   ;
-                if (!$ok) {
-                    return $fail('Format path Google Drive tidak dikenali. Gunakan tautan "Bagikan" dari Google Drive.');
-                }
-            },
-        ],
-    ]);
+        if ($validator->fails()) {
+            return back()->withErrors($validator)->withInput();
+        }
 
-    if ($validator->fails()) {
-        return back()->withErrors($validator)->withInput();
+        $allowed = [
+            'nama_lengkap',
+            'npm',
+            'tempat_lahir',
+            'tanggal_lahir',
+            'nomor_ijazah',
+            'tanggal_lulus',
+            'gelar',
+            'program_studi',
+            'jurusan_id',
+            'ipk',
+            'prestasi_akademik',
+            'prestasi_non_akademik',
+            'organisasi',
+            'pengalaman_kerja',
+            'sertifikat_kompetensi',
+            'catatan_khusus',
+            'drive_link',
+        ];
+
+        $payload = $request->only($allowed);
+        $payload['user_id'] = $user->id;
+        $payload['status']  = 'draft';
+
+        $skpiData = SkpiData::updateOrCreate(
+            ['user_id' => $user->id],
+            $payload
+        );
+
+        // Setelah simpan, langsung ke dashboard
+        return redirect()->route('dashboard')->with('success', 'Data SKPI berhasil disimpan sebagai draft.');
     }
 
-    $jurusan = \App\Models\Jurusan::findOrFail($request->jurusan_id);
-
-    $allowed = [
-        'tempat_lahir',
-        'tanggal_lahir',
-        'nomor_ijazah',
-        'tanggal_lulus',
-        'gelar',
-        'jurusan_id',
-        'ipk',
-        'prestasi_akademik',
-        'prestasi_non_akademik',
-        'organisasi',
-        'pengalaman_kerja',
-        'sertifikat_kompetensi',
-        'catatan_khusus',
-        'drive_link', // simpan link drive
-    ];
-
-    $payload = $request->only($allowed);
-    $payload['user_id'] = $user->id;
-    $payload['status']  = 'draft';
-    $payload['nama_lengkap'] = $user->name;
-    $payload['program_studi'] = $jurusan->nama_jurusan;
-    $payload['nim'] = $request->input('npm');
-
-    $skpiData = SkpiData::updateOrCreate(
-        ['user_id' => $user->id],
-        $payload
-    );
-
-    return redirect()->route('skpi.show', $skpiData)->with('success', 'Data SKPI berhasil disimpan sebagai draft.');
-}
-
-public function update(Request $request, SkpiData $skpi)
-{
-    $this->authorize('update', $skpi);
-
-    if (!$skpi->canBeEdited()) {
-        return redirect()->route('skpi.index')->with('error', 'Data SKPI tidak dapat diedit.');
+    public function show(SkpiData $skpi)
+    {
+        $this->authorize('view', $skpi);
+        $skpi->load(['jurusan', 'documents', 'reviewer', 'approver']);
+        return view('skpi.show', compact('skpi'));
     }
 
-    $validator = Validator::make($request->all(), [
-        'nama_lengkap'          => 'nullable|string|max:255',
-        'npm'                   => 'required|string|max:20',
-        'tempat_lahir'          => 'required|string|max:255',
-        'tanggal_lahir'         => 'required|date',
-        'nomor_ijazah'          => 'required|string|max:255',
-        'tanggal_lulus'         => 'required|date',
-        'gelar'                 => 'required|string|max:50',
-        'jurusan_id'            => 'required|exists:jurusans,id',
-        'ipk'                   => 'required|numeric|min:0|max:4',
-        'prestasi_akademik'     => 'nullable|string',
-        'prestasi_non_akademik' => 'nullable|string',
-        'organisasi'            => 'nullable|string',
-        'pengalaman_kerja'      => 'nullable|string',
-        'sertifikat_kompetensi' => 'nullable|string',
-        'catatan_khusus'        => 'nullable|string',
-        'drive_link'            => [
-            'required',
-            'url',
-            'max:2048',
-            function ($attr, $value, $fail) {
-                $parts = parse_url($value);
-                if (!$parts || !isset($parts['scheme'], $parts['host'])) {
-                    return $fail('Link Google Drive tidak valid.');
-                }
-                if (strtolower($parts['scheme']) !== 'https') {
-                    return $fail('Link harus menggunakan HTTPS.');
-                }
-                $host = strtolower($parts['host']);
-                if ($host !== 'drive.google.com') {
-                    return $fail('Link harus dari domain drive.google.com.');
-                }
-                $path = $parts['path'] ?? '';
-                $ok = preg_match('#^/file/d/[^/]+#', $path)
-                   || preg_match('#^/drive/folders/[^/]+#', $path)
-                   || $path === '/open'
-                   || $path === '/uc'
-                   || $path === '/drive/u/0/folders';
-                if (!$ok) {
-                    return $fail('Format path Google Drive tidak dikenali. Gunakan tautan "Bagikan" dari Google Drive.');
-                }
-            },
-        ],
-    ]);
+    public function edit(SkpiData $skpi)
+    {
+        $this->authorize('update', $skpi);
 
-    if ($validator->fails()) {
-        return back()->withErrors($validator)->withInput();
+        if (!$skpi->canBeEdited()) {
+            return redirect()->route('skpi.index')->with('error', 'Data SKPI tidak dapat diedit.');
+        }
+
+        $jurusans = Jurusan::active()->orderBy('nama_jurusan')->get();
+        $existingSkpi = $skpi->load(['jurusan']);
+
+        $lockedProgramStudi = optional(auth()->user()->jurusan)->nama_jurusan ?? ($existingSkpi->program_studi ?? '');
+        $lockedGelar = $this->tentukanGelar($lockedProgramStudi);
+
+        return view('skpi.create', compact('jurusans', 'existingSkpi', 'lockedProgramStudi', 'lockedGelar'));
     }
 
-    $jurusan = \App\Models\Jurusan::findOrFail($request->jurusan_id);
+    public function update(Request $request, SkpiData $skpi)
+    {
+        $this->authorize('update', $skpi);
 
-    $allowed = [
-        'tempat_lahir',
-        'tanggal_lahir',
-        'nomor_ijazah',
-        'tanggal_lulus',
-        'gelar',
-        'jurusan_id',
-        'ipk',
-        'prestasi_akademik',
-        'prestasi_non_akademik',
-        'organisasi',
-        'pengalaman_kerja',
-        'sertifikat_kompetensi',
-        'catatan_khusus',
-        'drive_link',
-    ];
+        if (!$skpi->canBeEdited()) {
+            return redirect()->route('skpi.index')->with('error', 'Data SKPI tidak dapat diedit.');
+        }
 
-    $update = $request->only($allowed);
-    $update['nama_lengkap'] = Auth::user()->name;
-    $update['program_studi'] = $jurusan->nama_jurusan;
-    $update['nim'] = $request->input('npm');
+        $validator = Validator::make($request->all(), [
+            'nama_lengkap'          => 'required|string|max:255',
+            'npm'                   => 'required|string|max:50',
+            'tempat_lahir'          => 'required|string|max:255',
+            'tanggal_lahir'         => 'required|date',
+            'nomor_ijazah'          => 'required|string|max:255',
+            'tanggal_lulus'         => 'required|date',
+            'gelar'                 => 'required|string|max:50',
+            'program_studi'         => 'required|string|max:255',
+            'jurusan_id'            => 'required|exists:jurusans,id',
+            'ipk'                   => 'required|numeric|min:0|max:4',
+            'prestasi_akademik'     => 'nullable|string',
+            'prestasi_non_akademik' => 'nullable|string',
+            'organisasi'            => 'nullable|string',
+            'pengalaman_kerja'      => 'nullable|string',
+            'sertifikat_kompetensi' => 'nullable|string',
+            'catatan_khusus'        => 'nullable|string',
+            'drive_link'            => ['required','url','regex:/^https?:\/\/(drive\.google\.com|docs\.google\.com)\/.+/i'],
+        ], [
+            'drive_link.regex'      => 'Link Google Drive tidak valid (harus drive.google.com / docs.google.com).',
+        ]);
 
-    $skpi->update($update);
+        if ($validator->fails()) {
+            return back()->withErrors($validator)->withInput();
+        }
 
-    return redirect()->route('skpi.show', $skpi)->with('success', 'Data SKPI berhasil diupdate.');
-}
+        $allowed = [
+            'nama_lengkap',
+            'npm',
+            'tempat_lahir',
+            'tanggal_lahir',
+            'nomor_ijazah',
+            'tanggal_lulus',
+            'gelar',
+            'program_studi',
+            'jurusan_id',
+            'ipk',
+            'prestasi_akademik',
+            'prestasi_non_akademik',
+            'organisasi',
+            'pengalaman_kerja',
+            'sertifikat_kompetensi',
+            'catatan_khusus',
+            'drive_link',
+        ];
+
+        $skpi->update($request->only($allowed));
+
+        // Setelah update, langsung ke dashboard
+        return redirect()->route('dashboard')->with('success', 'Data SKPI berhasil diperbarui.');
+    }
+
+    public function submit(SkpiData $skpi)
+    {
+        $this->authorize('update', $skpi);
+
+        if (!$skpi->canBeSubmitted()) {
+            return redirect()->route('skpi.index')->with('error', 'Data SKPI tidak dapat disubmit.');
+        }
+
+        $skpi->update([
+            'status'      => 'submitted',
+            'reviewed_at' => null,
+            'approved_at' => null,
+        ]);
+
+        return redirect()->route('dashboard')->with('success', 'Data SKPI berhasil disubmit untuk review.');
+    }
+
+    public function print(SkpiData $skpi)
+    {
+        $this->authorize('view', $skpi);
+
+        if ($skpi->status !== 'approved') {
+            return redirect()->route('skpi.index')->with('error', 'Hanya SKPI yang sudah disetujui yang dapat dicetak.');
+        }
+
+        $skpi->load(['jurusan', 'approver']);
+
+        return view('skpi.print', compact('skpi'));
+    }
+
+    private function tentukanGelar(string $programStudi = null): string
+    {
+        $ps = strtolower(trim($programStudi ?? ''));
+        if (in_array($ps, ['informatika', 'sistem informasi'])) {
+            return 'S.Kom';
+        }
+        if (in_array($ps, ['teknik sipil', 'teknik mesin', 'teknik elektro'])) {
+            return 'S.T';
+        }
+        if ($ps === 'arsitektur') {
+            return 'S.Ars';
+        }
+        // default fallback (kalau belum dikenali)
+        return 'Sarjana';
+    }
 }

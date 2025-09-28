@@ -11,11 +11,11 @@ use Illuminate\Support\Facades\Route;
 // Landing Page
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
-// Auth scaffolding
+// Auth scaffolding (Laravel Breeze/Fortify/Jetstream)
 require __DIR__.'/auth.php';
 
 // ============================
-// Area Authenticated umum
+// Authenticated umum
 // ============================
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [HomeController::class, 'dashboard'])->name('dashboard');
@@ -25,9 +25,10 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
+    // Documents (upload/download/delete)
     Route::post('/skpi/{skpi}/documents', [DocumentController::class, 'upload'])
         ->name('documents.upload')
-        ->whereNumber('skpi'); // ->whereUuid('skpi') jika pakai UUID
+        ->whereNumber('skpi'); // kalau pakai UUID ganti ->whereUuid('skpi')
 
     Route::get('/documents/{document}/download', [DocumentController::class, 'download'])
         ->name('documents.download')
@@ -42,32 +43,29 @@ Route::middleware('auth')->group(function () {
 // User (Mahasiswa)
 // ============================
 Route::middleware(['auth', 'role:user'])->group(function () {
-
+    // Dashboard SKPI
     Route::get('/skpi', [SkpiController::class, 'index'])->name('skpi.index');
 
-    // Letakkan rute statis /skpi/create SEBELUM rute dinamis /skpi/{skpi}
-    // --- Rute yang WAJIB phone ---
-    Route::middleware('phone.required')->group(function () {
-        // CREATE & STORE WAJIB PHONE
-        Route::get('/skpi/create', [SkpiController::class, 'create'])->name('skpi.create');
-        Route::post('/skpi', [SkpiController::class, 'store'])->name('skpi.store');
+    // Buat baru / simpan
+    Route::get('/skpi/create', [SkpiController::class, 'create'])->name('skpi.create');
+    Route::post('/skpi', [SkpiController::class, 'store'])->name('skpi.store');
 
-        // EDIT/UPDATE/SUBMIT juga bisa diwajibkan phone
-        Route::get('/skpi/{skpi}/edit', [SkpiController::class, 'edit'])
-            ->name('skpi.edit')
-            ->whereNumber('skpi'); // ->whereUuid('skpi')
-
-        Route::put('/skpi/{skpi}', [SkpiController::class, 'update'])
-            ->name('skpi.update')
-            ->whereNumber('skpi');
-
-        Route::post('/skpi/{skpi}/submit', [SkpiController::class, 'submit'])
-            ->name('skpi.submit')
-            ->whereNumber('skpi');
-    });
-
+    // Detail, edit, update
     Route::get('/skpi/{skpi}', [SkpiController::class, 'show'])
         ->name('skpi.show')
+        ->whereNumber('skpi');
+
+    Route::get('/skpi/{skpi}/edit', [SkpiController::class, 'edit'])
+        ->name('skpi.edit')
+        ->whereNumber('skpi');
+
+    Route::put('/skpi/{skpi}', [SkpiController::class, 'update'])
+        ->name('skpi.update')
+        ->whereNumber('skpi');
+
+    // Submit & Print
+    Route::post('/skpi/{skpi}/submit', [SkpiController::class, 'submit'])
+        ->name('skpi.submit')
         ->whereNumber('skpi');
 
     Route::get('/skpi/{skpi}/print', [SkpiController::class, 'print'])
@@ -78,74 +76,78 @@ Route::middleware(['auth', 'role:user'])->group(function () {
 // ============================
 // Admin
 // ============================
-Route::middleware(['auth', 'role:admin,superadmin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
-    Route::get('/skpi', [AdminController::class, 'skpiList'])->name('skpi-list');
+Route::middleware(['auth', 'role:admin,superadmin'])
+    ->prefix('admin')->name('admin.')
+    ->group(function () {
+        Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
+        Route::get('/skpi', [AdminController::class, 'skpiList'])->name('skpi-list');
 
-    Route::get('/skpi/{skpi}/review', [AdminController::class, 'reviewSkpi'])
-        ->name('review-skpi')
-        ->whereNumber('skpi');
+        Route::get('/skpi/{skpi}/review', [AdminController::class, 'reviewSkpi'])
+            ->name('review-skpi')
+            ->whereNumber('skpi');
 
-    Route::post('/skpi/{skpi}/approve', [AdminController::class, 'approveSkpi'])
-        ->name('approve-skpi')
-        ->whereNumber('skpi');
+        Route::post('/skpi/{skpi}/approve', [AdminController::class, 'approveSkpi'])
+            ->name('approve-skpi')
+            ->whereNumber('skpi');
 
-    Route::get('/skpi/{skpi}/print', [AdminController::class, 'printSkpi'])
-        ->name('print-skpi')
-        ->whereNumber('skpi');
-});
+        Route::get('/skpi/{skpi}/print', [AdminController::class, 'printSkpi'])
+            ->name('print-skpi')
+            ->whereNumber('skpi');
+    });
 
 // ============================
 // SuperAdmin
 // ============================
-Route::middleware(['auth', 'role:superadmin'])->prefix('superadmin')->name('superadmin.')->group(function () {
-    Route::get('/dashboard', [SuperAdminController::class, 'dashboard'])->name('dashboard');
+Route::middleware(['auth', 'role:superadmin'])
+    ->prefix('superadmin')->name('superadmin.')
+    ->group(function () {
+        Route::get('/dashboard', [SuperAdminController::class, 'dashboard'])->name('dashboard');
 
-    // Users
-    Route::get('/users', [SuperAdminController::class, 'users'])->name('users');
-    Route::get('/users/create', [SuperAdminController::class, 'createUser'])->name('create-user');
-    Route::post('/users', [SuperAdminController::class, 'storeUser'])->name('store-user');
-    Route::get('/users/{user}/edit', [SuperAdminController::class, 'editUser'])->name('edit-user')->whereNumber('user');
-    Route::put('/users/{user}', [SuperAdminController::class, 'updateUser'])->name('update-user')->whereNumber('user');
-    Route::delete('/users/{user}', [SuperAdminController::class, 'deleteUser'])->name('delete-user')->whereNumber('user');
+        // Users
+        Route::get('/users', [SuperAdminController::class, 'users'])->name('users');
+        Route::get('/users/create', [SuperAdminController::class, 'createUser'])->name('create-user');
+        Route::post('/users', [SuperAdminController::class, 'storeUser'])->name('store-user');
+        Route::get('/users/{user}/edit', [SuperAdminController::class, 'editUser'])->name('edit-user')->whereNumber('user');
+        Route::put('/users/{user}', [SuperAdminController::class, 'updateUser'])->name('update-user')->whereNumber('user');
+        Route::delete('/users/{user}', [SuperAdminController::class, 'deleteUser'])->name('delete-user')->whereNumber('user');
 
-    // Jurusans
-    Route::get('/jurusans', [SuperAdminController::class, 'jurusans'])->name('jurusans');
-    Route::get('/jurusans/create', [SuperAdminController::class, 'createJurusan'])->name('create-jurusan');
-    Route::post('/jurusans', [SuperAdminController::class, 'storeJurusan'])->name('store-jurusan');
+        // Jurusans
+        Route::get('/jurusans', [SuperAdminController::class, 'jurusans'])->name('jurusans');
+        Route::get('/jurusans/create', [SuperAdminController::class, 'createJurusan'])->name('create-jurusan');
+        Route::post('/jurusans', [SuperAdminController::class, 'storeJurusan'])->name('store-jurusan');
 
-    Route::get('/jurusans/{jurusan}/edit', [SuperAdminController::class, 'editJurusan'])
-        ->name('edit-jurusan')
-        ->whereNumber('jurusan');
+        Route::get('/jurusans/{jurusan}/edit', [SuperAdminController::class, 'editJurusan'])
+            ->name('edit-jurusan')
+            ->whereNumber('jurusan');
 
-    Route::put('/jurusans/{jurusan}', [SuperAdminController::class, 'updateJurusan'])
-        ->name('update-jurusan')
-        ->whereNumber('jurusan');
+        Route::put('/jurusans/{jurusan}', [SuperAdminController::class, 'updateJurusan'])
+            ->name('update-jurusan')
+            ->whereNumber('jurusan');
 
-    Route::patch('/jurusans/{jurusan}/toggle-status', [SuperAdminController::class, 'toggleJurusanStatus'])
-        ->name('toggle-jurusan-status')
-        ->whereNumber('jurusan');
+        Route::patch('/jurusans/{jurusan}/toggle-status', [SuperAdminController::class, 'toggleJurusanStatus'])
+            ->name('toggle-jurusan-status')
+            ->whereNumber('jurusan');
 
-    Route::delete('/jurusans/{jurusan}', [SuperAdminController::class, 'destroyJurusan'])
-        ->name('delete-jurusan')
-        ->whereNumber('jurusan');
+        Route::delete('/jurusans/{jurusan}', [SuperAdminController::class, 'destroyJurusan'])
+            ->name('delete-jurusan')
+            ->whereNumber('jurusan');
 
-    Route::delete('/jurusan/{jurusan}', [SuperAdminController::class, 'destroyJurusan'])
-        ->whereNumber('jurusan'); // kompatibilitas
+        Route::delete('/jurusan/{jurusan}', [SuperAdminController::class, 'destroyJurusan'])
+            ->whereNumber('jurusan'); // kompatibilitas
 
-    Route::get('/jurusans/{jurusan}/detail', [SuperAdminController::class, 'jurusanDetail'])
-        ->name('jurusan-detail')
-        ->whereNumber('jurusan');
+        Route::get('/jurusans/{jurusan}/detail', [SuperAdminController::class, 'jurusanDetail'])
+            ->name('jurusan-detail')
+            ->whereNumber('jurusan');
 
-    // SKPI monitoring & laporan
-    Route::get('/all-skpi', [SuperAdminController::class, 'allSkpi'])->name('all-skpi');
-    Route::get('/reports', [SuperAdminController::class, 'reports'])->name('reports');
+        // SKPI monitoring & laporan
+        Route::get('/all-skpi', [SuperAdminController::class, 'allSkpi'])->name('all-skpi');
+        Route::get('/reports', [SuperAdminController::class, 'reports'])->name('reports');
 
-    // SKPI detail & print (versi superadmin)
-    Route::get('/skpi/{skpi}', [SuperAdminController::class, 'showSkpi'])->name('skpi.show')->whereNumber('skpi');
-    Route::get('/skpi/{skpi}/print', [SuperAdminController::class, 'printSkpi'])->name('skpi.print')->whereNumber('skpi');
+        // SKPI detail & print (versi superadmin)
+        Route::get('/skpi/{skpi}', [SuperAdminController::class, 'showSkpi'])->name('skpi.show')->whereNumber('skpi');
+        Route::get('/skpi/{skpi}/print', [SuperAdminController::class, 'printSkpi'])->name('skpi.print')->whereNumber('skpi');
 
-    // Approve/Reject oleh superadmin
-    Route::post('/skpi/{skpi}/approve', [SuperAdminController::class, 'approveSkpi'])->name('approve-skpi')->whereNumber('skpi');
-    Route::post('/skpi/{skpi}/reject', [SuperAdminController::class, 'rejectSkpi'])->name('reject-skpi')->whereNumber('skpi');
-});
+        // Approve/Reject oleh superadmin
+        Route::post('/skpi/{skpi}/approve', [SuperAdminController::class, 'approveSkpi'])->name('approve-skpi')->whereNumber('skpi');
+        Route::post('/skpi/{skpi}/reject', [SuperAdminController::class, 'rejectSkpi'])->name('reject-skpi')->whereNumber('skpi');
+    });

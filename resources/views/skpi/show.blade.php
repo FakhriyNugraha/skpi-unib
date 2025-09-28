@@ -136,7 +136,7 @@
                             <label class="block text-sm font-medium text-gray-700">Link Google Drive</label>
                             <p class="mt-1 text-sm">
                                 <a href="{{ $skpi->drive_link }}" target="_blank" rel="noopener" class="text-unib-blue-600 hover:underline">
-                                    Buka Link Drive
+                                    Link Drive
                                 </a>
                             </p>
                         </div>

@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="title">{{ $existingSkpi ? 'Edit' : 'Buat' }} SKPI</x-slot>
-    
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8" x-data="driveValidator()">
+
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Header -->
         <div class="mb-8">
             <div class="flex items-center justify-between">
@@ -15,9 +15,9 @@
             </div>
         </div>
 
-        <form method="POST"
+        <form id="skpiForm" method="POST"
               action="{{ $existingSkpi ? route('skpi.update', $existingSkpi) : route('skpi.store') }}"
-              class="space-y-8" @submit.prevent="handleSubmit($event)">
+              class="space-y-8">
             @csrf
             @if($existingSkpi)
                 @method('PUT')
@@ -31,22 +31,23 @@
                     </svg>
                     Informasi Pribadi
                 </h2>
-                
+
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Nama Lengkap read-only dari DB -->
-                    <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Nama Lengkap</label>
-                        <div class="bg-gray-50 p-3 rounded-lg text-sm text-gray-900 border border-gray-200">
-                            {{ old('nama_lengkap', $existingSkpi->nama_lengkap ?? auth()->user()->name) }}
-                        </div>
-                        <input type="hidden" name="nama_lengkap" value="{{ old('nama_lengkap', $existingSkpi->nama_lengkap ?? auth()->user()->name) }}">
+                    <div>
+                        <label for="nama_lengkap" class="block text-sm font-medium text-gray-700 mb-2">Nama Lengkap *</label>
+                        <input type="text" name="nama_lengkap" id="nama_lengkap"
+                               class="input-field @error('nama_lengkap') border-red-500 @enderror"
+                               value="{{ old('nama_lengkap', auth()->user()->name) }}" readonly required>
+                        @error('nama_lengkap')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     <div>
                         <label for="npm" class="block text-sm font-medium text-gray-700 mb-2">NPM *</label>
                         <input type="text" name="npm" id="npm"
-                               class="input-field @error('npm') border-red-500 @enderror" 
-                               value="{{ old('npm', $existingSkpi->nim ?? (auth()->user()->npm ?? '')) }}" required>
+                               class="input-field @error('npm') border-red-500 @enderror"
+                               value="{{ old('npm', auth()->user()->npm) }}" readonly required>
                         @error('npm')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
@@ -55,7 +56,7 @@
                     <div>
                         <label for="tempat_lahir" class="block text-sm font-medium text-gray-700 mb-2">Tempat Lahir *</label>
                         <input type="text" name="tempat_lahir" id="tempat_lahir"
-                               class="input-field @error('tempat_lahir') border-red-500 @enderror" 
+                               class="input-field @error('tempat_lahir') border-red-500 @enderror"
                                value="{{ old('tempat_lahir', $existingSkpi->tempat_lahir ?? '') }}" required>
                         @error('tempat_lahir')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -65,8 +66,8 @@
                     <div>
                         <label for="tanggal_lahir" class="block text-sm font-medium text-gray-700 mb-2">Tanggal Lahir *</label>
                         <input type="date" name="tanggal_lahir" id="tanggal_lahir"
-                               class="input-field @error('tanggal_lahir') border-red-500 @enderror" 
-                               value="{{ old('tanggal_lahir', isset($existingSkpi->tanggal_lahir) ? $existingSkpi->tanggal_lahir->format('Y-m-d') : '') }}" required>
+                               class="input-field @error('tanggal_lahir') border-red-500 @enderror"
+                               value="{{ old('tanggal_lahir', optional($existingSkpi->tanggal_lahir ?? null)->format('Y-m-d')) }}" required>
                         @error('tanggal_lahir')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
@@ -82,12 +83,12 @@
                     </svg>
                     Informasi Akademik
                 </h2>
-                
+
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label for="nomor_ijazah" class="block text-sm font-medium text-gray-700 mb-2">Nomor Ijazah *</label>
                         <input type="text" name="nomor_ijazah" id="nomor_ijazah"
-                               class="input-field @error('nomor_ijazah') border-red-500 @enderror" 
+                               class="input-field @error('nomor_ijazah') border-red-500 @enderror"
                                value="{{ old('nomor_ijazah', $existingSkpi->nomor_ijazah ?? '') }}" required>
                         @error('nomor_ijazah')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -97,8 +98,8 @@
                     <div>
                         <label for="tanggal_lulus" class="block text-sm font-medium text-gray-700 mb-2">Tanggal Lulus *</label>
                         <input type="date" name="tanggal_lulus" id="tanggal_lulus"
-                               class="input-field @error('tanggal_lulus') border-red-500 @enderror" 
-                               value="{{ old('tanggal_lulus', isset($existingSkpi->tanggal_lulus) ? $existingSkpi->tanggal_lulus->format('Y-m-d') : '') }}" required>
+                               class="input-field @error('tanggal_lulus') border-red-500 @enderror"
+                               value="{{ old('tanggal_lulus', optional($existingSkpi->tanggal_lulus ?? null)->format('Y-m-d')) }}" required>
                         @error('tanggal_lulus')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
@@ -107,35 +108,26 @@
                     <div>
                         <label for="gelar" class="block text-sm font-medium text-gray-700 mb-2">Gelar *</label>
                         <input type="text" name="gelar" id="gelar"
-                               class="input-field @error('gelar') border-red-500 @enderror" 
-                               value="{{ old('gelar', $existingSkpi->gelar ?? '') }}" placeholder="contoh: S.Kom, S.T, S.Ars" required>
-                        @error('gelar')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
+                               class="input-field"
+                               value="{{ $lockedGelar ?? old('gelar', $existingSkpi->gelar ?? '') }}"
+                               readonly required>
                     </div>
 
-                    <!-- Dropdown Jurusan (label jadi Program Studi) -->
                     <div>
-                        <label for="jurusan_id" class="block text-sm font-medium text-gray-700 mb-2">Program Studi *</label>
-                        <select name="jurusan_id" id="jurusan_id"
-                                class="input-field @error('jurusan_id') border-red-500 @enderror" required>
-                            <option value="">Pilih Program Studi</option>
-                            @foreach($jurusans as $jurusan)
-                                <option value="{{ $jurusan->id }}"
-                                    {{ old('jurusan_id', $existingSkpi->jurusan_id ?? auth()->user()->jurusan_id) == $jurusan->id ? 'selected' : '' }}>
-                                    {{ $jurusan->nama_jurusan }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('jurusan_id')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
+                        <label for="program_studi" class="block text-sm font-medium text-gray-700 mb-2">Program Studi *</label>
+                        <input type="text" name="program_studi" id="program_studi"
+                               class="input-field"
+                               value="{{ $lockedProgramStudi ?? old('program_studi', $existingSkpi->program_studi ?? '') }}"
+                               readonly required>
                     </div>
+
+                    {{-- jurusan_id disimpan tersembunyi --}}
+                    <input type="hidden" name="jurusan_id" value="{{ auth()->user()->jurusan_id }}">
 
                     <div>
                         <label for="ipk" class="block text-sm font-medium text-gray-700 mb-2">IPK *</label>
                         <input type="number" step="0.01" min="0" max="4" name="ipk" id="ipk"
-                               class="input-field @error('ipk') border-red-500 @enderror" 
+                               class="input-field @error('ipk') border-red-500 @enderror"
                                value="{{ old('ipk', $existingSkpi->ipk ?? '') }}" required>
                         @error('ipk')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -144,7 +136,7 @@
                 </div>
             </div>
 
-            <!-- Prestasi & Aktivitas -->
+            <!-- Prestasi dan Aktivitas -->
             <div class="card p-6">
                 <h2 class="text-xl font-semibold text-gray-900 mb-6 flex items-center">
                     <svg class="w-5 h-5 mr-2 text-teknik-orange-600" fill="currentColor" viewBox="0 0 20 20">
@@ -194,6 +186,7 @@
                         @enderror
                     </div>
 
+                    <!-- Full width -->
                     <div class="md:col-span-2 flex flex-col">
                         <label for="sertifikat_kompetensi" class="block text-sm font-medium text-gray-700 mb-2">Sertifikat Kompetensi</label>
                         <textarea name="sertifikat_kompetensi" id="sertifikat_kompetensi"
@@ -204,6 +197,7 @@
                         @enderror
                     </div>
 
+                    <!-- Full width -->
                     <div class="md:col-span-2 flex flex-col">
                         <label for="catatan_khusus" class="block text-sm font-medium text-gray-700 mb-2">Catatan Khusus</label>
                         <textarea name="catatan_khusus" id="catatan_khusus"
@@ -213,38 +207,37 @@
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
-                </div>
 
-                <!-- Link Google Drive (1 saja) -->
-                <div class="mt-8">
-                    <label for="drive_link" class="block text-sm font-medium text-gray-700 mb-2">Link Google Drive *</label>
-                    <div class="flex items-center space-x-3">
+                    <!-- Full width: Link Google Drive (DIPINDAH KE SINI) -->
+                    <div class="md:col-span-2 flex flex-col">
+                        <label for="drive_link" class="block text-sm font-medium text-gray-700 mb-2">
+                            Link Google Drive *
+                        </label>
                         <input type="url" name="drive_link" id="drive_link"
-                               x-model="url"
-                               @input="validate()"
-                               class="input-field flex-1 @error('drive_link') border-red-500 @enderror"
-                               placeholder="https://drive.google.com/file/d/… atau https://drive.google.com/drive/folders/…"
-                               required>
-                        <div x-show="status==='ok'">
-                            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                            </svg>
-                        </div>
-                        <div x-show="status==='bad'">
-                            <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                            </svg>
+                               class="input-field @error('drive_link') border-red-500 @enderror"
+                               placeholder="https://drive.google.com/drive/folders/...."
+                               value="{{ old('drive_link', $existingSkpi->drive_link ?? '') }}"
+                               required
+                               pattern="https?://(drive\.google\.com|docs\.google\.com)/.+">
+                        @error('drive_link')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+
+                        <!-- Petunjuk (gaya mirip snippet kamu) -->
+                        <div class="mt-4 rounded-lg border border-blue-200 bg-blue-50 p-4">
+                            <h3 class="mb-2 text-sm font-medium text-blue-800">Petunjuk Pengisian Link:</h3>
+                            <div class="space-y-1 text-xs text-blue-700">
+                                <p>Unggah semua bukti pada <strong>Google Drive</strong> dan pastikan aksesnya bisa dilihat oleh reviewer.</p>
+                                <p>Di dalam folder tersebut, <strong>pisahkan subfolder</strong> sesuai kategori:</p>
+                                <ul class="list-disc pl-5">
+                                    <li><strong>Prestasi Akademik</strong></li>
+                                    <li><strong>Prestasi Non-Akademik</strong></li>
+                                    <li><strong>Pengalaman Kerja/Magang</strong></li>
+                                    <li><strong>Sertifikat Kompetensi</strong></li>
+                                </ul>
+                            </div>
                         </div>
                     </div>
-                    <p class="text-xs text-gray-500 mt-2">
-                        Gunakan tautan <em>Bagikan</em> dari Google Drive dan pastikan akses dapat dilihat reviewer (setidaknya “Anyone with the link, Viewer”).
-                    </p>
-                    @error('drive_link')
-                        <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                    <p x-show="message" class="mt-2 text-sm" :class="status==='ok' ? 'text-green-700' : 'text-red-700'">
-                        <span x-text="message"></span>
-                    </p>
                 </div>
             </div>
 
@@ -256,53 +249,95 @@
                         <p class="mt-1">Data akan disimpan sebagai draft dan dapat diedit sebelum disubmit untuk review.</p>
                     </div>
                     <div class="flex space-x-4">
-                        <a href="{{ route('skpi.index') }}" class="btn-outline">
-                            Batal
-                        </a>
-                        <button type="submit" class="btn-primary"> {{ $existingSkpi ? 'Update SKPI' : 'Simpan SKPI' }} </button>
+                        <a href="{{ route('skpi.index') }}" class="btn-outline">Batal</a>
+                        <!-- Trigger modal -->
+                        <button type="button" id="openConfirm" class="btn-primary">
+                            {{ $existingSkpi ? 'Update SKPI' : 'Simpan SKPI' }}
+                        </button>
                     </div>
                 </div>
             </div>
         </form>
     </div>
 
-    <!-- Alpine validator untuk link drive -->
+    <!-- Modal Konfirmasi Sederhana -->
+    <div id="confirmModal" class="fixed inset-0 z-50 hidden" aria-hidden="true">
+        <div id="modalOverlay" class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
+        <div class="absolute inset-0 flex items-center justify-center p-4">
+            <div class="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-gray-200">
+                <div class="p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 text-center">
+                        Konfirmasi {{ $existingSkpi ? 'Update' : 'Simpan' }} SKPI
+                    </h3>
+                    <p class="mt-3 text-sm text-gray-600 text-center">
+                        Apakah Anda yakin ingin {{ $existingSkpi ? 'mengupdate' : 'menyimpan' }} SKPI?
+                    </p>
+                    <div class="mt-6 flex justify-center gap-3">
+                        <button type="button" id="cancelConfirm"
+                                class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50">
+                            Batal
+                        </button>
+                        <button type="button" id="confirmSubmit"
+                                class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 shadow-sm">
+                            Ya, {{ $existingSkpi ? 'Update' : 'Simpan' }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Script Modal & Validasi Drive --}}
     <script>
-        function driveValidator() {
-            return {
-                url: @json(old('drive_link', $existingSkpi->drive_link ?? '')),
-                status: null, // 'ok' | 'bad' | null
-                message: '',
-                validate() {
-                    try {
-                        const u = new URL(this.url);
-                        const host = (u.hostname || '').toLowerCase();
-                        const https = (u.protocol === 'https:');
-                        const path = u.pathname || '';
-                        const okPath = /^\/file\/d\/[^/]+/.test(path)
-                                    || /^\/drive\/folders\/[^/]+/.test(path)
-                                    || path === '/open'
-                                    || path === '/uc'
-                                    || path === '/drive/u/0/folders';
+        (function () {
+            const form = document.getElementById('skpiForm');
+            const btnOpen = document.getElementById('openConfirm');
+            const modal = document.getElementById('confirmModal');
+            const overlay = document.getElementById('modalOverlay');
+            const btnCancel = document.getElementById('cancelConfirm');
+            const btnConfirm = document.getElementById('confirmSubmit');
 
-                        if (!https) { this.status='bad'; this.message='Link harus menggunakan HTTPS.'; return; }
-                        if (host !== 'drive.google.com') { this.status='bad'; this.message='Domain harus drive.google.com'; return; }
-                        if (!okPath) { this.status='bad'; this.message='Format link Drive tidak dikenali. Gunakan tautan "Bagikan".'; return; }
+            const open = () => {
+                modal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+                btnConfirm.focus();
+            };
+            const close = () => {
+                modal.classList.add('hidden');
+                document.body.style.overflow = '';
+            };
 
-                        this.status='ok'; this.message='Link Google Drive valid.';
-                    } catch(e) {
-                        if (this.url.trim()==='') { this.status=null; this.message=''; return; }
-                        this.status='bad'; this.message='Format URL tidak valid.';
-                    }
-                },
-                handleSubmit(evt) {
-                    this.validate();
-                    if (this.status !== 'ok') {
-                        evt.preventDefault();
-                        if (!this.message) this.message = 'Periksa kembali link Google Drive Anda.';
-                    }
+            function quickValidate() {
+                // HTML5 built-in validation
+                if (!form.checkValidity()) {
+                    form.reportValidity();
+                    return false;
                 }
+                // Validasi ekstra link drive
+                const drive = (document.getElementById('drive_link')?.value ?? '').trim();
+                const driveOk = /^https?:\/\/(drive\.google\.com|docs\.google\.com)\/.+/i.test(drive);
+                if (!driveOk) {
+                    alert('Link Google Drive tidak valid. Gunakan URL drive.google.com / docs.google.com');
+                    return false;
+                }
+                return true;
             }
-        }
+
+            btnOpen?.addEventListener('click', () => {
+                if (!quickValidate()) return;
+                open();
+            });
+
+            overlay?.addEventListener('click', close);
+            btnCancel?.addEventListener('click', close);
+            btnConfirm?.addEventListener('click', () => {
+                close();
+                form.submit();
+            });
+
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && !modal.classList.contains('hidden')) close();
+            });
+        })();
     </script>
 </x-app-layout>
