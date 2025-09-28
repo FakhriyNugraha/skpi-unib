@@ -131,6 +131,17 @@
                             <p class="mt-1 text-sm text-gray-900 bg-gray-50 p-3 rounded-lg">{{ $skpi->sertifikat_kompetensi }}</p>
                         </div>
                     @endif
+                    @if($skpi->drive_link)
+                        <div class="mt-4">
+                            <label class="block text-sm font-medium text-gray-700">Link Google Drive</label>
+                            <p class="mt-1 text-sm">
+                                <a href="{{ $skpi->drive_link }}" target="_blank" rel="noopener" class="text-unib-blue-600 hover:underline">
+                                    Buka Link Drive
+                                </a>
+                            </p>
+                        </div>
+                    @endif
+
                     @if($skpi->catatan_khusus)
                         <div>
                             <label class="block text-sm font-medium text-gray-700">Catatan Khusus</label>

@@ -2,80 +2,105 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\ProfileUpdateRequest;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Redirect;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\View\View;
 
 class ProfileController extends Controller
 {
-    /**
-     * Display the user's profile form.
-     */
-    public function edit(Request $request): View
+    public function edit(Request $request)
     {
+        // Simpan "next" ke sesi jika ada, agar setelah update bisa kembali ke tujuan
+        if ($request->filled('next')) {
+            session()->put('redirect_to', $request->get('next'));
+        }
+
         return view('profile.edit', [
-            'user' => $request->user(),
+            'user' => Auth::user(),
         ]);
     }
 
-    /**
-     * Update the user's profile information.
-     */
-    public function update(ProfileUpdateRequest $request): RedirectResponse
+    public function update(Request $request)
     {
-        $user = $request->user();
-        
-        $validated = $request->validated();
-        
+        $user = Auth::user();
+
+        // Jika sedang "dipaksa" isi phone (datang dari middleware atau query)
+        $forcePhone = session('force_phone_fill') || $request->boolean('force_phone');
+
+        // Validasi dasar profil
+        $rules = [
+            'name'   => ['required', 'string', 'max:255'],
+            'email'  => ['required', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
+            'phone'  => [$forcePhone ? 'required' : 'nullable', 'string', 'max:20'],
+            'address'=> ['nullable', 'string', 'max:1000'],
+            'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
+        ];
+
+        // Role-based fields:
+        if ($user->role === 'user') {
+            // Ganti nim -> npm (unik di tabel users; sesuaikan kolom DB-mu)
+            $rules['npm'] = [
+                'required',
+                'string',
+                'max:9',
+                'regex:/^[A-Za-z0-9]+$/',
+                Rule::unique('users', 'npm')->ignore($user->id),
+            ];
+        } elseif (in_array($user->role, ['admin', 'superadmin'])) {
+            $rules['nip'] = [
+                'nullable',
+                'string',
+                'max:20',
+                Rule::unique('users', 'nip')->ignore($user->id),
+            ];
+        }
+
+        $data = $request->validate($rules);
+
         // Handle avatar upload
         if ($request->hasFile('avatar')) {
-            // Delete old avatar if exists
+            // Hapus avatar lama jika ada
             if ($user->avatar) {
                 Storage::disk('public')->delete($user->avatar);
             }
-            
-            $avatarPath = $request->file('avatar')->store('avatars', 'public');
-            $validated['avatar'] = $avatarPath;
-        }
-        
-        $user->fill($validated);
-
-        if ($user->isDirty('email')) {
-            $user->email_verified_at = null;
+            $path = $request->file('avatar')->store('avatars', 'public');
+            $data['avatar'] = $path;
         }
 
-        $user->save();
+        $user->update($data);
 
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
+        // Jika ini datang dari "paksa isi phone", balikkan ke tujuan
+        if ($forcePhone && !empty($user->phone)) {
+            $redirectTo = session('redirect_to', route('skpi.index'));
+            session()->forget(['force_phone_fill','redirect_to']);
+
+            return redirect($redirectTo)->with('success', 'Nomor telepon berhasil disimpan. Silakan lanjut.');
+        }
+
+        return back()->with('success', 'Profil berhasil diperbarui.');
     }
 
-    /**
-     * Delete the user's account.
-     */
-    public function destroy(Request $request): RedirectResponse
+    public function destroy(Request $request)
     {
-        $request->validateWithBag('userDeletion', [
+        $request->validate([
             'password' => ['required', 'current_password'],
         ]);
 
         $user = $request->user();
 
-        // Delete avatar if exists
+        Auth::logout();
+
+        // Hapus avatar bila ada (opsional)
         if ($user->avatar) {
             Storage::disk('public')->delete($user->avatar);
         }
-
-        Auth::logout();
 
         $user->delete();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return Redirect::to('/');
+        return redirect('/')->with('success', 'Akun berhasil dihapus.');
     }
 }

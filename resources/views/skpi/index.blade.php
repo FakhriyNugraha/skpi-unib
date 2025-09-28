@@ -15,7 +15,7 @@
                                     <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
                                     <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
                                 </svg>
-                                NPM: {{ auth()->user()->npm }}
+                                NPM: {{ auth()->user()->npm ?? '—' }}
                             </div>
                             @if(auth()->user()->jurusan)
                             <div class="flex items-center">
@@ -43,6 +43,29 @@
                 </div>
             </div>
         </div>
+
+        {{-- Peringatan nomor telepon belum ada (DISISIPKAN, desain tetap konsisten) --}}
+        @if(empty(auth()->user()->phone))
+            <div class="mb-6 rounded-2xl border border-yellow-200 bg-yellow-50 px-4 py-3 text-yellow-900">
+                <div class="flex items-start">
+                    <svg class="w-5 h-5 mt-0.5 mr-2 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16c-.77.833.192 2.5 1.732 2.5z"/>
+                    </svg>
+                    <div class="flex-1">
+                        <p class="font-semibold">Lengkapi Nomor Telepon Anda</p>
+                        <p class="text-sm mt-1">
+                            Kami belum menemukan nomor telepon pada profil Anda. Mohon lengkapi agar admin dapat menghubungi Anda jika diperlukan.
+                        </p>
+                        <div class="mt-3">
+                            <a href="{{ route('profile.edit') }}" class="inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-medium bg-yellow-600 text-white hover:bg-yellow-700">
+                                Lengkapi Sekarang
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
 
         @if(!$skpiData)
         <!-- Belum ada data SKPI -->
@@ -142,7 +165,7 @@
                             <h4 class="font-medium text-gray-900 mb-3">Informasi Pribadi</h4>
                             <div class="space-y-2 text-sm">
                                 <div><span class="text-gray-600">Nama:</span> {{ $skpiData->nama_lengkap }}</div>
-                                <div><span class="text-gray-600">NPM:</span> {{ $skpiData->npm }}</div>
+                                <div><span class="text-gray-600">NPM:</span> {{ $skpiData->npm ?? auth()->user()->npm ?? '—' }}</div>
                                 <div><span class="text-gray-600">Tempat, Tanggal Lahir:</span> {{ $skpiData->tempat_lahir }}, {{ $skpiData->tanggal_lahir->format('d M Y') }}</div>
                             </div>
                         </div>

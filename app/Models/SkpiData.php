@@ -33,6 +33,7 @@ class SkpiData extends Model
         'reviewed_at',
         'approved_by',
         'approved_at',
+        'drive_link',
     ];
 
     protected $casts = [

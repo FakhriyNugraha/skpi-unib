@@ -140,11 +140,11 @@
 
                                 @if($user->role === 'user')
                                     <div>
-                                        <label for="nim" class="block text-sm font-medium text-gray-700 mb-2">NIM</label>
-                                        <input id="nim" name="nim" type="text"
-                                               class="input-field @error('nim') border-red-500 @enderror"
-                                               value="{{ old('nim', $user->nim) }}">
-                                        @error('nim') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                                        <label for="npm" class="block text-sm font-medium text-gray-700 mb-2">NPM</label>
+                                        <input id="npm" name="npm" type="text"
+                                               class="input-field @error('npm') border-red-500 @enderror"
+                                               value="{{ old('npm', $user->npm) }}">
+                                        @error('npm') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                                     </div>
                                 @elseif(in_array($user->role, ['admin', 'superadmin']))
                                     <div>
@@ -160,8 +160,16 @@
                                     <label for="phone" class="block text-sm font-medium text-gray-700 mb-2">Nomor Telepon</label>
                                     <input id="phone" name="phone" type="text"
                                            class="input-field @error('phone') border-red-500 @enderror"
-                                           value="{{ old('phone', $user->phone) }}">
+                                           value="{{ old('phone', $user->phone) }}"
+                                           placeholder="Isi nomor telepon aktif">
                                     @error('phone') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+
+                                    {{-- Info kecil jika kosong --}}
+                                    @if(empty($user->phone))
+                                        <p class="mt-1 text-xs text-teknik-orange-600">
+                                            ⚠️ Nomor telepon belum ada. Harap diisi untuk kebutuhan kontak.
+                                        </p>
+                                    @endif
                                 </div>
                             </div>
 
@@ -249,7 +257,7 @@
                     Hapus Akun
                 </button>
 
-                {{-- Modal Jetstream - focusable (trap fokus ok bila @alpinejs/focus aktif) --}}
+                {{-- Modal Jetstream --}}
                 <x-modal name="confirm-user-deletion" :show="$errors->userDeletion->isNotEmpty()" focusable>
                     <form method="post" action="{{ route('profile.destroy') }}" class="p-6">
                         @csrf
@@ -309,11 +317,9 @@
                     if (t) t.show = false;
                 },
                 init() {
-                    // ---- Guard agar init tidak dijalankan dua kali ----
                     if (window.__TOAST_INIT_DONE__) return;
                     window.__TOAST_INIT_DONE__ = true;
 
-                    // 1) Listener global (dipasang sekali)
                     const handler = (e) => {
                         const d = e.detail || {};
                         const type  = d.type  || 'info';
@@ -323,7 +329,6 @@
                     };
                     window.addEventListener('app:toast', handler);
 
-                    // 2) Flash session - buat eksklusif (lihat poin #2 di bawah)
                     @if(session()->has('success'))
                         this.push('Berhasil', @json(session('success')), 'success');
                     @elseif(session()->has('error'))
@@ -334,7 +339,6 @@
                         this.push('Berhasil', 'Profil berhasil diperbarui.', 'success');
                     @endif
 
-                    // 3) Error validasi (ringkas)
                     const errors = @json($errors->all());
                     if (Array.isArray(errors) && errors.length) {
                         const extra = errors.length > 1 ? ` (+${errors.length - 1} lainnya)` : '';
@@ -344,8 +348,7 @@
             }
         }
 
-
-        // ===== Preview avatar (sekali, tidak bikin toast dobel)
+        // ===== Preview avatar
         document.addEventListener('DOMContentLoaded', function () {
             const input = document.getElementById('avatarInput');
             const wrapper = document.getElementById('avatarPreviewWrapper');
