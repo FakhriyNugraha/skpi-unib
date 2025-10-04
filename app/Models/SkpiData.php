@@ -103,4 +103,12 @@ class SkpiData extends Model
     {
         return in_array($this->status, ['draft', 'rejected'], true);
     }
+
+    /**
+     * Business rule: bisa di-review/disetujui/ditolak ketika statusnya 'submitted' (menunggu review).
+     */
+    public function canBeApproved(): bool
+    {
+        return $this->status === 'submitted';
+    }
 }

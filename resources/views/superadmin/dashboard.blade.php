@@ -165,12 +165,12 @@
 
         {{-- RECENT ACTIVITY --}}
         <section aria-labelledby="activity-title" class="card p-6">
-            <div class="mb-4 flex items-center justify-between">
+            <div class="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                 <h2 id="activity-title" class="text-xl font-semibold text-unib-blue-900">
                     Aktivitas Terbaru
                 </h2>
                 <a href="{{ route('superadmin.all-skpi') }}"
-                   class="text-sm text-unib-blue-700 hover:underline">
+                   class="text-sm text-unib-blue-700 hover:underline self-start sm:self-auto">
                     Lihat semua
                 </a>
             </div>
@@ -202,7 +202,7 @@
                             </thead>
                             <tbody class="divide-y divide-gray-100 bg-white">
                                 @foreach($recentActivity as $item)
-                                    <tr class="hover:bg-gray-50">
+                                    <tr class="hover:bg-gray-50 transition-colors">
                                         <td class="px-3 py-3">
                                             <div class="flex items-center">
                                                 <div class="mr-3 flex h-8 w-8 items-center justify-center rounded-full bg-unib-blue-100">

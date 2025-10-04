@@ -4,7 +4,7 @@
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Header -->
         <div class="mb-8">
-            <div class="flex items-center justify-between">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                     <h1 class="text-3xl font-bold text-gray-900">Review SKPI</h1>
                     <p class="text-gray-600 mt-2">{{ $skpi->nama_lengkap }} - {{ $skpi->nim }}</p>
@@ -186,7 +186,7 @@
                                 Catatan Review
                             </label>
                             <textarea name="catatan_reviewer" id="catatan_reviewer" rows="4" 
-                                      class="input-field @error('catatan_reviewer') border-red-500 @enderror"
+                                      class="input-field w-full @error('catatan_reviewer') border-red-500 @enderror"
                                       placeholder="Berikan catatan untuk mahasiswa...">{{ old('catatan_reviewer') }}</textarea>
                             @error('catatan_reviewer')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -195,18 +195,18 @@
                         
                         <div class="space-y-3">
                             <button type="submit" name="action" value="approve" 
-                                    class="w-full bg-green-600 text-white px-4 py-3 rounded-lg font-medium hover:bg-green-700 transition-colors"
+                                    class="w-full bg-green-600 text-white px-4 py-3 rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center justify-center"
                                     onclick="return confirm('Apakah Anda yakin ingin menyetujui SKPI ini?')">
-                                <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                                 </svg>
                                 Setujui SKPI
                             </button>
                             
                             <button type="submit" name="action" value="reject"
-                                    class="w-full bg-red-600 text-white px-4 py-3 rounded-lg font-medium hover:bg-red-700 transition-colors"
+                                    class="w-full bg-red-600 text-white px-4 py-3 rounded-lg font-medium hover:bg-red-700 transition-colors flex items-center justify-center"
                                     onclick="return confirm('Apakah Anda yakin ingin menolak SKPI ini? Pastikan Anda telah memberikan catatan yang jelas.')">
-                                <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                                 </svg>
                                 Tolak SKPI

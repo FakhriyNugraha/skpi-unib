@@ -104,30 +104,35 @@
                         </div>
                         
                         @if($skpiData->reviewed_at)
-                        <div>
+                        <div class="flex items-center justify-between">
                             <span class="text-sm text-gray-600">Direview pada:</span>
                             <p class="text-sm font-medium">{{ $skpiData->reviewed_at->format('d M Y H:i') }}</p>
                         </div>
                         @endif
                         
                         @if($skpiData->approved_at)
-                        <div>
+                        <div class="flex items-center justify-between">
                             <span class="text-sm text-gray-600">Disetujui pada:</span>
                             <p class="text-sm font-medium">{{ $skpiData->approved_at->format('d M Y H:i') }}</p>
                         </div>
                         @endif
                         
                         @if($skpiData->catatan_reviewer)
-                        <div>
-                            <span class="text-sm text-gray-600">Catatan Reviewer:</span>
-                            <p class="text-sm bg-gray-50 p-3 rounded-lg mt-2">{{ $skpiData->catatan_reviewer }}</p>
+                        <div class="flex items-start justify-between">
+                            <div class="flex-1">
+                                <span class="text-sm text-gray-600">Catatan Reviewer:</span>
+                                <p class="text-sm bg-gray-50 p-3 rounded-lg mt-2">{{ $skpiData->catatan_reviewer }}</p>
+                            </div>
                         </div>
                         @endif
                     </div>
                     
-                    <div class="mt-6 space-y-3">
+                    <div class="mt-6 space-y-3 sm:space-y-0 sm:flex sm:space-x-3 sm:justify-center">
                         @if($skpiData->canBeEdited())
-                            <a href="{{ route('skpi.edit', $skpiData) }}" class="btn-primary w-full text-center block">
+                            <a href="{{ route('skpi.edit', $skpiData) }}" class="btn-primary w-full flex items-center justify-center">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                </svg>
                                 Edit SKPI
                             </a>
                         @endif
@@ -136,19 +141,29 @@
                             <form method="POST" action="{{ route('skpi.submit', $skpiData) }}" 
                                   onsubmit="return confirm('Apakah Anda yakin ingin submit SKPI? Data tidak dapat diedit setelah disubmit.')">
                                 @csrf
-                                <button type="submit" class="btn-secondary w-full">
+                                <button type="submit" class="btn-secondary w-full flex items-center justify-center">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
                                     Submit untuk Review
                                 </button>
                             </form>
                         @endif
                         
                         @if($skpiData->status === 'approved')
-                            <a href="{{ route('skpi.print', $skpiData) }}" target="_blank" class="btn-outline w-full text-center block">
+                            <a href="{{ route('skpi.print', $skpiData) }}" target="_blank" class="btn-outline w-full flex items-center justify-center">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                                </svg>
                                 Cetak SKPI
                             </a>
                         @endif
                         
-                        <a href="{{ route('skpi.show', $skpiData) }}" class="btn-outline w-full text-center block">
+                        <a href="{{ route('skpi.show', $skpiData) }}" class="btn-outline w-full flex items-center justify-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                            </svg>
                             Lihat Detail
                         </a>
                     </div>

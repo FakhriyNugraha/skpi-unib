@@ -248,10 +248,12 @@
                         <p>* Field wajib diisi</p>
                         <p class="mt-1">Data akan disimpan sebagai draft dan dapat diedit sebelum disubmit untuk review.</p>
                     </div>
-                    <div class="flex space-x-4">
-                        <a href="{{ route('skpi.index') }}" class="btn-outline">Batal</a>
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:space-x-3 space-y-3 sm:space-y-0">
+                        <a href="{{ route('skpi.index') }}" class="btn-outline text-center">
+                            Batal
+                        </a>
                         <!-- Trigger modal -->
-                        <button type="button" id="openConfirm" class="btn-primary">
+                        <button type="button" id="openConfirm" class="btn-primary text-center">
                             {{ $existingSkpi ? 'Update SKPI' : 'Simpan SKPI' }}
                         </button>
                     </div>

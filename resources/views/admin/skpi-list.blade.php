@@ -4,7 +4,7 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Header -->
         <div class="mb-8">
-            <div class="flex items-center justify-between">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                     <h1 class="text-3xl font-bold text-gray-900">Daftar SKPI</h1>
                     <p class="text-gray-600 mt-2">Kelola dan review pengajuan SKPI mahasiswa</p>
@@ -17,10 +17,10 @@
 
         <!-- Filters -->
         <div class="card p-6 mb-8">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                    <select id="status-filter" class="input-field">
+                    <select id="status-filter" class="input-field w-full">
                         <option value="">Semua Status</option>
                         <option value="draft">Draft</option>
                         <option value="submitted">Menunggu Review</option>
@@ -30,7 +30,7 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Jurusan</label>
-                    <select id="jurusan-filter" class="input-field">
+                    <select id="jurusan-filter" class="input-field w-full">
                         <option value="">Semua Jurusan</option>
                         @foreach(\App\Models\Jurusan::active()->get() as $jurusan)
                             <option value="{{ $jurusan->id }}">{{ $jurusan->nama_jurusan }}</option>
@@ -39,7 +39,7 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Pencarian</label>
-                    <input type="text" id="search" placeholder="Nama atau NIM..." class="input-field">
+                    <input type="text" id="search" placeholder="Nama atau NIM..." class="input-field w-full">
                 </div>
                 <div class="flex items-end">
                     <button onclick="applyFilters()" class="btn-primary w-full">Filter</button>
@@ -48,7 +48,7 @@
         </div>
 
         <!-- SKPI List -->
-        <div class="card">
+        <div class="card overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
@@ -75,7 +75,7 @@
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         @forelse($skpiList as $skpi)
-                        <tr class="hover:bg-gray-50">
+                        <tr class="hover:bg-gray-50 transition-colors">
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex items-center">
                                     <div class="w-10 h-10 bg-unib-blue-100 rounded-full flex items-center justify-center mr-3">
@@ -85,7 +85,7 @@
                                     </div>
                                     <div>
                                         <div class="text-sm font-medium text-gray-900">{{ $skpi->nama_lengkap }}</div>
-                                        <div class="text-sm text-gray-500">{{ $skpi->nim }}</div>
+                                        <div class="text-sm text-gray-500">{{ $skpi->npm }}</div>
                                     </div>
                                 </div>
                             </td>
@@ -142,7 +142,7 @@
             </div>
             
             @if($skpiList->hasPages())
-            <div class="px-6 py-3 border-t border-gray-200">
+            <div class="px-6 py-3 border-t border-gray-200 bg-gray-50">
                 {{ $skpiList->links() }}
             </div>
             @endif

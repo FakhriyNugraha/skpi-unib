@@ -5,7 +5,7 @@
         <!-- Header -->
         <div class="mb-8">
             <div class="bg-gradient-to-r from-unib-blue-600 to-unib-blue-700 rounded-2xl text-white p-8">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <h1 class="text-3xl font-bold mb-2">Dashboard Admin</h1>
                         <p class="text-blue-100">Selamat datang, {{ auth()->user()->name }}</p>
@@ -27,12 +27,20 @@
                             @endif
                         </div>
                     </div>
+                    <div class="mt-4 sm:mt-0">
+                        <a href="{{ route('admin.skpi-list') }}" class="btn-primary inline-flex items-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                            </svg>
+                            Review SKPI
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- Statistics Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <div class="card p-6">
                 <div class="flex items-center">
                     <div class="p-3 rounded-full bg-yellow-100 mr-4">
@@ -166,8 +174,11 @@
                         @endforeach
                     </div>
                     <div class="mt-4 text-center">
-                        <a href="{{ route('admin.skpi-list') }}" class="text-sm text-unib-blue-600 hover:text-unib-blue-800">
-                            Lihat semua →
+                        <a href="{{ route('admin.skpi-list') }}" class="text-sm text-unib-blue-600 hover:text-unib-blue-800 inline-flex items-center">
+                            <span>Lihat semua</span>
+                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
                         </a>
                     </div>
                 @else
