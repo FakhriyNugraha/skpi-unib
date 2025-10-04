@@ -11,7 +11,7 @@
             .no-print { display: none; }
             .page-break { page-break-before: always; }
         }
-        .logo-unib { width: 80px; height: 80px; background: url('{{ asset('images/logounib.png') }}') center/cover no-repeat; }
+        .logo-unib { width: 100px; height: 100px; background: url('{{ asset('images/logounib.png') }}') center/cover no-repeat; }
     </style>
 </head>
 <body class="bg-white">

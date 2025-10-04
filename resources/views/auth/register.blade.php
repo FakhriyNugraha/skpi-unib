@@ -24,7 +24,7 @@
                     <!-- Logo and Header -->
                     <div class="text-center mb-8">
                         <div class="flex justify-center mb-6">
-                            <div class="w-16 h-16">
+                            <div class="w-20 h-20">
                                 <img src="{{ asset('images/logounib.png') }}" alt="Logo UNIB" class="w-full h-full object-contain">
                             </div>
                         </div>
@@ -220,14 +220,14 @@
             <aside class="hidden lg:block relative w-0 flex-1">
                 <div class="absolute inset-0 bg-gradient-to-br from-teknik-orange-600 to-teknik-orange-800">
                     <div class="absolute inset-0 bg-black/20"></div>
-                    <div class="relative h-full flex flex-col justify-center items-center text-white p-12">
-                        <div class="text-center max-w-md">
-                            <div class="mb-8">
-                                <img src="{{ asset('images/logounib.png') }}" alt="Logo UNIB" class="w-24 h-24 mx-auto mb-6">
+                    <div class="relative h-full flex flex-col justify-start items-center text-white pt-16 pb-12 px-12">
+                        <div class="text-center max-w-md mt-12">
+                            <div class="mb-6">
+                                <img src="{{ asset('images/logounib.png') }}" alt="Logo UNIB" class="w-32 h-32 mx-auto mb-4">
                             </div>
-                            <h2 class="text-4xl font-bold mb-4">Bergabung dengan</h2>
-                            <h3 class="text-2xl font-semibold mb-6">Fakultas Teknik UNIB</h3>
-                            <p class="text-lg text-orange-100 mb-8 leading-relaxed">
+                            <h2 class="text-4xl font-bold mb-2">Bergabung dengan</h2>
+                            <h3 class="text-2xl font-semibold mb-4">Fakultas Teknik UNIB</h3>
+                            <p class="text-lg text-orange-100 mb-6 leading-relaxed">
                                 Daftarkan diri Anda untuk mengakses sistem SKPI dan kelola prestasi akademik Anda dengan mudah
                             </p>
                             <div class="grid grid-cols-3 gap-4 text-center">

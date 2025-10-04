@@ -16,8 +16,8 @@
     
     <style>
         .logo-unib {
-            width: 50px;
-            height: 50px;
+            width: 60px;
+            height: 60px;
             background-image: url('/images/logounib.png');
             background-size: contain;
             background-repeat: no-repeat;

@@ -27,7 +27,7 @@
                 <!-- Brand -->
                 <div class="text-center mb-8">
                     <div class="flex justify-center mb-6">
-                        <div class="w-16 h-16">
+                        <div class="w-20 h-20">
                             <img src="{{ asset('images/logounib.png') }}" alt="Logo UNIB" class="w-full h-full object-contain">
                         </div>
                     </div>
@@ -184,12 +184,12 @@
         <aside class="relative hidden lg:block">
             <div class="absolute inset-0 bg-gradient-to-br from-unib-blue-600 to-unib-blue-800">
                 <div class="absolute inset-0 bg-black/20"></div>
-                <div class="relative flex h-full flex-col items-center justify-center p-12 text-white">
-                    <div class="max-w-md text-center">
-                        <img src="{{ asset('images/logounib.png') }}" alt="Logo UNIB" class="mx-auto mb-6 h-24 w-24">
-                        <h1 class="mb-2 text-4xl font-bold">SKPI UNIB</h1>
-                        <h2 class="mb-6 text-2xl font-semibold">Fakultas Teknik</h2>
-                        <p class="mb-8 text-lg text-blue-100 leading-relaxed">
+                <div class="relative flex h-full flex-col items-center justify-start text-white pt-16 pb-12 px-12">
+                    <div class="max-w-md text-center mt-12">
+                        <img src="{{ asset('images/logounib.png') }}" alt="Logo UNIB" class="mx-auto mb-4 h-32 w-32">
+                        <h1 class="mb-1 text-4xl font-bold">SKPI UNIB</h1>
+                        <h2 class="mb-4 text-2xl font-semibold">Fakultas Teknik</h2>
+                        <p class="mb-6 text-lg text-blue-100 leading-relaxed">
                             Sistem Informasi Surat Keterangan Pendamping Ijazah
                             Universitas Bengkulu
                         </p>
