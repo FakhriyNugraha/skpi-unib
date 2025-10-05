@@ -165,16 +165,12 @@
                         @if($skpiData->canBeSubmitted())
                         <div class="pt-4 border-t border-gray-200">
                             <div class="flex justify-center">
-                                <form method="POST" action="{{ route('skpi.submit', $skpiData) }}" 
-                                      onsubmit="return confirm('Apakah Anda yakin ingin submit SKPI? Data tidak dapat diedit setelah disubmit.')">
-                                    @csrf
-                                    <button type="submit" class="btn-primary w-full sm:w-auto min-w-[160px] flex items-center justify-center transition-all duration-300 hover:shadow-xl hover:translate-y-[-2px] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-lg border-2 border-blue-500 bg-blue-600 hover:bg-blue-700">
-                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                        </svg>
-                                        Submit untuk di Review
-                                    </button>
-                                </form>
+                                <button type="button" id="submitBtn" class="btn-primary w-full sm:w-auto min-w-[160px] flex items-center justify-center transition-all duration-300 hover:shadow-xl hover:translate-y-[-2px] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-lg border-2 border-blue-500 bg-blue-600 hover:bg-blue-700">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                    Submit untuk di Review
+                                </button>
                             </div>
                         </div>
                         @endif
@@ -255,4 +251,92 @@
             </div>
         </div>
     </div>
+
+    <!-- Submit Confirmation Modal -->
+    <div id="submitModal" class="fixed inset-0 z-50 hidden" aria-hidden="true">
+        <div id="submitModalOverlay" class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
+        <div class="absolute inset-0 flex items-center justify-center p-4">
+            <div class="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-gray-200">
+                <div class="p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 text-center">
+                        Submit SKPI
+                    </h3>
+                    <p class="mt-3 text-sm text-gray-600 text-center">
+                        Apakah Anda yakin ingin submit SKPI? Data tidak dapat diedit setelah disubmit.
+                    </p>
+                    <div class="mt-6 flex flex-col sm:flex-row justify-center sm:gap-3 gap-2">
+                        <button type="button" id="cancelSubmit"
+                                class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 inline-flex items-center justify-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                            Batal
+                        </button>
+                        <button type="button" id="confirmSubmit"
+                                class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 shadow-sm inline-flex items-center justify-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            Submit
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if($skpiData)
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const submitBtn = document.getElementById('submitBtn');
+            const submitModal = document.getElementById('submitModal');
+            const submitModalOverlay = document.getElementById('submitModalOverlay');
+            const cancelSubmit = document.getElementById('cancelSubmit');
+            const confirmSubmit = document.getElementById('confirmSubmit');
+
+            if (submitBtn) {
+                // Submit button event handler
+                submitBtn.addEventListener('click', function() {
+                    submitModal.classList.remove('hidden');
+                    document.body.style.overflow = 'hidden';
+                    confirmSubmit.focus();
+                });
+                
+                // Close modal
+                function closeSubmitModal() {
+                    submitModal.classList.add('hidden');
+                    document.body.style.overflow = '';
+                }
+                
+                // Confirm submit
+                confirmSubmit.addEventListener('click', function() {
+                    // Create and submit form dynamically
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    // Use the route helper with the ID from the existing page
+                    form.action = '{{ route('skpi.submit', $skpiData->id) }}';
+                    form.style.display = 'none';
+                    
+                    // Add CSRF token
+                    const csrfInput = document.createElement('input');
+                    csrfInput.type = 'hidden';
+                    csrfInput.name = '_token';
+                    csrfInput.value = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                    form.appendChild(csrfInput);
+                    
+                    document.body.appendChild(form);
+                    form.submit();
+                });
+                
+                // Event listeners for closing modal
+                submitModalOverlay.addEventListener('click', closeSubmitModal);
+                cancelSubmit.addEventListener('click', closeSubmitModal);
+                
+                window.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape' && !submitModal.classList.contains('hidden')) closeSubmitModal();
+                });
+            }
+        });
+    </script>
+    @endif
 </x-app-layout>

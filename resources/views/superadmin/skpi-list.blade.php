@@ -148,18 +148,13 @@
                                         </a>
 
                                         @if($status === 'submitted')
-                                            <form method="POST" action="{{ route('superadmin.approve-skpi', $row) }}" class="inline"
-                                                  onsubmit="return confirm('Setujui SKPI ini?');">
-                                                @csrf
-                                                <button type="submit" class="btn-primary px-2 py-1 text-xs">Approve</button>
-                                            </form>
+                                            <button type="button" class="btn-primary px-2 py-1 text-xs approve-btn" data-skpi-id="{{ $row->id }}" data-action="approve">
+                                                Approve
+                                            </button>
 
-                                            <form method="POST" action="{{ route('superadmin.reject-skpi', $row) }}" class="inline"
-                                                  onsubmit="return confirm('Tolak SKPI ini?');">
-                                                @csrf
-                                                <input type="hidden" name="catatan_reviewer" value="">
-                                                <button type="submit" class="btn-outline px-2 py-1 text-xs">Reject</button>
-                                            </form>
+                                            <button type="button" class="btn-outline px-2 py-1 text-xs reject-btn" data-skpi-id="{{ $row->id }}" data-action="reject">
+                                                Reject
+                                            </button>
                                         @endif
 
                                         @if($status === 'approved')
@@ -188,4 +183,138 @@
             @endif
         </div>
     </div>
+
+    <!-- Approve/Reject Confirmation Modal -->
+    <div id="skpiReviewModal" class="fixed inset-0 z-50 hidden" aria-hidden="true">
+        <div id="skpiReviewModalOverlay" class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
+        <div class="absolute inset-0 flex items-center justify-center p-4">
+            <div class="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-gray-200">
+                <div class="p-6">
+                    <h3 id="skpiReviewModalTitle" class="text-lg font-semibold text-gray-900 text-center">
+                        Konfirmasi Aksi
+                    </h3>
+                    <p id="skpiReviewModalContent" class="mt-3 text-sm text-gray-600 text-center">
+                        Apakah Anda yakin ingin melakukan aksi ini?
+                    </p>
+                    <div class="mt-6 flex flex-col sm:flex-row justify-center sm:gap-3 gap-2">
+                        <button type="button" id="cancelSkpiReview"
+                                class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 inline-flex items-center justify-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                            Batal
+                        </button>
+                        <button type="button" id="confirmSkpiReview"
+                                class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 shadow-sm inline-flex items-center justify-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            <span id="confirmSkpiReviewText">Konfirmasi</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const approveButtons = document.querySelectorAll('.approve-btn');
+            const rejectButtons = document.querySelectorAll('.reject-btn');
+            const skpiReviewModal = document.getElementById('skpiReviewModal');
+            const skpiReviewModalOverlay = document.getElementById('skpiReviewModalOverlay');
+            const cancelSkpiReview = document.getElementById('cancelSkpiReview');
+            const confirmSkpiReview = document.getElementById('confirmSkpiReview');
+            const skpiReviewModalTitle = document.getElementById('skpiReviewModalTitle');
+            const skpiReviewModalContent = document.getElementById('skpiReviewModalContent');
+            const confirmSkpiReviewText = document.getElementById('confirmSkpiReviewText');
+            
+            let currentSkpiId = null;
+            let currentAction = null;
+            
+            // Approve button event handlers
+            approveButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    currentSkpiId = this.dataset.skpiId;
+                    currentAction = 'approve';
+                    skpiReviewModalTitle.textContent = 'Setujui SKPI';
+                    skpiReviewModalContent.textContent = 'Apakah Anda yakin ingin menyetujui SKPI ini? Tindakan ini tidak dapat dibatalkan.';
+                    confirmSkpiReviewText.textContent = 'Setujui';
+                    confirmSkpiReview.className = 'px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 shadow-sm inline-flex items-center justify-center';
+                    
+                    skpiReviewModal.classList.remove('hidden');
+                    document.body.style.overflow = 'hidden';
+                    confirmSkpiReview.focus();
+                });
+            });
+            
+            // Reject button event handlers
+            rejectButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    currentSkpiId = this.dataset.skpiId;
+                    currentAction = 'reject';
+                    skpiReviewModalTitle.textContent = 'Tolak SKPI';
+                    skpiReviewModalContent.textContent = 'Apakah Anda yakin ingin menolak SKPI ini? Tindakan ini tidak dapat dibatalkan.';
+                    confirmSkpiReviewText.textContent = 'Tolak';
+                    confirmSkpiReview.className = 'px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 shadow-sm inline-flex items-center justify-center';
+                    
+                    skpiReviewModal.classList.remove('hidden');
+                    document.body.style.overflow = 'hidden';
+                    confirmSkpiReview.focus();
+                });
+            });
+            
+            // Close modal
+            function closeSkpiReviewModal() {
+                skpiReviewModal.classList.add('hidden');
+                document.body.style.overflow = '';
+                currentSkpiId = null;
+                currentAction = null;
+            }
+            
+            // Confirm action
+            confirmSkpiReview.addEventListener('click', function() {
+                if (currentSkpiId && currentAction) {
+                    // Create and submit form dynamically based on action
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    
+                    if (currentAction === 'approve') {
+                        form.action = `/superadmin/skpi/${currentSkpiId}/approve`;
+                    } else {
+                        form.action = `/superadmin/skpi/${currentSkpiId}/reject`;
+                    }
+                    
+                    form.style.display = 'none';
+                    
+                    // Add CSRF token
+                    const csrfInput = document.createElement('input');
+                    csrfInput.type = 'hidden';
+                    csrfInput.name = '_token';
+                    csrfInput.value = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                    form.appendChild(csrfInput);
+                    
+                    // For reject action, we might want to add a note, but for now just submit
+                    if (currentAction === 'reject') {
+                        const catatanInput = document.createElement('input');
+                        catatanInput.type = 'hidden';
+                        catatanInput.name = 'catatan_reviewer';
+                        catatanInput.value = '';
+                        form.appendChild(catatanInput);
+                    }
+                    
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
+            
+            // Event listeners for closing modal
+            skpiReviewModalOverlay.addEventListener('click', closeSkpiReviewModal);
+            cancelSkpiReview.addEventListener('click', closeSkpiReviewModal);
+            
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && !skpiReviewModal.classList.contains('hidden')) closeSkpiReviewModal();
+            });
+        });
+    </script>
 </x-app-layout>

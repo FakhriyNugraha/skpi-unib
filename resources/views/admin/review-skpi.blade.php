@@ -194,18 +194,16 @@
                         </div>
                         
                         <div class="space-y-3">
-                            <button type="submit" name="action" value="approve" 
-                                    class="w-full bg-green-600 text-white px-4 py-3 rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center justify-center"
-                                    onclick="return confirm('Apakah Anda yakin ingin menyetujui SKPI ini?')">
+                            <button type="button" id="approveBtn"
+                                    class="w-full bg-green-600 text-white px-4 py-3 rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center justify-center">
                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                                 </svg>
                                 Setujui SKPI
                             </button>
                             
-                            <button type="submit" name="action" value="reject"
-                                    class="w-full bg-red-600 text-white px-4 py-3 rounded-lg font-medium hover:bg-red-700 transition-colors flex items-center justify-center"
-                                    onclick="return confirm('Apakah Anda yakin ingin menolak SKPI ini? Pastikan Anda telah memberikan catatan yang jelas.')">
+                            <button type="button" id="rejectBtn"
+                                    class="w-full bg-red-600 text-white px-4 py-3 rounded-lg font-medium hover:bg-red-700 transition-colors flex items-center justify-center">
                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                                 </svg>
@@ -329,4 +327,132 @@
             </div>
         </div>
     </div>
+
+    <!-- Approve/Reject Confirmation Modal -->
+    <div id="reviewModal" class="fixed inset-0 z-50 hidden" aria-hidden="true">
+        <div id="reviewModalOverlay" class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
+        <div class="absolute inset-0 flex items-center justify-center p-4">
+            <div class="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-gray-200">
+                <div class="p-6">
+                    <h3 id="reviewModalTitle" class="text-lg font-semibold text-gray-900 text-center">
+                        Konfirmasi Aksi
+                    </h3>
+                    <p id="reviewModalContent" class="mt-3 text-sm text-gray-600 text-center">
+                        Apakah Anda yakin ingin melakukan aksi ini?
+                    </p>
+                    <div class="mt-6 flex flex-col sm:flex-row justify-center sm:gap-3 gap-2">
+                        <button type="button" id="cancelReview"
+                                class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 inline-flex items-center justify-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                            Batal
+                        </button>
+                        <button type="button" id="confirmReview"
+                                class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 shadow-sm inline-flex items-center justify-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            <span id="confirmReviewText">Konfirmasi</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const approveBtn = document.getElementById('approveBtn');
+            const rejectBtn = document.getElementById('rejectBtn');
+            const reviewModal = document.getElementById('reviewModal');
+            const reviewModalOverlay = document.getElementById('reviewModalOverlay');
+            const cancelReview = document.getElementById('cancelReview');
+            const confirmReview = document.getElementById('confirmReview');
+            const reviewModalTitle = document.getElementById('reviewModalTitle');
+            const reviewModalContent = document.getElementById('reviewModalContent');
+            const confirmReviewText = document.getElementById('confirmReviewText');
+            
+            let currentAction = null;
+            
+            // Approve button event handler
+            approveBtn.addEventListener('click', function() {
+                currentAction = 'approve';
+                reviewModalTitle.textContent = 'Setujui SKPI';
+                reviewModalContent.textContent = 'Apakah Anda yakin ingin menyetujui SKPI ini? Tindakan ini tidak dapat dibatalkan.';
+                confirmReviewText.textContent = 'Setujui';
+                confirmReview.className = 'px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 shadow-sm inline-flex items-center justify-center';
+                
+                reviewModal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+                confirmReview.focus();
+            });
+            
+            // Reject button event handler
+            rejectBtn.addEventListener('click', function() {
+                currentAction = 'reject';
+                reviewModalTitle.textContent = 'Tolak SKPI';
+                reviewModalContent.textContent = 'Apakah Anda yakin ingin menolak SKPI ini? Pastikan Anda telah memberikan catatan yang jelas.';
+                confirmReviewText.textContent = 'Tolak';
+                confirmReview.className = 'px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 shadow-sm inline-flex items-center justify-center';
+                
+                reviewModal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+                confirmReview.focus();
+            });
+            
+            // Close modal
+            function closeReviewModal() {
+                reviewModal.classList.add('hidden');
+                document.body.style.overflow = '';
+                currentAction = null;
+            }
+            
+            // Confirm action
+            confirmReview.addEventListener('click', function() {
+                if (currentAction) {
+                    // Create and submit form dynamically
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '{{ route('admin.approve-skpi', $skpi) }}';
+                    form.style.display = 'none';
+                    
+                    // Add CSRF token
+                    const csrfInput = document.createElement('input');
+                    csrfInput.type = 'hidden';
+                    csrfInput.name = '_token';
+                    csrfInput.value = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                    form.appendChild(csrfInput);
+                    
+                    // Add action value
+                    const actionInput = document.createElement('input');
+                    actionInput.type = 'hidden';
+                    actionInput.name = 'action';
+                    actionInput.value = currentAction;
+                    form.appendChild(actionInput);
+                    
+                    // Add catatan_reviewer if exists
+                    const textarea = document.getElementById('catatan_reviewer');
+                    if (textarea && textarea.value) {
+                        const catatanInput = document.createElement('input');
+                        catatanInput.type = 'hidden';
+                        catatanInput.name = 'catatan_reviewer';
+                        catatanInput.value = textarea.value;
+                        form.appendChild(catatanInput);
+                    }
+                    
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
+            
+            // Event listeners for closing modal
+            reviewModalOverlay.addEventListener('click', closeReviewModal);
+            cancelReview.addEventListener('click', closeReviewModal);
+            
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && !reviewModal.classList.contains('hidden')) closeReviewModal();
+            });
+        });
+    </script>
 </x-app-layout>
