@@ -62,8 +62,8 @@ class AdminController extends Controller
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
-                $q->where('nama_lengkap', 'LIKE', "%{$search}%")
-                  ->orWhere('nim', 'LIKE', "%{$search}%");
+                $q->where('nama_lengkap', 'LIKE', '%' . $search . '%')
+                  ->orWhere('npm', 'LIKE', '%' . $search . '%');
             });
         }
         

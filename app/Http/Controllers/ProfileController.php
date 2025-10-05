@@ -88,6 +88,11 @@ class ProfileController extends Controller
         ]);
 
         $user = $request->user();
+        
+        // Double-check: ensure user is deleting their own account
+        if ($user->id !== Auth::id()) {
+            abort(403, 'Unauthorized to delete this account.');
+        }
 
         Auth::logout();
 

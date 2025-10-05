@@ -9,7 +9,10 @@
                     <h1 class="text-3xl font-bold text-gray-900">{{ $existingSkpi ? 'Edit' : 'Buat' }} SKPI</h1>
                     <p class="text-gray-600 mt-2">Lengkapi semua informasi yang diperlukan untuk SKPI Anda</p>
                 </div>
-                <a href="{{ route('skpi.index') }}" class="btn-outline">
+                <a href="{{ route('skpi.index') }}" class="btn-outline inline-flex items-center">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                    </svg>
                     Kembali
                 </a>
             </div>
@@ -248,12 +251,18 @@
                         <p>* Field wajib diisi</p>
                         <p class="mt-1">Data akan disimpan sebagai draft dan dapat diedit sebelum disubmit untuk review.</p>
                     </div>
-                    <div class="flex flex-col sm:flex-row sm:items-center sm:space-x-3 space-y-3 sm:space-y-0">
-                        <a href="{{ route('skpi.index') }}" class="btn-outline text-center">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:gap-3 space-y-3 sm:space-y-0">
+                        <a href="{{ route('skpi.index') }}" class="btn-outline inline-flex items-center justify-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
                             Batal
                         </a>
                         <!-- Trigger modal -->
-                        <button type="button" id="openConfirm" class="btn-primary text-center">
+                        <button type="button" id="openConfirm" class="btn-primary inline-flex items-center justify-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
                             {{ $existingSkpi ? 'Update SKPI' : 'Simpan SKPI' }}
                         </button>
                     </div>
@@ -274,13 +283,19 @@
                     <p class="mt-3 text-sm text-gray-600 text-center">
                         Apakah Anda yakin ingin {{ $existingSkpi ? 'mengupdate' : 'menyimpan' }} SKPI?
                     </p>
-                    <div class="mt-6 flex justify-center gap-3">
+                    <div class="mt-6 flex flex-col sm:flex-row justify-center sm:gap-3 gap-2">
                         <button type="button" id="cancelConfirm"
-                                class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50">
+                                class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 inline-flex items-center justify-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
                             Batal
                         </button>
                         <button type="button" id="confirmSubmit"
-                                class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 shadow-sm">
+                                class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 shadow-sm inline-flex items-center justify-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
                             Ya, {{ $existingSkpi ? 'Update' : 'Simpan' }}
                         </button>
                     </div>

@@ -58,7 +58,10 @@
                             Kami belum menemukan nomor telepon pada profil Anda. Mohon lengkapi agar admin dapat menghubungi Anda jika diperlukan.
                         </p>
                         <div class="mt-3">
-                            <a href="{{ route('profile.edit') }}" class="inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-medium bg-yellow-600 text-white hover:bg-yellow-700">
+                            <a href="{{ route('profile.edit') }}" class="inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium bg-yellow-600 text-white hover:bg-yellow-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 min-w-[140px] text-center">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                </svg>
                                 Lengkapi Sekarang
                             </a>
                         </div>
@@ -79,7 +82,10 @@
             <p class="text-gray-600 mb-8 max-w-md mx-auto">
                 Anda belum memiliki data SKPI. Mulai buat SKPI Anda dengan mengisi informasi yang diperlukan.
             </p>
-            <a href="{{ route('skpi.create') }}" class="btn-primary">
+            <a href="{{ route('skpi.create') }}" class="btn-primary inline-flex items-center justify-center min-w-[160px]">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
                 Buat SKPI Baru
             </a>
         </div>
@@ -127,45 +133,51 @@
                         @endif
                     </div>
                     
-                    <div class="mt-6 space-y-3 sm:space-y-0 sm:flex sm:space-x-3 sm:justify-center">
-                        @if($skpiData->canBeEdited())
-                            <a href="{{ route('skpi.edit', $skpiData) }}" class="btn-primary w-full flex items-center justify-center">
+                    <div class="mt-6 flex flex-col gap-3">
+                        <div class="flex flex-col sm:flex-row sm:flex-wrap sm:items-center sm:justify-center gap-3 lg:gap-4">
+                            @if($skpiData->canBeEdited())
+                                <a href="{{ route('skpi.edit', $skpiData) }}" class="btn-primary min-w-[140px] flex items-center justify-center transition-all duration-300 hover:shadow-xl hover:translate-y-[-2px] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-lg">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                    </svg>
+                                    Edit SKPI
+                                </a>
+                            @endif
+                            
+                            @if($skpiData->status === 'approved')
+                                <a href="{{ route('skpi.print', $skpiData) }}" target="_blank" class="btn-outline min-w-[140px] flex items-center justify-center transition-all duration-300 hover:shadow-xl hover:translate-y-[-2px] focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 rounded-lg">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+                                    </svg>
+                                    Cetak SKPI
+                                </a>
+                            @endif
+                            
+                            <a href="{{ route('skpi.show', $skpiData) }}" class="btn-outline min-w-[140px] flex items-center justify-center transition-all duration-300 hover:shadow-xl hover:translate-y-[-2px] focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 rounded-lg">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                                 </svg>
-                                Edit SKPI
+                                Lihat Detail
                             </a>
-                        @endif
+                        </div>
                         
                         @if($skpiData->canBeSubmitted())
-                            <form method="POST" action="{{ route('skpi.submit', $skpiData) }}" 
-                                  onsubmit="return confirm('Apakah Anda yakin ingin submit SKPI? Data tidak dapat diedit setelah disubmit.')">
-                                @csrf
-                                <button type="submit" class="btn-secondary w-full flex items-center justify-center">
-                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                    </svg>
-                                    Submit untuk Review
-                                </button>
-                            </form>
+                        <div class="pt-4 border-t border-gray-200">
+                            <div class="flex justify-center">
+                                <form method="POST" action="{{ route('skpi.submit', $skpiData) }}" 
+                                      onsubmit="return confirm('Apakah Anda yakin ingin submit SKPI? Data tidak dapat diedit setelah disubmit.')">
+                                    @csrf
+                                    <button type="submit" class="btn-primary w-full sm:w-auto min-w-[160px] flex items-center justify-center transition-all duration-300 hover:shadow-xl hover:translate-y-[-2px] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-lg border-2 border-blue-500 bg-blue-600 hover:bg-blue-700">
+                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                        </svg>
+                                        Submit untuk Review
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
                         @endif
-                        
-                        @if($skpiData->status === 'approved')
-                            <a href="{{ route('skpi.print', $skpiData) }}" target="_blank" class="btn-outline w-full flex items-center justify-center">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
-                                </svg>
-                                Cetak SKPI
-                            </a>
-                        @endif
-                        
-                        <a href="{{ route('skpi.show', $skpiData) }}" class="btn-outline w-full flex items-center justify-center">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                            </svg>
-                            Lihat Detail
-                        </a>
                     </div>
                 </div>
             </div>
