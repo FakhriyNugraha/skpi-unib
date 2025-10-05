@@ -80,7 +80,7 @@
                                             'Sistem Informasi' => 'G1F0',
                                         ];
                                     @endphp
-                                    @foreach(\App\Models\Jurusan::active()->orderBy('nama_jurusan')->get() as $jurusan)
+                                    @foreach($jurusans as $jurusan)
                                         <option value="{{ $jurusan->id }}"
                                                 data-prefix="{{ $prefMap[$jurusan->nama_jurusan] ?? '' }}"
                                                 {{ old('jurusan_id') == $jurusan->id ? 'selected' : '' }}>

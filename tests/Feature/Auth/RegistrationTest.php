@@ -25,7 +25,9 @@ class RegistrationTest extends TestCase
             'password_confirmation' => 'password',
         ]);
 
+        // After registration with email verification enabled, user should be authenticated
+        // but redirected to the email verification notice page
         $this->assertAuthenticated();
-        $response->assertRedirect(route('dashboard', absolute: false));
+        $response->assertRedirect(route('verification.notice'));
     }
 }

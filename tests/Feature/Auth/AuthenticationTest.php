@@ -26,8 +26,9 @@ class AuthenticationTest extends TestCase
             'password' => 'password',
         ]);
 
+        // User should be authenticated but redirected to verification notice if email not verified
         $this->assertAuthenticated();
-        $response->assertRedirect(route('dashboard', absolute: false));
+        $response->assertRedirect(route('verification.notice'));
     }
 
     public function test_users_can_not_authenticate_with_invalid_password(): void

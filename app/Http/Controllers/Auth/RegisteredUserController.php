@@ -20,7 +20,8 @@ class RegisteredUserController extends Controller
      */
     public function create(): View
     {
-        return view('auth.register');
+        $jurusans = \App\Models\Jurusan::active()->orderBy('nama_jurusan')->get();
+        return view('auth.register', compact('jurusans'));
     }
 
     /**
@@ -68,7 +69,7 @@ class RegisteredUserController extends Controller
         $email = strtolower($validated['email']);
         $npm   = strtoupper($validated['npm']);
 
-        // Buat user
+        // Create the user
         $user = User::create([
             'name'       => $validated['name'],
             'email'      => $email,
@@ -80,8 +81,13 @@ class RegisteredUserController extends Controller
         // Trigger event (untuk email verification, listener, dll.)
         event(new Registered($user));
 
-        // Login otomatis
+        // Login the user after registration
         Auth::login($user);
+
+        // If user needs to verify email, redirect to verification notice
+        if ($user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && ! $user->hasVerifiedEmail()) {
+            return redirect()->route('verification.notice');
+        }
 
         // Tentukan redirect yang aman:
         $target = Route::has('dashboard')
