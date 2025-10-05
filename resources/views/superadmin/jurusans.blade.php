@@ -273,31 +273,35 @@
     </div>
 
     <!-- Delete Confirmation Modal -->
-    <div id="deleteModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 hidden" role="dialog" aria-modal="true" aria-labelledby="deleteJurusanName">
-        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div class="mt-3 text-center">
-                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
-                    <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16c-.77.833.192 2.5 1.732 2.5z"></path>
-                    </svg>
-                </div>
-                <h3 class="text-lg font-medium text-gray-900 mt-2">Hapus Program Studi</h3>
-                <div class="mt-2 px-7 py-3">
-                    <p class="text-sm text-gray-500">
-                        Apakah Anda yakin ingin menghapus program studi <span id="deleteJurusanName" class="font-medium"></span>?
+    <!-- Delete Jurusan Confirmation Modal -->
+    <div id="deleteJurusanModal" class="fixed inset-0 z-50 hidden" aria-hidden="true">
+        <div id="deleteJurusanModalOverlay" class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
+        <div class="absolute inset-0 flex items-center justify-center p-4">
+            <div class="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-gray-200">
+                <div class="p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 text-center">
+                        Hapus Program Studi
+                    </h3>
+                    <p class="mt-3 text-sm text-gray-600 text-center">
+                        Apakah Anda yakin ingin menghapus program studi <span id="deleteJurusanName" class="font-medium"></span>? 
                         Tindakan ini tidak dapat dibatalkan dan akan menghapus semua data terkait.
                     </p>
-                </div>
-                <div class="items-center px-4 py-3">
-                    <form id="deleteForm" method="POST">
-                        @csrf
-                        @method('DELETE')
-                        <div class="flex space-x-4">
-                            <button type="button" id="cancelDelete" class="btn-outline flex-1">Batal</button>
-                            <button type="submit" class="btn-danger flex-1">Hapus</button>
-                        </div>
-                    </form>
+                    <div class="mt-6 flex flex-col sm:flex-row justify-center sm:gap-3 gap-2">
+                        <button type="button" id="cancelDeleteJurusan"
+                                class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 inline-flex items-center justify-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                            Batal
+                        </button>
+                        <button type="button" id="confirmDeleteJurusan"
+                                class="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 shadow-sm inline-flex items-center justify-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                            </svg>
+                            Hapus
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -365,12 +369,21 @@
                 }
                 function closeDetailModal() { detailModal.classList.add('hidden'); }
 
-                function openDeleteModal(id, name) {
-                    deleteName.textContent = name;
-                    deleteForm.action = `/superadmin/jurusan/${id}`;
-                    deleteModal.classList.remove('hidden');
+                function openDeleteJurusanModal(id, name) {
+                    currentJurusanId = id;
+                    document.getElementById('deleteJurusanName').textContent = name;
+                    document.getElementById('deleteJurusanModal').classList.remove('hidden');
+                    document.body.style.overflow = 'hidden';
+                    document.getElementById('confirmDeleteJurusan').focus();
                 }
-                function closeDeleteModal() { deleteModal.classList.add('hidden'); }
+                
+                function closeDeleteJurusanModal() {
+                    document.getElementById('deleteJurusanModal').classList.add('hidden');
+                    document.body.style.overflow = '';
+                    currentJurusanId = null;
+                }
+                
+                let currentJurusanId = null;
 
                 function hookStatusFormsLoading() {
                     const forms = $$('form[action*="toggle-jurusan-status"]');
@@ -427,11 +440,48 @@
                 deleteBtns.forEach(btn => {
                     on(btn, 'click', e => {
                         e.preventDefault();
-                        openDeleteModal(btn.dataset.jurusan, btn.dataset.name);
+                        openDeleteJurusanModal(btn.dataset.jurusan, btn.dataset.name);
                     });
                 });
-                on(cancelDelete, 'click', closeDeleteModal);
-                on(deleteModal, 'click', e => { if (e.target === deleteModal) closeDeleteModal(); });
+                
+                // Delete jurusan modal event handlers
+                const deleteJurusanModalOverlay = $('#deleteJurusanModalOverlay');
+                const cancelDeleteJurusan = $('#cancelDeleteJurusan');
+                const confirmDeleteJurusan = $('#confirmDeleteJurusan');
+                
+                on(deleteJurusanModalOverlay, 'click', closeDeleteJurusanModal);
+                on(cancelDeleteJurusan, 'click', closeDeleteJurusanModal);
+                
+                on(confirmDeleteJurusan, 'click', () => {
+                    if (currentJurusanId) {
+                        // Create and submit form dynamically
+                        const form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = `/superadmin/jurusan/${currentJurusanId}`;
+                        form.style.display = 'none';
+                        
+                        // Add CSRF token
+                        const csrfInput = document.createElement('input');
+                        csrfInput.type = 'hidden';
+                        csrfInput.name = '_token';
+                        csrfInput.value = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                        form.appendChild(csrfInput);
+                        
+                        // Add method override
+                        const methodInput = document.createElement('input');
+                        methodInput.type = 'hidden';
+                        methodInput.name = '_method';
+                        methodInput.value = 'DELETE';
+                        form.appendChild(methodInput);
+                        
+                        document.body.appendChild(form);
+                        form.submit();
+                    }
+                });
+                
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape' && !$('#deleteJurusanModal').classList.contains('hidden')) closeDeleteJurusanModal();
+                });
 
                 @if(session('success')) showToast(@json(session('success')), 'success'); @endif
                 @if(session('error'))   showToast(@json(session('error')),   'error');   @endif

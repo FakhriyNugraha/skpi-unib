@@ -251,40 +251,17 @@
                 </p>
 
                 <button
-                    x-data
-                    x-on:click.prevent="$dispatch('open-modal', 'confirm-user-deletion')"
+                    type="button"
+                    id="openDeleteAccountModal"
                     class="bg-red-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-red-700 transition-colors">
                     Hapus Akun
                 </button>
 
-                {{-- Modal Jetstream --}}
-                <x-modal name="confirm-user-deletion" :show="$errors->userDeletion->isNotEmpty()" focusable>
-                    <form method="post" action="{{ route('profile.destroy') }}" class="p-6">
-                        @csrf
-                        @method('delete')
-
-                        <h2 class="text-lg font-medium text-gray-900">Apakah Anda yakin ingin menghapus akun?</h2>
-                        <p class="mt-1 text-sm text-gray-600">
-                            Setelah akun Anda dihapus, semua sumber daya dan data akan dihapus secara permanen.
-                            Masukkan password untuk konfirmasi penghapusan akun.
-                        </p>
-
-                        <div class="mt-6">
-                            <x-input-label for="password" value="{{ __('Password') }}" class="sr-only" />
-                            <input id="password" name="password" type="password" class="input-field" placeholder="Password">
-                            @error('password', 'userDeletion')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <div class="mt-6 flex justify-end">
-                            <button type="button" x-on:click="$dispatch('close')" class="btn-outline mr-3">Batal</button>
-                            <button type="submit" class="bg-red-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-red-700 transition-colors">
-                                Hapus Akun
-                            </button>
-                        </div>
-                    </form>
-                </x-modal>
+                <!-- Hidden form for account deletion -->
+                <form id="delete-account-form" method="post" action="{{ route('profile.destroy') }}" style="display: none;">
+                    @csrf
+                    @method('delete')
+                </form>
             </div>
         </div>
     </div>
@@ -389,4 +366,111 @@
             });
         });
     </script>
+
+    <!-- Delete Account Confirmation Modal -->
+    <div id="deleteAccountModal" class="fixed inset-0 z-50 hidden" aria-hidden="true">
+        <div id="deleteAccountModalOverlay" class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
+        <div class="absolute inset-0 flex items-center justify-center p-4">
+            <div class="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-gray-200">
+                <div class="p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 text-center">
+                        Hapus Akun
+                    </h3>
+                    <p class="mt-3 text-sm text-gray-600 text-center">
+                        Setelah akun Anda dihapus, semua sumber daya dan data akan dihapus secara permanen.
+                        Masukkan password untuk konfirmasi penghapusan akun.
+                    </p>
+                    
+                    <div class="mt-4">
+                        <label for="deleteAccountPassword" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                        <input 
+                            type="password" 
+                            id="deleteAccountPassword" 
+                            class="input-field w-full" 
+                            placeholder="Masukkan password Anda">
+                    </div>
+                    
+                    <div class="mt-6 flex flex-col sm:flex-row justify-center sm:gap-3 gap-2">
+                        <button type="button" id="cancelDeleteAccount"
+                                class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 inline-flex items-center justify-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                            Batal
+                        </button>
+                        <button type="button" id="confirmDeleteAccount"
+                                class="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 shadow-sm inline-flex items-center justify-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                            </svg>
+                            Hapus Akun
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Ensure form exists and is properly set up
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add password input to the delete form if it doesn't exist
+            const deleteForm = document.getElementById('delete-account-form');
+            if (deleteForm && !deleteForm.querySelector('input[name="password"]')) {
+                const passwordInput = document.createElement('input');
+                passwordInput.type = 'hidden';
+                passwordInput.name = 'password';
+                deleteForm.appendChild(passwordInput);
+            }
+            
+            // Delete Account Modal
+            const deleteAccountForm = document.getElementById('delete-account-form');
+            const btnOpenDeleteAccount = document.getElementById('openDeleteAccountModal');
+            const deleteAccountModal = document.getElementById('deleteAccountModal');
+            const deleteAccountOverlay = document.getElementById('deleteAccountModalOverlay');
+            const btnCancelDeleteAccount = document.getElementById('cancelDeleteAccount');
+            const btnConfirmDeleteAccount = document.getElementById('confirmDeleteAccount');
+            const deleteAccountPassword = document.getElementById('deleteAccountPassword');
+
+            const openDeleteAccount = () => {
+                deleteAccountModal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+                deleteAccountPassword.focus();
+            };
+            
+            const closeDeleteAccount = () => {
+                deleteAccountModal.classList.add('hidden');
+                document.body.style.overflow = '';
+                deleteAccountPassword.value = ''; // Clear password field
+            };
+
+            btnOpenDeleteAccount?.addEventListener('click', openDeleteAccount);
+
+            deleteAccountOverlay?.addEventListener('click', closeDeleteAccount);
+            btnCancelDeleteAccount?.addEventListener('click', closeDeleteAccount);
+            
+            btnConfirmDeleteAccount?.addEventListener('click', () => {
+                const password = deleteAccountPassword.value.trim();
+                if (!password) {
+                    alert('Silakan masukkan password untuk konfirmasi penghapusan akun.');
+                    deleteAccountPassword.focus();
+                    return;
+                }
+                
+                // Set password value to hidden form and submit
+                const passwordInput = deleteAccountForm.querySelector('input[name="password"]');
+                if (passwordInput) {
+                    passwordInput.value = password;
+                }
+                
+                closeDeleteAccount();
+                deleteAccountForm.submit();
+            });
+
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && !deleteAccountModal.classList.contains('hidden')) closeDeleteAccount();
+            });
+        });
+    </script>
+
 </x-app-layout>

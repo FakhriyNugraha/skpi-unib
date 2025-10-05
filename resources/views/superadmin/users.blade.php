@@ -173,14 +173,13 @@
                                     Edit
                                 </a>
                                 @if($user->id != auth()->id())
-                                <form method="POST" action="{{ route('superadmin.delete-user', $user) }}" class="inline">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="text-red-600 hover:text-red-900" 
-                                            onclick="return confirm('Apakah Anda yakin ingin menghapus user ini?')">
-                                        Hapus
-                                    </button>
-                                </form>
+                                <button 
+                                    type="button"
+                                    class="text-red-600 hover:text-red-900 delete-user-btn"
+                                    data-user-id="{{ $user->id }}"
+                                    data-user-name="{{ $user->name }}">
+                                    Hapus
+                                </button>
                                 @endif
                             </td>
                         </tr>
@@ -205,4 +204,167 @@
             @endif
         </div>
     </div>
+
+    <!-- Delete Confirmation Modal -->
+    <x-confirmation-modal name="delete-user" />
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add event listeners to all delete user buttons
+            const deleteButtons = document.querySelectorAll('.delete-user-btn');
+            
+            deleteButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    const userId = this.dataset.userId;
+                    const userName = this.dataset.userName;
+                    
+                    // Open confirmation modal
+                    window.dispatchEvent(new CustomEvent('open-confirmation-modal', {
+                        detail: {
+                            name: 'delete-user',
+                            title: 'Hapus User',
+                            content: `Apakah Anda yakin ingin menghapus user <span class="font-medium">${userName}</span>? Tindakan ini tidak dapat dibatalkan.`,
+                            confirmText: 'Hapus',
+                            cancelText: 'Batal',
+                            confirmClass: 'bg-red-600 text-white',
+                            action: `delete-user-${userId}-form`
+                        }
+                    }));
+                    
+                    // Create and add the hidden delete form if it doesn't exist yet
+                    let deleteForm = document.querySelector(`#delete-user-${userId}-form`);
+                    if (!deleteForm) {
+                        deleteForm = document.createElement('form');
+                        deleteForm.id = `delete-user-${userId}-form`;
+                        deleteForm.method = 'POST';
+                        deleteForm.action = `/superadmin/users/${userId}`;
+                        deleteForm.style.display = 'none';
+                        
+                        // Add CSRF token and method
+                        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                        const csrfInput = document.createElement('input');
+                        csrfInput.type = 'hidden';
+                        csrfInput.name = '_token';
+                        csrfInput.value = csrfToken;
+                        deleteForm.appendChild(csrfInput);
+                        
+                        const methodInput = document.createElement('input');
+                        methodInput.type = 'hidden';
+                        methodInput.name = '_method';
+                        methodInput.value = 'DELETE';
+                        deleteForm.appendChild(methodInput);
+                        
+                        document.body.appendChild(deleteForm);
+                    }
+                });
+            });
+        });
+    </script>
+
+    <!-- Delete User Confirmation Modal -->
+    <div id="deleteUserModal" class="fixed inset-0 z-50 hidden" aria-hidden="true">
+        <div id="deleteUserModalOverlay" class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
+        <div class="absolute inset-0 flex items-center justify-center p-4">
+            <div class="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-gray-200">
+                <div class="p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 text-center">
+                        Hapus User
+                    </h3>
+                    <p class="mt-3 text-sm text-gray-600 text-center">
+                        Apakah Anda yakin ingin menghapus user <span id="deleteUserName" class="font-medium"></span>? 
+                        Tindakan ini tidak dapat dibatalkan.
+                    </p>
+                    <div class="mt-6 flex flex-col sm:flex-row justify-center sm:gap-3 gap-2">
+                        <button type="button" id="cancelDeleteUser"
+                                class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 inline-flex items-center justify-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                            Batal
+                        </button>
+                        <button type="button" id="confirmDeleteUser"
+                                class="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 shadow-sm inline-flex items-center justify-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                            </svg>
+                            Hapus
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Delete User Modal
+            const deleteButtons = document.querySelectorAll('.delete-user-btn');
+            const deleteUserModal = document.getElementById('deleteUserModal');
+            const deleteUserModalOverlay = document.getElementById('deleteUserModalOverlay');
+            const btnCancelDeleteUser = document.getElementById('cancelDeleteUser');
+            const btnConfirmDeleteUser = document.getElementById('confirmDeleteUser');
+            const deleteUserName = document.getElementById('deleteUserName');
+            let currentUserId = null;
+
+            const openDeleteUser = (userId, userName) => {
+                currentUserId = userId;
+                deleteUserName.textContent = userName;
+                deleteUserModal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+                btnConfirmDeleteUser.focus();
+            };
+            
+            const closeDeleteUser = () => {
+                deleteUserModal.classList.add('hidden');
+                document.body.style.overflow = '';
+                currentUserId = null;
+            };
+
+            deleteButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const userId = this.dataset.userId;
+                    const userName = this.dataset.userName;
+                    openDeleteUser(userId, userName);
+                });
+            });
+
+            deleteUserModalOverlay?.addEventListener('click', closeDeleteUser);
+            btnCancelDeleteUser?.addEventListener('click', closeDeleteUser);
+            
+            btnConfirmDeleteUser?.addEventListener('click', () => {
+                if (currentUserId) {
+                    // Create and submit form dynamically
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = `/superadmin/users/${currentUserId}`;
+                    form.style.display = 'none';
+                    
+                    // Add CSRF token
+                    const csrfInput = document.createElement('input');
+                    csrfInput.type = 'hidden';
+                    csrfInput.name = '_token';
+                    csrfInput.value = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                    form.appendChild(csrfInput);
+                    
+                    // Add method override
+                    const methodInput = document.createElement('input');
+                    methodInput.type = 'hidden';
+                    methodInput.name = '_method';
+                    methodInput.value = 'DELETE';
+                    form.appendChild(methodInput);
+                    
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
+
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && !deleteUserModal.classList.contains('hidden')) closeDeleteUser();
+            });
+        });
+    </script>
+
 </x-app-layout>
