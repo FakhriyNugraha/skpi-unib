@@ -93,6 +93,10 @@ Route::middleware(['auth', 'role:admin,superadmin'])
         Route::get('/skpi/{skpi}/print', [AdminController::class, 'printSkpi'])
             ->name('print-skpi')
             ->whereNumber('skpi');
+            
+        Route::post('/skpi/{skpi}/verify-drive', [\App\Http\Controllers\DriveVerificationController::class, 'verifyDriveContents'])
+            ->name('verify-drive')
+            ->whereNumber('skpi');
     });
 
 // ============================

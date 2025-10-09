@@ -17,7 +17,7 @@
 
         <!-- Filters -->
         <div class="card p-6 mb-8">
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
                     <select id="status-filter" class="input-field w-full">
@@ -29,20 +29,11 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Jurusan</label>
-                    <select id="jurusan-filter" class="input-field w-full">
-                        <option value="">Semua Jurusan</option>
-                        @foreach(\App\Models\Jurusan::active()->get() as $jurusan)
-                            <option value="{{ $jurusan->id }}">{{ $jurusan->nama_jurusan }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Pencarian</label>
                     <input type="text" id="search" placeholder="Nama atau NIM..." class="input-field w-full">
                 </div>
                 <div class="flex items-end">
-                    <button onclick="applyFilters()" class="btn-primary w-full">Filter</button>
+                    <button type="button" onclick="applyFilters()" class="btn-primary px-4 py-2 text-sm h-[40px]">Filter</button>
                 </div>
             </div>
         </div>
@@ -65,10 +56,10 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Status
                             </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Tanggal Submit
                             </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Aksi
                             </th>
                         </tr>
@@ -105,26 +96,20 @@
                                     {{ ucfirst($skpi->status) }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <td class="px-2 py-4 whitespace-nowrap text-sm text-gray-500">
                                 {{ $skpi->updated_at->format('d M Y') }}
                                 <div class="text-xs text-gray-400">{{ $skpi->updated_at->format('H:i') }}</div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                            <td class="px-4 py-4 whitespace-nowrap text-center text-sm font-medium">
                                 @if($skpi->status === 'submitted')
-                                    <a href="{{ route('admin.review-skpi', $skpi) }}" class="text-unib-blue-600 hover:text-unib-blue-900">
+                                    <a href="{{ route('admin.review-skpi', $skpi) }}" class="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-white bg-unib-blue-600 hover:bg-unib-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-unib-blue-500">
                                         Review
                                     </a>
-                                @endif
-                                
-                                @if($skpi->status === 'approved')
-                                    <a href="{{ route('admin.print-skpi', $skpi) }}" target="_blank" class="text-green-600 hover:text-green-900">
+                                @elseif($skpi->status === 'approved')
+                                    <a href="{{ route('admin.print-skpi', $skpi) }}" target="_blank" class="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
                                         Cetak
                                     </a>
                                 @endif
-                                
-                                <a href="{{ route('skpi.show', $skpi) }}" class="text-gray-600 hover:text-gray-900">
-                                    Lihat
-                                </a>
                             </td>
                         </tr>
                         @empty
@@ -152,16 +137,12 @@
     <script>
         function applyFilters() {
             const status = document.getElementById('status-filter').value;
-            const jurusan = document.getElementById('jurusan-filter').value;
             const search = document.getElementById('search').value;
             
             const params = new URLSearchParams(window.location.search);
             
             if (status) params.set('status', status);
             else params.delete('status');
-            
-            if (jurusan) params.set('jurusan', jurusan);
-            else params.delete('jurusan');
             
             if (search) params.set('search', search);
             else params.delete('search');
@@ -175,9 +156,6 @@
             
             if (params.get('status')) {
                 document.getElementById('status-filter').value = params.get('status');
-            }
-            if (params.get('jurusan')) {
-                document.getElementById('jurusan-filter').value = params.get('jurusan');
             }
             if (params.get('search')) {
                 document.getElementById('search').value = params.get('search');
