@@ -26,6 +26,17 @@ class DocumentTextExtractor
             return '';
         }
 
+        // Untuk lingkungan produksi/cloud, kita gunakan pendekatan yang lebih aman
+        // Cek apakah ini lingkungan produksi (bisa disesuaikan dengan environment variable)
+        $isProduction = env('APP_ENV') === 'production' || env('APP_ENV') === 'prod';
+
+        // Di lingkungan produksi, kita nonaktifkan ekstraksi konten untuk mencegah error
+        if ($isProduction) {
+            // Kembalikan nama file sebagai indikator bahwa file tersedia
+            // Sistem akan menggunakan pencocokan nama file saja
+            return "File tersedia: " . $fileName;
+        }
+
         try {
             // Untuk Google Docs/Sheets/Slides: tidak bisa get alt=media langsung; harus diexport
             $isGoogleNative = in_array($originalMimeType, [
@@ -74,8 +85,10 @@ class DocumentTextExtractor
                     // Untuk sekarang, kita hanya kembalikan konten untuk pencocokan nama
                     return "Gambar file: " . $fileName . " (konten tidak dapat diekstrak untuk OCR di lingkungan cloud)";
                 } elseif (strpos($originalMimeType, 'text') !== false || $extension === 'txt') {
+                    // Untuk file teks, kita tetap bisa mengembalikan konten
                     return $content;
                 } else {
+                    // Untuk tipe file lain, kita kembalikan konten atau nama file sebagai indikator
                     return $content;
                 }
             }
