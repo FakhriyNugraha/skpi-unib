@@ -5,6 +5,22 @@ namespace App\Helpers;
 use Smalot\PdfParser\Parser as PdfParser;
 use Google\Service\Drive;
 
+if (!function_exists('assertReadableFile')) {
+    /**
+     * Assert that a path is a readable file, not a directory
+     * 
+     * @param string $path
+     * @return string
+     * @throws \RuntimeException
+     */
+    function assertReadableFile(string $path): string {
+        if (is_dir($path)) throw new \RuntimeException("EISDIR: Path adalah direktori: $path");
+        if (!is_file($path)) throw new \RuntimeException("Path bukan file reguler: $path");
+        if (!is_readable($path)) throw new \RuntimeException("File tidak bisa dibaca: $path");
+        return $path;
+    }
+}
+
 class DocumentTextExtractor
 {
     /**
@@ -26,17 +42,6 @@ class DocumentTextExtractor
             return '';
         }
 
-        // Untuk lingkungan produksi/cloud, kita gunakan pendekatan yang lebih aman
-        // Cek apakah ini lingkungan produksi (bisa disesuaikan dengan environment variable)
-        $isProduction = env('APP_ENV') === 'production' || env('APP_ENV') === 'prod';
-
-        // Di lingkungan produksi, kita nonaktifkan ekstraksi konten untuk mencegah error
-        if ($isProduction) {
-            // Kembalikan nama file sebagai indikator bahwa file tersedia
-            // Sistem akan menggunakan pencocokan nama file saja
-            return "File tersedia: " . $fileName;
-        }
-
         try {
             // Untuk Google Docs/Sheets/Slides: tidak bisa get alt=media langsung; harus diexport
             $isGoogleNative = in_array($originalMimeType, [
@@ -48,48 +53,30 @@ class DocumentTextExtractor
             $content = '';
             
             if ($isGoogleNative) {
-                // Get export links for Google native files
-                $file = $driveService->files->get($fileId, array('fields' => 'exportLinks'));
-                
-                if ($file->getExportLinks() && isset($file->getExportLinks()['application/pdf'])) {
-                    // Export Google Docs/Sheets/Slides to PDF
-                    $exportUrl = $file->getExportLinks()['application/pdf'];
-                    
-                    $client = $driveService->getClient();
-                    $response = $client->authorize()->request('GET', $exportUrl);
-                    $content = (string) $response->getBody();
-                    // Use PDF processing for exported content
-                    return self::extractTextFromPdfContent($content);
-                } else {
-                    error_log("No export link available for Google file: " . $fileName);
-                    return '';
-                }
+                // Export Google Docs/Sheets/Slides to PDF
+                $bytes = $driveService->files->export($fileId, 'application/pdf')->getBody()->getContents();
+                // Use PDF processing for exported content
+                return self::extractTextFromPdfContent($bytes);
             } else {
                 // Untuk file asli: gunakan alt=media
-                $url = 'https://www.googleapis.com/drive/v3/files/' . $fileId . '?alt=media';
-                
-                $client = $driveService->getClient();
-                $response = $client->authorize()->request('GET', $url);
-                $content = (string) $response->getBody();
+                $bytes = $driveService->files->get($fileId, ['alt'=>'media'])->getBody()->getContents();
                 
                 // Determine how to process based on original MIME type
                 $extension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
                 
                 if (strpos($originalMimeType, 'pdf') !== false) {
-                    return self::extractTextFromPdfContent($content);
+                    return self::extractTextFromPdfContent($bytes);
                 } elseif (strpos($originalMimeType, 'document') !== false || in_array($extension, ['doc', 'docx'])) {
-                    return self::extractTextFromDocxContent($content);
+                    return self::extractTextFromDocxContent($bytes);
                 } elseif (strpos($originalMimeType, 'image') !== false || in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'bmp'])) {
-                    // Untuk lingkungan cloud, kita hindari OCR untuk sementara karena bisa menyebabkan error
-                    // Kita kembalikan nama file sebagai referensi saja
-                    // Untuk sekarang, kita hanya kembalikan konten untuk pencocokan nama
-                    return "Gambar file: " . $fileName . " (konten tidak dapat diekstrak untuk OCR di lingkungan cloud)";
+                    // Untuk gambar, kita kembalikan nama file sebagai referensi
+                    return "Gambar file: " . $fileName;
                 } elseif (strpos($originalMimeType, 'text') !== false || $extension === 'txt') {
                     // Untuk file teks, kita tetap bisa mengembalikan konten
-                    return $content;
+                    return $bytes;
                 } else {
-                    // Untuk tipe file lain, kita kembalikan konten atau nama file sebagai indikator
-                    return $content;
+                    // Untuk tipe file lain, kita kembalikan konten
+                    return $bytes;
                 }
             }
         } catch (\Exception $e) {
@@ -103,8 +90,14 @@ class DocumentTextExtractor
      */
     private static function extractTextFromPdfContent($pdfContent)
     {
-        $parser = new PdfParser();
         try {
+            // Validate that we have content
+            if (empty($pdfContent)) {
+                error_log("PDF content is empty");
+                return '';
+            }
+            
+            $parser = new PdfParser();
             // Using parseContent method which accepts the content directly as string
             $pdf = $parser->parseContent($pdfContent);
             return $pdf->getText();
@@ -134,14 +127,22 @@ class DocumentTextExtractor
             return '';
         }
 
+        // Validate that we have content
+        if (empty($docxContent)) {
+            error_log("DOCX content is empty");
+            return '';
+        }
+        
         $tempFile = tempnam(sys_get_temp_dir(), 'docx_');
         if ($tempFile === false) {
+            error_log("Could not create temp file for DOCX processing");
             return '';
         }
         
         try {
             $result = file_put_contents($tempFile, $docxContent);
             if ($result === false) {
+                error_log("Could not write DOCX content to temp file: " . $tempFile);
                 return '';
             }
             
@@ -170,8 +171,9 @@ class DocumentTextExtractor
         } catch (\Exception $e) {
             error_log("DOCX parsing error: " . $e->getMessage());
         } finally {
-            if (file_exists($tempFile) && is_file($tempFile)) {
-                unlink($tempFile);
+            // Safely remove temp file
+            if (file_exists($tempFile)) {
+                @unlink($tempFile);
             }
         }
 
@@ -183,8 +185,44 @@ class DocumentTextExtractor
      */
     private static function extractTextFromImageContent($imageContent, $tempFile)
     {
-        // Di lingkungan cloud, kita hindari operasi yang kompleks untuk menghindari error
-        // Fungsi ini sekarang kita kosongkan untuk mencegah error di lingkungan produksi
+        // Di lingkungan produksi, kita hindari OCR untuk mencegah error
+        // Kita hanya mengembalikan nama file sebagai indikator
+        if (env('APP_ENV') === 'production' || env('APP_ENV') === 'prod') {
+            return '';
+        }
+        
+        // Untuk lingkungan pengembangan, kita bisa mencoba OCR jika tersedia
+        try {
+            // Validate that we have content
+            if (empty($imageContent)) {
+                error_log("Image content is empty");
+                return '';
+            }
+            
+            // Validate temp file
+            if (empty($tempFile) || !file_exists($tempFile)) {
+                error_log("Invalid temp file for OCR processing");
+                return '';
+            }
+            
+            // Verify that tempFile is actually a file, not a directory
+            if (!is_file($tempFile)) {
+                error_log("Image temp file is not a file: " . $tempFile);
+                return '';
+            }
+            
+            // Check if Tesseract is available
+            if (self::isTesseractAvailable()) {
+                $command = 'tesseract ' . escapeshellarg($tempFile) . ' stdout 2>/dev/null';
+                $output = shell_exec($command);
+                if ($output !== null) {
+                    return $output;
+                }
+            }
+        } catch (\Exception $e) {
+            error_log("OCR processing error: " . $e->getMessage());
+        }
+        
         return '';
     }
 
