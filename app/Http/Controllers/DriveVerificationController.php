@@ -102,14 +102,40 @@ class DriveVerificationController extends Controller
         // Check if we have base64 encoded credentials in environment
         $serviceAccountJsonBase64 = $_ENV['GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON_BASE64'] ?? env('GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON_BASE64');
         
+        \Log::info('Checking Google Drive credentials', [
+            'base64_length' => strlen($serviceAccountJsonBase64 ?? ''),
+            'base64_preview' => substr($serviceAccountJsonBase64 ?? '', 0, 50) . '...',
+            'base64_set' => !empty($serviceAccountJsonBase64)
+        ]);
+        
         if ($serviceAccountJsonBase64) {
             \Log::info('Using base64 encoded credentials from environment');
+            
+            // Validate Base64 format before decoding
+            if (!preg_match('/^[A-Za-z0-9+\/=]*$/', $serviceAccountJsonBase64)) {
+                \Log::error('Invalid Base64 format for Google Drive credentials');
+                throw new \Exception('Format Base64 credential Google Drive tidak valid');
+            }
             
             // Use base64 encoded JSON from environment variable
             $json = base64_decode($serviceAccountJsonBase64, true);
             if ($json === false) {
                 \Log::error('Base64 decode failed for Google Drive credentials');
+                \Log::error('Base64 content preview', [
+                    'content' => substr($serviceAccountJsonBase64, 0, 100)
+                ]);
                 throw new \Exception('Credential Google Drive tidak valid (base64 decode failed)');
+            }
+            
+            // Validate that decoded content is valid JSON
+            $decodedJson = json_decode($json, true);
+            if ($decodedJson === null) {
+                \Log::error('Decoded Base64 is not valid JSON', [
+                    'json_error' => json_last_error(),
+                    'json_error_msg' => json_last_error_msg(),
+                    'decoded_preview' => substr($json, 0, 100)
+                ]);
+                throw new \Exception('Credential Google Drive tidak valid (bukan JSON yang valid)');
             }
             
             // Save to temporary location
@@ -124,6 +150,7 @@ class DriveVerificationController extends Controller
             }
             
             \Log::info('Saved base64 credential to file', ['file' => $serviceAccountFile]);
+        } else {
         } else {
             // Fallback to file path approach
             $serviceAccountFilePath = $_ENV['GOOGLE_DRIVE_SERVICE_ACCOUNT_FILE'] ?? env('GOOGLE_DRIVE_SERVICE_ACCOUNT_FILE');
