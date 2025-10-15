@@ -17,18 +17,18 @@ class DocumentTextExtractor
     public static function extractTextFromDriveFile($driveFile, $driveService)
     {
         $fileId = $driveFile->getId();
-        $mimeType = $driveFile->getMimeType();
+        $originalMimeType = $driveFile->getMimeType();
         $fileName = $driveFile->getName();
 
         // Abaikan folder: mimeType !== 'application/vnd.google-apps.folder'
-        if ($mimeType === 'application/vnd.google-apps.folder') {
+        if ($originalMimeType === 'application/vnd.google-apps.folder') {
             error_log("Skipping folder: " . $fileName);
             return '';
         }
 
         try {
             // Untuk Google Docs/Sheets/Slides: tidak bisa get alt=media langsung; harus diexport
-            $isGoogleNative = in_array($mimeType, [
+            $isGoogleNative = in_array($originalMimeType, [
                 'application/vnd.google-apps.document',
                 'application/vnd.google-apps.spreadsheet', 
                 'application/vnd.google-apps.presentation'
@@ -47,60 +47,60 @@ class DocumentTextExtractor
                     $client = $driveService->getClient();
                     $response = $client->authorize()->request('GET', $exportUrl);
                     $content = (string) $response->getBody();
-                    // Treat as PDF since we exported it as PDF
-                    $mimeType = 'application/pdf';
+                    // Use PDF processing for exported content
+                    return self::extractTextFromPdfContent($content);
                 } else {
                     error_log("No export link available for Google file: " . $fileName);
                     return '';
                 }
             } else {
-                // Untuk PDF asli: mimeType === 'application/pdf' → bisa di-files.get dengan alt=media
+                // Untuk file asli: gunakan alt=media
                 $url = 'https://www.googleapis.com/drive/v3/files/' . $fileId . '?alt=media';
                 
                 $client = $driveService->getClient();
                 $response = $client->authorize()->request('GET', $url);
                 $content = (string) $response->getBody();
-            }
-            
-            // Determine how to process based on MIME type (might have been changed for Google files)
-            $extension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
-            
-            if (strpos($mimeType, 'pdf') !== false) {
-                return self::extractTextFromPdfContent($content);
-            } elseif (strpos($mimeType, 'document') !== false || in_array($extension, ['doc', 'docx'])) {
-                return self::extractTextFromDocxContent($content);
-            } elseif (strpos($mimeType, 'image') !== false || in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'bmp'])) {
-                // For image processing, we still need temp file for OCR
-                $tempFile = tempnam(sys_get_temp_dir(), 'img_');
-                if ($tempFile === false) {
-                    error_log("Could not create temp file for image processing");
-                    return '';
-                }
                 
-                $result = file_put_contents($tempFile, $content);
-                if ($result === false) {
-                    error_log("Could not write image content to temp file: " . $tempFile);
-                    return '';
-                }
+                // Determine how to process based on original MIME type
+                $extension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
                 
-                try {
-                    // Verify that tempFile is actually a file, not a directory
-                    if (!is_file($tempFile)) {
-                        error_log("Temp file is not a file: " . $tempFile);
+                if (strpos($originalMimeType, 'pdf') !== false) {
+                    return self::extractTextFromPdfContent($content);
+                } elseif (strpos($originalMimeType, 'document') !== false || in_array($extension, ['doc', 'docx'])) {
+                    return self::extractTextFromDocxContent($content);
+                } elseif (strpos($originalMimeType, 'image') !== false || in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'bmp'])) {
+                    // For image processing, we still need temp file for OCR
+                    $tempFile = tempnam(sys_get_temp_dir(), 'img_');
+                    if ($tempFile === false) {
+                        error_log("Could not create temp file for image processing");
                         return '';
                     }
                     
-                    $result = self::extractTextFromImageContent($content, $tempFile);
-                    return $result;
-                } finally {
-                    if (file_exists($tempFile) && is_file($tempFile)) {
-                        unlink($tempFile);
+                    $result = file_put_contents($tempFile, $content);
+                    if ($result === false) {
+                        error_log("Could not write image content to temp file: " . $tempFile);
+                        return '';
                     }
+                    
+                    try {
+                        // Verify that tempFile is actually a file, not a directory
+                        if (!is_file($tempFile)) {
+                            error_log("Temp file is not a file: " . $tempFile);
+                            return '';
+                        }
+                        
+                        $result = self::extractTextFromImageContent($content, $tempFile);
+                        return $result;
+                    } finally {
+                        if (file_exists($tempFile) && is_file($tempFile)) {
+                            unlink($tempFile);
+                        }
+                    }
+                } elseif (strpos($originalMimeType, 'text') !== false || $extension === 'txt') {
+                    return $content;
+                } else {
+                    return $content;
                 }
-            } elseif (strpos($mimeType, 'text') !== false || $extension === 'txt') {
-                return $content;
-            } else {
-                return $content;
             }
         } catch (\Exception $e) {
             error_log("DocumentTextExtractor error: " . $e->getMessage());
@@ -119,7 +119,8 @@ class DocumentTextExtractor
             $pdf = $parser->parseContent($pdfContent);
             return $pdf->getText();
         } catch (\Exception $e) {
-            error_log("PDF parsing error: " . $e->getMessage());
+            // Log the detailed error for debugging
+            error_log("PDF parsing error: " . $e->getMessage() . " in " . $e->getFile() . ":" . $e->getLine());
             return '';
         }
     }
