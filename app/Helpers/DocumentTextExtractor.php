@@ -20,30 +20,54 @@ class DocumentTextExtractor
         $mimeType = $driveFile->getMimeType();
         $fileName = $driveFile->getName();
 
-        // Check if this is actually a file (not a folder)
+        // Abaikan folder: mimeType !== 'application/vnd.google-apps.folder'
         if ($mimeType === 'application/vnd.google-apps.folder') {
-            error_log("Trying to extract text from a folder, not a file: " . $fileName);
+            error_log("Skipping folder: " . $fileName);
             return '';
         }
 
         try {
-            // Using the Google API Client to download the file content 
-            // The proper way to download file content is by using the media download URL
-            $url = 'https://www.googleapis.com/drive/v3/files/' . $fileId . '?alt=media';
+            // Untuk Google Docs/Sheets/Slides: tidak bisa get alt=media langsung; harus diexport
+            $isGoogleNative = in_array($mimeType, [
+                'application/vnd.google-apps.document',
+                'application/vnd.google-apps.spreadsheet', 
+                'application/vnd.google-apps.presentation'
+            ]);
+
+            $content = '';
             
-            // Make the authorized request to download the file
-            $client = $driveService->getClient();
-            $response = $client->authorize()->request('GET', $url);
+            if ($isGoogleNative) {
+                // Get export links for Google native files
+                $file = $driveService->files->get($fileId, array('fields' => 'exportLinks'));
+                
+                if ($file->getExportLinks() && isset($file->getExportLinks()['application/pdf'])) {
+                    // Export Google Docs/Sheets/Slides to PDF
+                    $exportUrl = $file->getExportLinks()['application/pdf'];
+                    
+                    $client = $driveService->getClient();
+                    $response = $client->authorize()->request('GET', $exportUrl);
+                    $content = (string) $response->getBody();
+                    // Treat as PDF since we exported it as PDF
+                    $mimeType = 'application/pdf';
+                } else {
+                    error_log("No export link available for Google file: " . $fileName);
+                    return '';
+                }
+            } else {
+                // Untuk PDF asli: mimeType === 'application/pdf' → bisa di-files.get dengan alt=media
+                $url = 'https://www.googleapis.com/drive/v3/files/' . $fileId . '?alt=media';
+                
+                $client = $driveService->getClient();
+                $response = $client->authorize()->request('GET', $url);
+                $content = (string) $response->getBody();
+            }
             
-            $content = (string) $response->getBody();
-            
-            // Determine how to process based on MIME type
+            // Determine how to process based on MIME type (might have been changed for Google files)
             $extension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
             
-            if (strpos($mimeType, 'pdf') !== false || $extension === 'pdf') {
+            if (strpos($mimeType, 'pdf') !== false) {
                 return self::extractTextFromPdfContent($content);
             } elseif (strpos($mimeType, 'document') !== false || in_array($extension, ['doc', 'docx'])) {
-                // For document processing, we'll use the content directly without temp file
                 return self::extractTextFromDocxContent($content);
             } elseif (strpos($mimeType, 'image') !== false || in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'bmp'])) {
                 // For image processing, we still need temp file for OCR
