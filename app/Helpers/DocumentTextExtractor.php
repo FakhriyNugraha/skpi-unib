@@ -69,33 +69,10 @@ class DocumentTextExtractor
                 } elseif (strpos($originalMimeType, 'document') !== false || in_array($extension, ['doc', 'docx'])) {
                     return self::extractTextFromDocxContent($content);
                 } elseif (strpos($originalMimeType, 'image') !== false || in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'bmp'])) {
-                    // For image processing, we still need temp file for OCR
-                    $tempFile = tempnam(sys_get_temp_dir(), 'img_');
-                    if ($tempFile === false) {
-                        error_log("Could not create temp file for image processing");
-                        return '';
-                    }
-                    
-                    $result = file_put_contents($tempFile, $content);
-                    if ($result === false) {
-                        error_log("Could not write image content to temp file: " . $tempFile);
-                        return '';
-                    }
-                    
-                    try {
-                        // Verify that tempFile is actually a file, not a directory
-                        if (!is_file($tempFile)) {
-                            error_log("Temp file is not a file: " . $tempFile);
-                            return '';
-                        }
-                        
-                        $result = self::extractTextFromImageContent($content, $tempFile);
-                        return $result;
-                    } finally {
-                        if (file_exists($tempFile) && is_file($tempFile)) {
-                            unlink($tempFile);
-                        }
-                    }
+                    // Untuk lingkungan cloud, kita hindari OCR untuk sementara karena bisa menyebabkan error
+                    // Kita kembalikan nama file sebagai referensi saja
+                    // Untuk sekarang, kita hanya kembalikan konten untuk pencocokan nama
+                    return "Gambar file: " . $fileName . " (konten tidak dapat diekstrak untuk OCR di lingkungan cloud)";
                 } elseif (strpos($originalMimeType, 'text') !== false || $extension === 'txt') {
                     return $content;
                 } else {
@@ -149,12 +126,18 @@ class DocumentTextExtractor
             return '';
         }
         
-        $result = file_put_contents($tempFile, $docxContent);
-        if ($result === false) {
-            return '';
-        }
-        
         try {
+            $result = file_put_contents($tempFile, $docxContent);
+            if ($result === false) {
+                return '';
+            }
+            
+            // Verify that tempFile is actually a file, not a directory
+            if (!is_file($tempFile)) {
+                error_log("DOCX temp file is not a file: " . $tempFile);
+                return '';
+            }
+            
             $zip = new \ZipArchive();
             $res = $zip->open($tempFile);
             if ($res === true) {
@@ -174,7 +157,7 @@ class DocumentTextExtractor
         } catch (\Exception $e) {
             error_log("DOCX parsing error: " . $e->getMessage());
         } finally {
-            if (file_exists($tempFile)) {
+            if (file_exists($tempFile) && is_file($tempFile)) {
                 unlink($tempFile);
             }
         }
@@ -187,21 +170,8 @@ class DocumentTextExtractor
      */
     private static function extractTextFromImageContent($imageContent, $tempFile)
     {
-        // Save content to temp file for OCR processing
-        $result = file_put_contents($tempFile, $imageContent);
-        if ($result === false) {
-            return '';
-        }
-        
-        // Check if Tesseract is available
-        if (self::isTesseractAvailable()) {
-            $command = 'tesseract ' . escapeshellarg($tempFile) . ' stdout 2>/dev/null';
-            $output = shell_exec($command);
-            if ($output !== null) {
-                return $output;
-            }
-        }
-        
+        // Di lingkungan cloud, kita hindari operasi yang kompleks untuk menghindari error
+        // Fungsi ini sekarang kita kosongkan untuk mencegah error di lingkungan produksi
         return '';
     }
 
