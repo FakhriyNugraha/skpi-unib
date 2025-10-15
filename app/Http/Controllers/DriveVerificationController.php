@@ -151,7 +151,6 @@ class DriveVerificationController extends Controller
             
             \Log::info('Saved base64 credential to file', ['file' => $serviceAccountFile]);
         } else {
-        } else {
             // Fallback to file path approach
             $serviceAccountFilePath = $_ENV['GOOGLE_DRIVE_SERVICE_ACCOUNT_FILE'] ?? env('GOOGLE_DRIVE_SERVICE_ACCOUNT_FILE');
             if ($serviceAccountFilePath) {
