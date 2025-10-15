@@ -20,13 +20,12 @@ class DocumentTextExtractor
         $mimeType = $driveFile->getMimeType();
         $fileName = $driveFile->getName();
 
-        // Download file content to temporary location
-        $tempFile = tempnam(sys_get_temp_dir(), 'drive_file_');
-        if ($tempFile === false) {
-            error_log("Could not create temp file for drive file extraction");
+        // Check if this is actually a file (not a folder)
+        if ($mimeType === 'application/vnd.google-apps.folder') {
+            error_log("Trying to extract text from a folder, not a file: " . $fileName);
             return '';
         }
-        
+
         try {
             // Using the Google API Client to download the file content 
             // The proper way to download file content is by using the media download URL
@@ -38,27 +37,42 @@ class DocumentTextExtractor
             
             $content = (string) $response->getBody();
             
-            $result = file_put_contents($tempFile, $content);
-            if ($result === false) {
-                error_log("Could not write content to temp file: " . $tempFile);
-                return '';
-            }
-            
-            // Verify that tempFile is actually a file, not a directory
-            if (!is_file($tempFile)) {
-                error_log("Temp file is not a file: " . $tempFile);
-                return '';
-            }
-            
             // Determine how to process based on MIME type
             $extension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
             
             if (strpos($mimeType, 'pdf') !== false || $extension === 'pdf') {
                 return self::extractTextFromPdfContent($content);
             } elseif (strpos($mimeType, 'document') !== false || in_array($extension, ['doc', 'docx'])) {
-                return self::extractTextFromWordContent($content, $tempFile);
+                // For document processing, we'll use the content directly without temp file
+                return self::extractTextFromDocxContent($content);
             } elseif (strpos($mimeType, 'image') !== false || in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'bmp'])) {
-                return self::extractTextFromImageContent($content, $tempFile);
+                // For image processing, we still need temp file for OCR
+                $tempFile = tempnam(sys_get_temp_dir(), 'img_');
+                if ($tempFile === false) {
+                    error_log("Could not create temp file for image processing");
+                    return '';
+                }
+                
+                $result = file_put_contents($tempFile, $content);
+                if ($result === false) {
+                    error_log("Could not write image content to temp file: " . $tempFile);
+                    return '';
+                }
+                
+                try {
+                    // Verify that tempFile is actually a file, not a directory
+                    if (!is_file($tempFile)) {
+                        error_log("Temp file is not a file: " . $tempFile);
+                        return '';
+                    }
+                    
+                    $result = self::extractTextFromImageContent($content, $tempFile);
+                    return $result;
+                } finally {
+                    if (file_exists($tempFile) && is_file($tempFile)) {
+                        unlink($tempFile);
+                    }
+                }
             } elseif (strpos($mimeType, 'text') !== false || $extension === 'txt') {
                 return $content;
             } else {
@@ -67,10 +81,6 @@ class DocumentTextExtractor
         } catch (\Exception $e) {
             error_log("DocumentTextExtractor error: " . $e->getMessage());
             return '';
-        } finally {
-            if (file_exists($tempFile) && is_file($tempFile)) {
-                unlink($tempFile);
-            }
         }
     }
 
@@ -95,22 +105,9 @@ class DocumentTextExtractor
      */
     private static function extractTextFromWordContent($wordContent, $tempFile)
     {
-        // Save content to temp file for processing
-        $result = file_put_contents($tempFile, $wordContent);
-        if ($result === false) {
-            return '';
-        }
-        
-        $extension = strtolower(pathinfo($tempFile, PATHINFO_EXTENSION));
-        
-        if ($extension === 'doc') {
-            // For .doc files, we might need antiword or similar utility
-            // Here we're implementing the zip-based approach for .docx, 
-            // but we'll need to handle .doc differently
-            return self::extractTextFromDocxContent($wordContent);
-        } else {
-            return self::extractTextFromDocxContent($wordContent);
-        }
+        // This function is not used anymore since we changed the approach
+        // but keeping it for compatibility with existing code
+        return self::extractTextFromDocxContent($wordContent);
     }
 
     /**
