@@ -499,6 +499,31 @@
                             html += '</div>';
                         }
                         
+                        // Detailed document matching with percentages
+                        if (results.validation_score && results.validation_score.details) {
+                            html += '<div class="mt-4 space-y-3">';
+                            html += '<h4 class="font-medium text-gray-800">Kesesuaian Dokumen per Jenis:</h4>';
+                            
+                            results.validation_score.details.forEach(detail => {
+                                let statusColor = 'text-gray-600 bg-gray-100';
+                                if (detail.status === 'tersedia') statusColor = 'text-green-600 bg-green-100';
+                                else if (detail.status === 'tidak tersedia') statusColor = 'text-red-600 bg-red-100';
+                                
+                                html += '<div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border">';
+                                html += `<span class="text-sm font-medium">${detail.type}</span>`;
+                                html += `<div class="flex items-center">`;
+                                html += `<span class="px-2 py-1 rounded text-xs ${statusColor} mr-2">${detail.percentage}%</span>`;
+                                html += `<span class="text-xs ${detail.status === 'tersedia' ? 'text-green-600' : 'text-red-600'}">${detail.status}</span>`;
+                                if (detail.file_name) {
+                                    html += `<span class="text-xs text-gray-500 ml-2 truncate max-w-xs" title="${detail.file_name}">${detail.file_name.length > 30 ? detail.file_name.substring(0, 30) + '...' : detail.file_name}</span>`;
+                                }
+                                html += '</div>';
+                                html += '</div>';
+                            });
+                            
+                            html += '</div>';
+                        }
+                        
                         // Scan summary
                         if (results.scan_summary) {
                             html += '<div class="bg-blue-50 p-3 rounded-lg mt-4">';
