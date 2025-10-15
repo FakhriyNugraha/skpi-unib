@@ -47,6 +47,12 @@ class DriveVerificationController extends Controller
             ]);
 
         } catch (\Exception $e) {
+            \Log::error('Drive verification error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan saat memverifikasi: ' . $e->getMessage()
@@ -75,11 +81,45 @@ class DriveVerificationController extends Controller
         // Initialize Google Client
         $client = new Client();
         
-        // Use Service Account credentials
-        $serviceAccountFile = storage_path('app/' . env('GOOGLE_DRIVE_SERVICE_ACCOUNT_FILE'));
+        // Use Service Account credentials - improved for production safety
+        $serviceAccountFile = null;
         
-        if (!file_exists($serviceAccountFile)) {
-            throw new \Exception('File credentials Google Drive tidak ditemukan. Silakan atur GOOGLE_DRIVE_SERVICE_ACCOUNT_FILE di .env');
+        // Check if we have base64 encoded credentials in environment
+        $serviceAccountJsonBase64 = env('GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON_BASE64');
+        
+        if ($serviceAccountJsonBase64) {
+            // Use base64 encoded JSON from environment variable
+            $json = base64_decode($serviceAccountJsonBase64, true);
+            if ($json === false) {
+                throw new \Exception('Credential Google Drive tidak valid (base64 decode failed)');
+            }
+            
+            // Save to temporary location
+            $serviceAccountFile = storage_path('app/credentials/google_service_account.json');
+            if (!is_dir(dirname($serviceAccountFile))) {
+                mkdir(dirname($serviceAccountFile), 0755, true);
+            }
+            file_put_contents($serviceAccountFile, $json);
+        } else {
+            // Fallback to file path approach
+            $serviceAccountFilePath = env('GOOGLE_DRIVE_SERVICE_ACCOUNT_FILE');
+            if ($serviceAccountFilePath) {
+                $serviceAccountFile = storage_path('app/' . $serviceAccountFilePath);
+            }
+        }
+        
+        // Validate that we have a valid credential file
+        if (!$serviceAccountFile || !file_exists($serviceAccountFile)) {
+            throw new \Exception('File credentials Google Drive tidak ditemukan. Silakan atur GOOGLE_DRIVE_SERVICE_ACCOUNT_FILE atau GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON_BASE64 di .env');
+        }
+        
+        // Additional safety check - ensure it's actually a file, not a directory
+        if (is_dir($serviceAccountFile)) {
+            throw new \Exception('Path credential Google Drive menunjuk ke direktori, bukan file: ' . $serviceAccountFile);
+        }
+        
+        if (!is_readable($serviceAccountFile)) {
+            throw new \Exception('File credentials Google Drive tidak dapat dibaca: ' . $serviceAccountFile);
         }
         
         $client->setAuthConfig($serviceAccountFile);

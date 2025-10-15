@@ -21,6 +21,27 @@ if (!function_exists('assertReadableFile')) {
     }
 }
 
+if (!function_exists('safeFileGetContents')) {
+    /**
+     * Safe wrapper for file_get_contents with error checking
+     * 
+     * @param string $path
+     * @return string
+     * @throws \RuntimeException
+     */
+    function safeFileGetContents(string $path): string {
+        // First, assert that path is a readable file
+        assertReadableFile($path);
+        
+        $content = @file_get_contents($path);
+        if ($content === false) {
+            throw new \RuntimeException("Gagal membaca file: $path");
+        }
+        
+        return $content;
+    }
+}
+
 class DocumentTextExtractor
 {
     /**
@@ -81,6 +102,15 @@ class DocumentTextExtractor
             }
         } catch (\Exception $e) {
             error_log("DocumentTextExtractor error: " . $e->getMessage());
+            \Log::error('DocumentTextExtractor error', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
+                'fileId' => $fileId,
+                'fileName' => $fileName,
+                'mimeType' => $originalMimeType
+            ]);
             return '';
         }
     }
@@ -104,6 +134,12 @@ class DocumentTextExtractor
         } catch (\Exception $e) {
             // Log the detailed error for debugging
             error_log("PDF parsing error: " . $e->getMessage() . " in " . $e->getFile() . ":" . $e->getLine());
+            \Log::error('PDF parsing error', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
             return '';
         }
     }
@@ -170,6 +206,12 @@ class DocumentTextExtractor
             }
         } catch (\Exception $e) {
             error_log("DOCX parsing error: " . $e->getMessage());
+            \Log::error('DOCX parsing error', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
         } finally {
             // Safely remove temp file
             if (file_exists($tempFile)) {
@@ -221,6 +263,12 @@ class DocumentTextExtractor
             }
         } catch (\Exception $e) {
             error_log("OCR processing error: " . $e->getMessage());
+            \Log::error('OCR processing error', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
         }
         
         return '';
@@ -231,7 +279,18 @@ class DocumentTextExtractor
      */
     private static function isTesseractAvailable()
     {
-        $result = shell_exec('tesseract --version 2>&1');
-        return $result !== null && strpos($result, 'tesseract') !== false;
+        try {
+            $result = shell_exec('tesseract --version 2>&1');
+            return $result !== null && strpos($result, 'tesseract') !== false;
+        } catch (\Exception $e) {
+            error_log("Tesseract availability check error: " . $e->getMessage());
+            \Log::error('Tesseract availability check error', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return false;
+        }
     }
 }
