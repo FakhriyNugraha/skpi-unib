@@ -22,6 +22,10 @@ class DocumentTextExtractor
 
         // Download file content to temporary location
         $tempFile = tempnam(sys_get_temp_dir(), 'drive_file_');
+        if ($tempFile === false) {
+            error_log("Could not create temp file for drive file extraction");
+            return '';
+        }
         
         try {
             // Using the Google API Client to download the file content 
@@ -34,7 +38,17 @@ class DocumentTextExtractor
             
             $content = (string) $response->getBody();
             
-            file_put_contents($tempFile, $content);
+            $result = file_put_contents($tempFile, $content);
+            if ($result === false) {
+                error_log("Could not write content to temp file: " . $tempFile);
+                return '';
+            }
+            
+            // Verify that tempFile is actually a file, not a directory
+            if (!is_file($tempFile)) {
+                error_log("Temp file is not a file: " . $tempFile);
+                return '';
+            }
             
             // Determine how to process based on MIME type
             $extension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
@@ -54,7 +68,7 @@ class DocumentTextExtractor
             error_log("DocumentTextExtractor error: " . $e->getMessage());
             return '';
         } finally {
-            if (file_exists($tempFile)) {
+            if (file_exists($tempFile) && is_file($tempFile)) {
                 unlink($tempFile);
             }
         }
@@ -67,6 +81,7 @@ class DocumentTextExtractor
     {
         $parser = new PdfParser();
         try {
+            // Using parseContent method which accepts the content directly as string
             $pdf = $parser->parseContent($pdfContent);
             return $pdf->getText();
         } catch (\Exception $e) {
