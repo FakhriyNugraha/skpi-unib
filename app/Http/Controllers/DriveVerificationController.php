@@ -888,4 +888,97 @@ class DriveVerificationController extends Controller
 
         return $result;
     }
+    
+    /**
+     * Split text into sentences for better NLP processing
+     */
+    private function splitIntoSentences($text) {
+        // Split on sentence delimiters
+        $sentences = preg_split('/[.!?]+/', $text);
+        return array_filter(array_map('trim', $sentences));
+    }
+    
+    /**
+     * Split text into chunks for processing
+     */
+    private function chunkText($text, $chunkSize) {
+        $chunks = [];
+        $textLength = strlen($text);
+        
+        for ($i = 0; $i < $textLength; $i += $chunkSize) {
+            $chunks[] = substr($text, $i, $chunkSize);
+        }
+        
+        return $chunks;
+    }
+    
+    /**
+     * Check if a keyword matches text using multiple techniques
+     */
+    private function isKeywordMatch($keyword, $text) {
+        // Direct match
+        if (strpos($text, $keyword) !== false) {
+            return true;
+        }
+        
+        // Word boundary match (to prevent substring matches)
+        if (preg_match('/\b' . preg_quote($keyword, '/') . '\b/i', $text)) {
+            return true;
+        }
+        
+        // Partial match with similarity threshold
+        similar_text($keyword, $text, $percent);
+        if ($percent > 80) {
+            return true;
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Calculate relevance score based on found keywords
+     */
+    private function calculateRelevanceScore($foundKeywords, $achievementContent) {
+        if (empty($foundKeywords)) {
+            return 0;
+        }
+        
+        // Calculate score based on keyword importance
+        $relevanceScore = 0;
+        $achievementLower = strtolower($achievementContent);
+        
+        foreach ($foundKeywords as $keyword) {
+            // Give higher score to keywords that appear in achievement content
+            if (strpos($achievementLower, $keyword) !== false) {
+                $relevanceScore += 15; // Higher weight for direct matches
+            } else {
+                $relevanceScore += 5; // Lower weight for other matches
+            }
+        }
+        
+        return min(100, $relevanceScore);
+    }
+    
+    /**
+     * Perform context-based matching between sentences and achievement content
+     */
+    private function contextBasedMatching($sentences, $achievementContent) {
+        $matchScore = 0;
+        $achievementWords = array_flip($this->extractKeywords($achievementContent));
+        
+        foreach ($sentences as $sentence) {
+            // Extract keywords from sentence
+            $sentenceKeywords = $this->extractKeywords($sentence);
+            
+            // Count matching keywords
+            $matchingKeywords = array_intersect($sentenceKeywords, array_keys($achievementWords));
+            
+            if (count($matchingKeywords) > 0) {
+                $matchScore += (count($matchingKeywords) / count($sentenceKeywords)) * 100;
+            }
+        }
+        
+        // Average the score across all sentences
+        return count($sentences) > 0 ? min(100, $matchScore / count($sentences)) : 0;
+    }
 }
