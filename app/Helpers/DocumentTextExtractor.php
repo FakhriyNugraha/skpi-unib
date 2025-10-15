@@ -81,7 +81,10 @@ class DocumentTextExtractor
     private static function extractTextFromWordContent($wordContent, $tempFile)
     {
         // Save content to temp file for processing
-        file_put_contents($tempFile, $wordContent);
+        $result = file_put_contents($tempFile, $wordContent);
+        if ($result === false) {
+            return '';
+        }
         
         $extension = strtolower(pathinfo($tempFile, PATHINFO_EXTENSION));
         
@@ -105,11 +108,19 @@ class DocumentTextExtractor
         }
 
         $tempFile = tempnam(sys_get_temp_dir(), 'docx_');
-        file_put_contents($tempFile, $docxContent);
+        if ($tempFile === false) {
+            return '';
+        }
+        
+        $result = file_put_contents($tempFile, $docxContent);
+        if ($result === false) {
+            return '';
+        }
         
         try {
             $zip = new \ZipArchive();
-            if ($zip->open($tempFile) === true) {
+            $res = $zip->open($tempFile);
+            if ($res === true) {
                 $content = $zip->getFromName('word/document.xml');
                 $zip->close();
 
@@ -119,6 +130,9 @@ class DocumentTextExtractor
                     $content = html_entity_decode($content, ENT_QUOTES, 'UTF-8');
                     return $content;
                 }
+            } else {
+                // Log the specific error for debugging
+                error_log("DOCX parsing error: ZipArchive::open returned error code: " . $res);
             }
         } catch (\Exception $e) {
             error_log("DOCX parsing error: " . $e->getMessage());
@@ -137,7 +151,10 @@ class DocumentTextExtractor
     private static function extractTextFromImageContent($imageContent, $tempFile)
     {
         // Save content to temp file for OCR processing
-        file_put_contents($tempFile, $imageContent);
+        $result = file_put_contents($tempFile, $imageContent);
+        if ($result === false) {
+            return '';
+        }
         
         // Check if Tesseract is available
         if (self::isTesseractAvailable()) {
