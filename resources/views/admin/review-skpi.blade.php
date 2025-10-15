@@ -518,46 +518,16 @@
                             html += '</div>';
                         }
                         
-                        // Matched items with authenticity
+                        // Matched items - only show document types without similarity scores
                         if (results.matched_items && results.matched_items.length > 0) {
                             html += '<div class="border-l-4 border-green-500 pl-4 mt-4">';
                             html += '<h4 class="font-medium text-green-700">Dokumen Terpenuhi:</h4>';
-                            results.matched_items.forEach(item => {
-                                html += `<p class="text-sm text-green-600 mt-1">• ${item.type}: ${item.file_name} (${item.similarity_score.toFixed(1)}% kesamaan)</p>`;
+                            // Only show document types, not file names and similarity scores
+                            const uniqueMatchedTypes = [...new Set(results.matched_items.map(item => item.type))];
+                            uniqueMatchedTypes.forEach(type => {
+                                html += `<p class="text-sm text-green-600 mt-1">• ${type}</p>`;
                             });
                             html += '</div>';
-                            
-                            // Authenticity checks
-                            if (results.authenticity_checks && results.authenticity_checks.length > 0) {
-                                html += '<div class="mt-4">';
-                                html += '<h4 class="font-medium text-gray-700">Verifikasi Keaslian:</h4>';
-                                // Group authenticity checks by file to avoid duplicates
-                                const uniqueChecks = [];
-                                const seenFiles = new Set();
-                                
-                                results.authenticity_checks.forEach(check => {
-                                    if (!seenFiles.has(check.file_name)) {
-                                        uniqueChecks.push(check);
-                                        seenFiles.add(check.file_name);
-                                    }
-                                });
-                                
-                                uniqueChecks.forEach(check => {
-                                    let confidenceColor = 'text-gray-500';
-                                    if (check.confidence_level === 'high') confidenceColor = 'text-green-600';
-                                    else if (check.confidence_level === 'medium') confidenceColor = 'text-yellow-600';
-                                    else confidenceColor = 'text-red-600';
-                                    
-                                    html += `<div class="text-sm mt-2 p-2 bg-gray-50 rounded">`;
-                                    html += `<p class="font-medium ${confidenceColor}">${check.file_name}</p>`;
-                                    html += `<p>Kepercayaan: <span class="${confidenceColor}">${check.confidence_level.toUpperCase()}</span></p>`;
-                                    if (check.verification_notes && check.verification_notes.length > 0) {
-                                        html += '<p>Catatan: ' + check.verification_notes.join(', ') + '</p>';
-                                    }
-                                    html += '</div>';
-                                });
-                                html += '</div>';
-                            }
                         }
                         
                         // Extra items
