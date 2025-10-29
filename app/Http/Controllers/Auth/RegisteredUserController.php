@@ -21,7 +21,14 @@ class RegisteredUserController extends Controller
     public function create(): View
     {
         $jurusans = \App\Models\Jurusan::active()->orderBy('nama_jurusan')->get();
-        return view('auth.register', compact('jurusans'));
+        
+        // Ambil statistik dari HomeController
+        $stats = [
+            'total_jurusan'   => \App\Models\Jurusan::active()->count(),
+            'total_mahasiswa' => User::where('role', 'user')->count(),
+        ];
+        
+        return view('auth.register', compact('jurusans', 'stats'));
     }
 
     /**

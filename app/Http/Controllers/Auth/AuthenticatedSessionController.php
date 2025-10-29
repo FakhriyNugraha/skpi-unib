@@ -4,6 +4,9 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Models\Jurusan;
+use App\Models\SkpiData;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -16,7 +19,13 @@ class AuthenticatedSessionController extends Controller
      */
     public function create(): View
     {
-        return view('auth.login');
+        // Ambil statistik dari HomeController
+        $stats = [
+            'total_jurusan'   => Jurusan::active()->count(),
+            'total_mahasiswa' => User::where('role', 'user')->count(),
+        ];
+
+        return view('auth.login', compact('stats'));
     }
 
     /**

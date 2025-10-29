@@ -155,3 +155,13 @@ Route::middleware(['auth', 'role:superadmin'])
         Route::post('/skpi/{skpi}/approve', [SuperAdminController::class, 'approveSkpi'])->name('approve-skpi')->whereNumber('skpi');
         Route::post('/skpi/{skpi}/reject', [SuperAdminController::class, 'rejectSkpi'])->name('reject-skpi')->whereNumber('skpi');
     });
+
+// Temporary test route to verify statistics
+Route::get('/test-stats', function () {
+    $stats = [
+        'total_jurusan' => \App\Models\Jurusan::active()->count(),
+        'total_mahasiswa' => \App\Models\User::where('role', 'user')->count(),
+    ];
+    
+    return response()->json($stats);
+});

@@ -195,11 +195,11 @@
                         </p>
                         <div class="grid grid-cols-2 gap-4 text-center">
                             <div class="rounded-lg bg-white/10 p-4 backdrop-blur-sm">
-                                <div class="text-2xl font-bold text-teknik-orange-400">6</div>
+                                <div class="text-2xl font-bold text-teknik-orange-400">{{ $stats['total_jurusan'] ?? 0 }}</div>
                                 <div class="text-sm">Program Studi</div>
                             </div>
                             <div class="rounded-lg bg-white/10 p-4 backdrop-blur-sm">
-                                <div class="text-2xl font-bold text-teknik-orange-400">100+</div>
+                                <div class="text-2xl font-bold text-teknik-orange-400">{{ $stats['total_mahasiswa'] ?? 0 }}</div>
                                 <div class="text-sm">Mahasiswa</div>
                             </div>
                         </div>
