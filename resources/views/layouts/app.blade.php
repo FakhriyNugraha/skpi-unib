@@ -16,7 +16,7 @@
         .logo-unib {
             width: 60px;
             height: 60px;
-            background-image: url('/images/logounib.png'); /* Pastikan path ini benar */
+            background-image: url('/images/logounib.png'); 
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
@@ -50,8 +50,8 @@
 </head>
 <body class="font-sans antialiased bg-gray-100">
     <div class="min-h-screen flex flex-col">
-        {{-- PERUBAHAN TONE WARNA BIRU DI SINI --}}
-        <header class="bg-gradient-to-r from-blue-800 to-blue-900 text-white shadow-lg sticky top-0 z-50">
+        
+        <header class="bg-gradient-to-r from-blue-900 via-blue-800 to-indigo-900 text-white shadow-xl sticky top-0 z-50">
             <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex items-center justify-between h-16">
                     <div class="flex items-center space-x-8">
@@ -149,8 +149,8 @@
             </div>
         </main>
 
-        {{-- PERUBAHAN TONE WARNA BIRU DI SINI --}}
-        <footer class="bg-gradient-to-br from-blue-800 to-blue-900 text-white mt-auto">
+        
+        <footer class="bg-gradient-to-br from-indigo-900 via-blue-800 to-blue-900 text-white mt-auto shadow-2xl">
             <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                     <div>
@@ -172,7 +172,7 @@
                         </div>
                     </div>
                 </div>
-                {{-- Border footer juga disesuaikan warnanya --}}
+                
                 <div class="border-t border-blue-700/50 mt-8 pt-8 text-center text-sm text-blue-200">
                     <p>&copy; {{ date('Y') }} Universitas Bengkulu. All rights reserved.</p>
                 </div>

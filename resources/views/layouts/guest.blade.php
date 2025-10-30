@@ -16,7 +16,7 @@
             .logo-unib-guest {
                 width: 90px;
                 height: 90px;
-                background-image: url('/images/logounib.png'); /* Pastikan path ini benar */
+                background-image: url('/images/logounib.png'); 
                 background-size: contain;
                 background-repeat: no-repeat;
                 background-position: center;
@@ -25,7 +25,7 @@
     </head>
     <body class="font-sans text-gray-900 antialiased">
         <div class="min-h-screen lg:grid lg:grid-cols-2">
-            {{-- PERUBAHAN TONE WARNA BIRU DI SINI --}}
+            
             <div class="hidden lg:flex flex-col items-center justify-center bg-gradient-to-br from-blue-800 to-blue-600 p-12 text-white text-center">
                 <a href="/">
                     <div class="logo-unib-guest mb-6"></div>
