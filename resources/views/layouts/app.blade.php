@@ -26,7 +26,7 @@
         /* Custom active link style */
         .nav-link-active {
             background-color: white;
-            color: #1e40af; /* blue-800, disesuaikan dengan tone baru */
+            color: #1e40af; /* blue-800 */
         }
 
         /* Dropdown Animation */
@@ -69,6 +69,12 @@
                             @elseif(auth()->user()->role === 'admin')
                                 <a href="{{ route('admin.dashboard') }}" class="px-3 py-2 rounded-md text-sm font-medium transition-colors {{ request()->routeIs('admin.dashboard') ? 'nav-link-active' : 'text-blue-100 hover:bg-white/10 hover:text-white' }}">Dashboard</a>
                                 <a href="{{ route('admin.skpi-list') }}" class="px-3 py-2 rounded-md text-sm font-medium transition-colors {{ request()->routeIs('admin.skpi-list') ? 'nav-link-active' : 'text-blue-100 hover:bg-white/10 hover:text-white' }}">Review SKPI</a>
+                            @elseif(auth()->user()->role === 'superadmin')
+                                <a href="{{ route('superadmin.dashboard') }}" class="px-3 py-2 rounded-md text-sm font-medium transition-colors {{ request()->routeIs('superadmin.dashboard') ? 'nav-link-active' : 'text-blue-100 hover:bg-white/10 hover:text-white' }}">Dashboard</a>
+                                <a href="{{ route('superadmin.users') }}" class="px-3 py-2 rounded-md text-sm font-medium transition-colors {{ request()->routeIs('superadmin.users') ? 'nav-link-active' : 'text-blue-100 hover:bg-white/10 hover:text-white' }}">Kelola User</a>
+                                <a href="{{ route('superadmin.jurusans') }}" class="px-3 py-2 rounded-md text-sm font-medium transition-colors {{ request()->routeIs('superadmin.jurusans') ? 'nav-link-active' : 'text-blue-100 hover:bg-white/10 hover:text-white' }}">Kelola Jurusan</a>
+                                <a href="{{ route('superadmin.all-skpi') }}" class="px-3 py-2 rounded-md text-sm font-medium transition-colors {{ request()->routeIs('superadmin.all-skpi') ? 'nav-link-active' : 'text-blue-100 hover:bg-white/10 hover:text-white' }}">Review SKPI</a>
+                                <a href="{{ route('superadmin.reports') }}" class="px-3 py-2 rounded-md text-sm font-medium transition-colors {{ request()->routeIs('superadmin.reports') ? 'nav-link-active' : 'text-blue-100 hover:bg-white/10 hover:text-white' }}">Laporan & Statistik</a>
                             @endif
                         </div>
                         @endauth
@@ -82,7 +88,7 @@
 
                         @auth
                             <div class="relative">
-                                <button id="userMenuButton" type="button" class="flex items-center text-sm bg-gray-800 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-blue-800 focus:ring-teknik-orange-400 avatar-glow transition-shadow"> {{-- Menyesuaikan ring-offset --}}
+                                <button id="userMenuButton" type="button" class="flex items-center text-sm bg-gray-800 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-blue-800 focus:ring-teknik-orange-400 avatar-glow transition-shadow">
                                     <span class="sr-only">Open user menu</span>
                                     @if(auth()->user()->avatar)
                                         <img class="h-10 w-10 rounded-full object-cover" src="{{ Storage::url(auth()->user()->avatar) }}" alt="{{ auth()->user()->name }}">
@@ -93,7 +99,8 @@
                                     @endif
                                 </button>
                                 
-                                <div id="userMenu" class="dropdown-menu hidden origin-top-right absolute right-0 mt-2 w-56 rounded-xl shadow-2xl bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
+                                <!-- Tambah overflow-hidden agar hover background terklip radius -->
+                                <div id="userMenu" class="dropdown-menu hidden origin-top-right absolute right-0 mt-2 w-56 rounded-xl shadow-2xl bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-50 overflow-hidden">
                                     <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button">
                                         <div class="px-4 py-3 border-b border-gray-200">
                                             <p class="text-sm font-semibold text-gray-900 truncate" role="none">{{ auth()->user()->name }}</p>
@@ -110,7 +117,8 @@
                                         <div class="border-t border-gray-100"></div>
                                         <form method="POST" action="{{ route('logout') }}" role="none">
                                             @csrf
-                                            <button type="submit" class="flex items-center w-full text-left px-4 py-2 text-sm text-red-700 hover:bg-red-50 group" role="menuitem">
+                                            <!-- Tambah rounded-b-xl agar mengikuti sudut container -->
+                                            <button type="submit" class="flex items-center w-full text-left px-4 py-2 text-sm text-red-700 hover:bg-red-50 group rounded-b-xl" role="menuitem">
                                                 <svg class="w-5 h-5 mr-3 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
                                                 Logout
                                             </button>

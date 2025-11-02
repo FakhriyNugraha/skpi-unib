@@ -1,6 +1,6 @@
 <x-app-layout>
     <!-- Hero Section -->
-    <div class="bg-gradient-to-br from-unib-blue-900 via-unib-blue-800 to-unib-blue-700 text-white relative overflow-hidden">
+    <div class="bg-gradient-to-br from-unib-blue-900 via-unib-blue-800 to-unib-blue-700 text-white relative overflow-hidden -mt-16">
         <!-- Background Pattern -->
         <div class="absolute inset-0 opacity-10">
             <div class="absolute inset-0" style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 40px 40px;"></div>

@@ -136,7 +136,8 @@
                     <div class="mt-6 flex flex-col gap-3">
                         <div class="flex flex-col sm:flex-row sm:flex-wrap sm:items-center sm:justify-center gap-3 lg:gap-4">
                             @if($skpiData->canBeEdited())
-                                <a href="{{ route('skpi.edit', $skpiData) }}" class="btn-primary min-w-[140px] flex items-center justify-center transition-all duration-300 hover:shadow-xl hover:translate-y-[-2px] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-lg">
+                                <!-- EDIT SKPI: kuning-oranye -->
+                                <a href="{{ route('skpi.edit', $skpiData) }}" class="min-w-[140px] flex items-center justify-center transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 rounded-lg px-4 py-2 bg-amber-500 text-white border-2 border-amber-500 hover:bg-amber-600">
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                     </svg>
@@ -153,7 +154,8 @@
                                 </a>
                             @endif
                             
-                            <a href="{{ route('skpi.show', $skpiData) }}" class="btn-outline min-w-[140px] flex items-center justify-center transition-all duration-300 hover:shadow-xl hover:translate-y-[-2px] focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 rounded-lg">
+                            <!-- LIHAT DETAIL: biru solid -->
+                            <a href="{{ route('skpi.show', $skpiData) }}" class="min-w-[140px] flex items-center justify-center transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-lg px-4 py-2 bg-blue-600 text-white border-2 border-blue-600 hover:bg-blue-700">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
@@ -165,7 +167,8 @@
                         @if($skpiData->canBeSubmitted())
                         <div class="pt-4 border-t border-gray-200">
                             <div class="flex justify-center">
-                                <button type="button" id="submitBtn" class="btn-primary w-full sm:w-auto min-w-[160px] flex items-center justify-center transition-all duration-300 hover:shadow-xl hover:translate-y-[-2px] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-lg border-2 border-blue-500 bg-blue-600 hover:bg-blue-700">
+                                <!-- SUBMIT: HIJAU -->
+                                <button type="button" id="submitBtn" class="w-full sm:w-auto min-w-[160px] flex items-center justify-center transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 rounded-lg border-2 border-green-600 bg-green-600 text-white px-4 py-2 hover:bg-green-700">
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                     </svg>
@@ -310,14 +313,11 @@
                 
                 // Confirm submit
                 confirmSubmit.addEventListener('click', function() {
-                    // Create and submit form dynamically
                     const form = document.createElement('form');
                     form.method = 'POST';
-                    // Use the route helper with the ID from the existing page
                     form.action = '{{ route('skpi.submit', $skpiData->id) }}';
                     form.style.display = 'none';
                     
-                    // Add CSRF token
                     const csrfInput = document.createElement('input');
                     csrfInput.type = 'hidden';
                     csrfInput.name = '_token';

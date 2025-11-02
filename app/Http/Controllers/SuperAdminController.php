@@ -309,25 +309,81 @@ class SuperAdminController extends Controller
 
     public function reports()
     {
-        $jurusans = Jurusan::withCount([
-            'skpiData as skpi_draft_count'     => fn($q) => $q->where('status','draft'),
-            'skpiData as skpi_submitted_count' => fn($q) => $q->where('status','submitted'),
-            'skpiData as skpi_approved_count'  => fn($q) => $q->where('status','approved'),
-            'skpiData as skpi_rejected_count'  => fn($q) => $q->where('status','rejected'),
-        ])->orderBy('nama_jurusan')->get();
+        // Statistik utama
+        $total_users = User::count();
+        $total_mahasiswa = User::where('role', 'user')->count();
+        $total_admin = User::whereIn('role', ['admin', 'superadmin'])->count();
+        
+        $total_skpi = SkpiData::count();
+        $approved_skpi = SkpiData::where('status', 'approved')->count();
+        $pending_skpi = SkpiData::where('status', 'submitted')->count();
+        $rejected_skpi = SkpiData::where('status', 'rejected')->count();
+        
+        $approved_percentage = $total_skpi > 0 ? round(($approved_skpi / $total_skpi) * 100, 1) : 0;
+        $pending_percentage = $total_skpi > 0 ? round(($pending_skpi / $total_skpi) * 100, 1) : 0;
+        $rejected_percentage = $total_skpi > 0 ? round(($rejected_skpi / $total_skpi) * 100, 1) : 0;
+        
+        $stats = [
+            'total_users' => $total_users,
+            'total_mahasiswa' => $total_mahasiswa,
+            'total_admin' => $total_admin,
+            'total_skpi' => $total_skpi,
+            'approved_skpi' => $approved_skpi,
+            'pending_skpi' => $pending_skpi,
+            'rejected_skpi' => $rejected_skpi,
+            'approval_percentage' => $approved_percentage,
+            'pending_percentage' => $pending_percentage,
+            'rejected_percentage' => $rejected_percentage,
+            'total_jurusan' => Jurusan::count(),
+            'active_jurusan' => Jurusan::where('status', 'active')->count(),
+            'inactive_jurusan' => Jurusan::where('status', 'inactive')->count(),
+        ];
 
-        $monthlyStats = SkpiData::select(
-                DB::raw('YEAR(created_at) as year'),
-                DB::raw('MONTH(created_at) as month'),
-                'status',
-                DB::raw('COUNT(*) as total')
-            )
-            ->whereYear('created_at', now()->year)
-            ->groupBy('year','month','status')
-            ->orderBy('year','desc')
-            ->orderBy('month','desc')
-            ->get();
+        // Statistik per jurusan
+        $jurusanStats = Jurusan::withCount([
+            'skpiData as jumlah_skpi' => fn($q) => $q->where('status', '!=', 'draft'),
+        ])
+        ->where('status', 'active')
+        ->orderBy('jumlah_skpi', 'desc')
+        ->get()
+        ->map(function ($jurusan) use ($total_skpi) {
+            $jumlah_skpi = $jurusan->jumlah_skpi;
+            $persentase = $total_skpi > 0 ? round(($jumlah_skpi / $total_skpi) * 100, 1) : 0;
+            
+            return [
+                'id' => $jurusan->id,
+                'nama_jurusan' => $jurusan->nama_jurusan,
+                'jumlah_skpi' => $jumlah_skpi,
+                'persentase' => $persentase,
+            ];
+        });
 
-        return view('superadmin.reports', compact('jurusans','monthlyStats'));
+        // Detail statistik per jurusan
+        $detailedStats = Jurusan::with([
+            'users' => fn($q) => $q->where('role', 'user')
+        ])
+        ->withCount([
+            'skpiData as total_skpi' => fn($q) => $q->where('status', '!=', 'draft'),
+            'skpiData as pending' => fn($q) => $q->where('status', 'submitted'),
+            'skpiData as approved' => fn($q) => $q->where('status', 'approved'),
+            'skpiData as rejected' => fn($q) => $q->where('status', 'rejected'),
+        ])
+        ->get()
+        ->map(function ($jurusan) {
+            $total = $jurusan->total_skpi;
+            $approved = $jurusan->approved;
+            $approval_rate = $total > 0 ? round(($approved / $total) * 100, 1) : 0;
+            
+            return [
+                'nama_jurusan' => $jurusan->nama_jurusan,
+                'total_skpi' => $total,
+                'approved' => $approved,
+                'pending' => $jurusan->pending,
+                'rejected' => $jurusan->rejected,
+                'approval_rate' => $approval_rate,
+            ];
+        });
+
+        return view('superadmin.reports', compact('stats', 'jurusanStats', 'detailedStats'));
     }
 }

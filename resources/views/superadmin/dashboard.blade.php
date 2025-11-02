@@ -14,18 +14,6 @@
                         Ringkasan sistem & aktivitas terbaru SKPI
                     </p>
                 </div>
-
-                <nav class="flex flex-wrap items-center gap-3">
-                    <a href="{{ route('superadmin.users') }}" class="btn-outline">
-                        Kelola Users
-                    </a>
-                    <a href="{{ route('superadmin.jurusans') }}" class="btn-outline">
-                        Kelola Jurusan
-                    </a>
-                    <a href="{{ route('superadmin.all-skpi') }}" class="btn-primary">
-                        Semua SKPI
-                    </a>
-                </nav>
             </div>
         </header>
 
@@ -33,9 +21,9 @@
         <section aria-labelledby="stats-title" class="mb-10">
             <h2 id="stats-title" class="sr-only">Statistik</h2>
 
-            <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-6">
-                {{-- TOTAL USERS (dirapikan) --}}
-                <article class="card p-5 hover:shadow-md transition-shadow h-full flex flex-col">
+            <div class="flex flex-col lg:flex-row gap-6">
+                {{-- TOTAL USERS (45%) --}}
+                <article class="card p-5 hover:shadow-md transition-shadow flex flex-col" style="flex: 0 0 45%;">
                     <div class="flex items-start justify-between">
                         <div>
                             <p class="text-[11px] uppercase tracking-wide text-unib-blue-800/70">Total Users</p>
@@ -53,109 +41,72 @@
 
                     <div class="mt-5 grid grid-cols-2 gap-3">
                         <div class="rounded-lg border border-unib-blue-100 bg-unib-blue-50 p-3">
-                            <p class="text-[11px] text-unib-blue-800/70">Mahasiswa</p>
-                            <p class="text-lg font-semibold text-unib-blue-900">
+                            <p class="text-sm font-medium text-unib-blue-800/90">Mahasiswa</p>
+                            <p class="text-xl font-semibold text-unib-blue-900">
                                 {{ $stats['total_mahasiswa'] }}
                             </p>
                         </div>
                         <div class="rounded-lg border border-unib-blue-100 bg-unib-blue-50 p-3">
-                            <p class="text-[11px] text-unib-blue-800/70">Admin Jurusan</p>
-                            <p class="text-lg font-semibold text-unib-blue-900">
+                            <p class="text-sm font-medium text-unib-blue-800/90">Admin Jurusan</p>
+                            <p class="text-xl font-semibold text-unib-blue-900">
                                 {{ $stats['total_admin'] }}
                             </p>
                         </div>
                     </div>
                 </article>
 
-                {{-- TOTAL SKPI --}}
-                <article class="card p-5 hover:shadow-md transition-shadow h-full flex flex-col">
-                    @php
-                        $approved = (int) $stats['approved_skpi'];
-                        $total = max(1, (int) $stats['total_skpi']);
-                        $approvedPct = min(100, round(($approved / $total) * 100));
-                    @endphp
-
-                    <p class="text-[11px] uppercase tracking-wide text-unib-blue-800/70">Total SKPI</p>
-                    <p class="mt-1 text-3xl font-extrabold text-unib-blue-900">
-                        {{ $stats['total_skpi'] }}
-                    </p>
-
-                    <div class="mt-4">
-                        <div class="h-2 w-full rounded-full bg-gray-100">
-                            <div class="h-2 rounded-full bg-teknik-orange-600" style="width: {{ $approvedPct }}%"></div>
+                {{-- TOTAL SKPI (40%) --}}
+                <article class="card p-5 hover:shadow-md transition-shadow flex flex-col" style="flex: 0 0 40%;">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <p class="text-[11px] uppercase tracking-wide text-unib-blue-800/70">Total SKPI</p>
+                            <p class="mt-1 text-3xl font-extrabold text-unib-blue-900">
+                                {{ $stats['total_skpi'] }}
+                            </p>
                         </div>
-                        <p class="mt-2 text-xs text-unib-blue-800/70">
-                            {{ $approved }} disetujui ({{ $approvedPct }}%)
-                        </p>
+                        <div class="w-10 h-10 rounded-full bg-teknik-orange-100 flex items-center justify-center">
+                            <svg class="w-5 h-5 text-teknik-orange-700" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                                <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"></path>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <div class="mt-5 grid grid-cols-2 gap-3">
+                        <div class="rounded-lg border border-teknik-orange-100 bg-teknik-orange-50 p-3">
+                            <p class="text-sm font-medium text-unib-blue-800/90">Disetujui</p>
+                            <p class="text-xl font-semibold text-teknik-orange-700">
+                                {{ $stats['approved_skpi'] }}
+                            </p>
+                        </div>
+                        <div class="rounded-lg border border-teknik-orange-100 bg-teknik-orange-50 p-3">
+                            <p class="text-sm font-medium text-unib-blue-800/90">Persentase</p>
+                            @php
+                                $approved = (int) $stats['approved_skpi'];
+                                $total = max(1, (int) $stats['total_skpi']);
+                                $approvedPct = min(100, round(($approved / $total) * 100));
+                            @endphp
+                            <p class="text-xl font-semibold text-teknik-orange-700">
+                                {{ $approvedPct }}%
+                            </p>
+                        </div>
                     </div>
                 </article>
 
-                {{-- SUBMITTED --}}
-                <article class="card p-5 hover:shadow-md transition-shadow h-full flex flex-col">
-                    <div class="flex items-center justify-between">
-                        <p class="text-[11px] uppercase tracking-wide text-unib-blue-800/70">Menunggu Review</p>
-                        <span class="inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-[11px] font-medium text-blue-800">
-                            Submitted
-                        </span>
-                    </div>
-                    <p class="mt-1 text-3xl font-extrabold text-unib-blue-900">
-                        {{ $stats['pending_skpi'] }}
-                    </p>
-                    <a href="{{ route('superadmin.all-skpi') }}?status=submitted"
-                       class="mt-4 inline-flex items-center justify-center rounded-lg border border-unib-blue-200 px-3 py-2 text-sm text-unib-blue-700 hover:bg-unib-blue-50">
-                        Lihat daftar
-                    </a>
-                </article>
-
-                {{-- APPROVED --}}
-                <article class="card p-5 hover:shadow-md transition-shadow h-full flex flex-col">
-                    <div class="flex items-center justify-between">
-                        <p class="text-[11px] uppercase tracking-wide text-unib-blue-800/70">Disetujui</p>
-                        <span class="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-[11px] font-medium text-green-800">
-                            Approved
-                        </span>
-                    </div>
-                    <p class="mt-1 text-3xl font-extrabold text-unib-blue-900">
-                        {{ $stats['approved_skpi'] }}
-                    </p>
-                    <a href="{{ route('superadmin.all-skpi') }}?status=approved"
-                       class="mt-4 inline-flex items-center justify-center rounded-lg border border-unib-blue-200 px-3 py-2 text-sm text-unib-blue-700 hover:bg-unib-blue-50">
-                        Lihat daftar
-                    </a>
-                </article>
-
-                {{-- REJECTED --}}
-                <article class="card p-5 hover:shadow-md transition-shadow h-full flex flex-col">
-                    <div class="flex items-center justify-between">
-                        <p class="text-[11px] uppercase tracking-wide text-unib-blue-800/70">Ditolak</p>
-                        <span class="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-[11px] font-medium text-red-800">
-                            Rejected
-                        </span>
-                    </div>
-                    <p class="mt-1 text-3xl font-extrabold text-unib-blue-900">
-                        {{ $stats['rejected_skpi'] }}
-                    </p>
-                    <a href="{{ route('superadmin.all-skpi') }}?status=rejected"
-                       class="mt-4 inline-flex items-center justify-center rounded-lg border border-unib-blue-200 px-3 py-2 text-sm text-unib-blue-700 hover:bg-unib-blue-50">
-                        Lihat daftar
-                    </a>
-                </article>
-
-                {{-- AKSI CEPAT (dirapikan) --}}
-                <article class="card p-5 hover:shadow-md transition-shadow h-full flex flex-col">
-                    <p class="mb-4 text-[11px] uppercase tracking-wide text-unib-blue-800/70">Aksi Cepat</p>
+                {{-- AKSI CEPAT (15%) --}}
+                <article class="card p-4 hover:shadow-md transition-shadow flex flex-col" style="flex: 0 0 15%;">
+                    <p class="mb-3 text-[11px] uppercase tracking-wide text-unib-blue-800/70">Aksi Cepat</p>
 
                     <div class="flex-1 space-y-2">
                         <a href="{{ route('superadmin.create-user') }}"
-                           class="btn-primary block w-full text-center">
+                           class="btn-primary block w-full text-center text-sm">
                             Buat User
                         </a>
                         <a href="{{ route('superadmin.create-jurusan') }}"
-                           class="btn-outline block w-full text-center">
+                           class="btn-outline block w-full text-center text-sm">
                             Tambah Jurusan
                         </a>
                         <a href="{{ route('superadmin.reports') }}"
-                           class="btn-outline block w-full text-center">
+                           class="btn-outline block w-full text-center text-sm">
                             Laporan & Statistik
                         </a>
                     </div>
