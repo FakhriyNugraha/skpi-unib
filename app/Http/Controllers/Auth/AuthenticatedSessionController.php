@@ -43,7 +43,17 @@ class AuthenticatedSessionController extends Controller
             return redirect()->route('verification.notice');
         }
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        // Redirect based on user role
+        switch ($user->role) {
+            case 'superadmin':
+                return redirect()->route('superadmin.dashboard');
+            case 'admin':
+                return redirect()->route('admin.dashboard');
+            case 'user':
+                return redirect()->route('skpi.index');
+            default:
+                return redirect()->route('home');
+        }
     }
 
     /**

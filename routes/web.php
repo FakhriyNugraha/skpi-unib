@@ -97,6 +97,51 @@ Route::middleware(['auth', 'role:admin,superadmin'])
         Route::post('/skpi/{skpi}/verify-drive', [\App\Http\Controllers\DriveVerificationController::class, 'verifyDriveContents'])
             ->name('verify-drive')
             ->whereNumber('skpi');
+
+        // Users - admin hanya bisa melihat, superadmin bisa mengelola
+        Route::get('/users', [SuperAdminController::class, 'users'])->name('users');
+        
+        // Jurusans - admin hanya bisa melihat, superadmin bisa mengelola
+        Route::get('/jurusans', [SuperAdminController::class, 'jurusans'])->name('jurusans');
+        Route::get('/jurusan', [SuperAdminController::class, 'jurusans'])->name('jurusan'); // Alias untuk kompatibilitas
+    });
+
+// ============================
+// SuperAdmin only
+// ============================
+Route::middleware(['auth', 'role:superadmin'])
+    ->prefix('admin')->name('admin.')
+    ->group(function () {
+        // Users management (superadmin only)
+        Route::get('/users/create', [SuperAdminController::class, 'createUser'])->name('create-user');
+        Route::post('/users', [SuperAdminController::class, 'storeUser'])->name('store-user');
+        Route::get('/users/{user}/edit', [SuperAdminController::class, 'editUser'])->name('edit-user')->whereNumber('user');
+        Route::put('/users/{user}', [SuperAdminController::class, 'updateUser'])->name('update-user')->whereNumber('user');
+        Route::delete('/users/{user}', [SuperAdminController::class, 'deleteUser'])->name('delete-user')->whereNumber('user');
+
+        // Jurusans management (superadmin only)
+        Route::get('/jurusans/create', [SuperAdminController::class, 'createJurusan'])->name('create-jurusan');
+        Route::post('/jurusans', [SuperAdminController::class, 'storeJurusan'])->name('store-jurusan');
+
+        Route::get('/jurusans/{jurusan}/edit', [SuperAdminController::class, 'editJurusan'])
+            ->name('edit-jurusan')
+            ->whereNumber('jurusan');
+
+        Route::put('/jurusans/{jurusan}', [SuperAdminController::class, 'updateJurusan'])
+            ->name('update-jurusan')
+            ->whereNumber('jurusan');
+
+        Route::patch('/jurusans/{jurusan}/toggle-status', [SuperAdminController::class, 'toggleJurusanStatus'])
+            ->name('toggle-jurusan-status')
+            ->whereNumber('jurusan');
+
+        Route::delete('/jurusans/{jurusan}', [SuperAdminController::class, 'destroyJurusan'])
+            ->name('delete-jurusan')
+            ->whereNumber('jurusan');
+
+        Route::get('/jurusans/{jurusan}/detail', [SuperAdminController::class, 'jurusanDetail'])
+            ->name('jurusan-detail')
+            ->whereNumber('jurusan');
     });
 
 // ============================

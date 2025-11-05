@@ -2,28 +2,69 @@
 <x-app-layout>
     <x-slot name="title">Dashboard Superadmin</x-slot>
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {{-- HEADER --}}
-        <header class="mb-10">
-            <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                    <h1 class="text-3xl font-extrabold tracking-tight text-unib-blue-900">
-                        Dashboard Superadmin
-                    </h1>
-                    <p class="mt-1 text-sm text-unib-blue-800/70">
-                        Ringkasan sistem & aktivitas terbaru SKPI
-                    </p>
+    {{-- Utility ringan untuk komponen --}}
+    <style>
+        .card{ @apply rounded-2xl border border-gray-200 bg-white shadow-sm; }
+        .btn{ @apply inline-flex items-center justify-center font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-xl; }
+        .btn-primary{ @apply btn bg-unib-blue-600 text-white hover:bg-unib-blue-700 focus:ring-unib-blue-300 px-4 py-2; }
+        .btn-outline{ @apply btn border border-unib-blue-600 text-unib-blue-700 hover:bg-unib-blue-50 px-4 py-2; }
+        .chip{ @apply inline-flex items-center px-2 py-1 rounded-full text-[11px] font-semibold; }
+    </style>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-3">
+        <!-- HERO (spacing & font seperti referensi) -->
+        <div class="mb-4">
+            <div class="bg-gradient-to-r from-unib-blue-600 to-unib-blue-700 rounded-2xl text-white shadow-sm">
+                <div class="px-5 py-5 sm:px-6 sm:py-6">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+                        <div class="sm:col-span-2">
+                            <!-- Judul lebih besar & tebal, tracking rapat -->
+                            <h2 class="text-2xl font-extrabold tracking-tight leading-tight">
+                                Dashboard Superadmin
+                            </h2>
+
+                            <!-- Subjudul sedikit lebih besar -->
+                            <p class="text-blue-100 text-sm mt-1">
+                                Ringkasan sistem & aktivitas terbaru SKPI
+                            </p>
+
+                            <!-- Baris info, icon + teks rapat -->
+                            <div class="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs mt-3">
+                                <div class="flex items-center opacity-95">
+                                    <svg class="w-4 h-4 mr-1.5" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
+                                        <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
+                                    </svg>
+                                    {{ ucfirst(auth()->user()->role) }}
+                                </div>
+
+                                @if(auth()->user()->jurusan)
+                                <div class="flex items-center opacity-95">
+                                    <svg class="w-4 h-4 mr-1.5" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5zm1 5a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" clip-rule="evenodd"/>
+                                    </svg>
+                                    {{ auth()->user()->jurusan->nama_jurusan }}
+                                </div>
+                                @endif
+                            </div>
+                        </div>
+
+                        <!-- Slot kanan dibiarkan kosong (di referensi untuk badge), tidak mengubah konten -->
+                        <div class="flex sm:justify-end items-start">
+                            {{-- tempatkan badge/aksi jika diperlukan --}}
+                        </div>
+                    </div>
                 </div>
             </div>
-        </header>
+        </div>
 
         {{-- STATS --}}
         <section aria-labelledby="stats-title" class="mb-10">
             <h2 id="stats-title" class="sr-only">Statistik</h2>
 
-            <div class="flex flex-col lg:flex-row gap-6">
-                {{-- TOTAL USERS (45%) --}}
-                <article class="card p-5 hover:shadow-md transition-shadow flex flex-col" style="flex: 0 0 45%;">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                {{-- TOTAL USERS (7 kolom dari 12 = sekitar 58%) --}}
+                <article class="card p-5 hover:shadow-md transition-shadow flex flex-col lg:col-span-7">
                     <div class="flex items-start justify-between">
                         <div>
                             <p class="text-[11px] uppercase tracking-wide text-unib-blue-800/70">Total Users</p>
@@ -55,8 +96,8 @@
                     </div>
                 </article>
 
-                {{-- TOTAL SKPI (40%) --}}
-                <article class="card p-5 hover:shadow-md transition-shadow flex flex-col" style="flex: 0 0 40%;">
+                {{-- TOTAL SKPI (5 kolom dari 12 = sekitar 42%) --}}
+                <article class="card p-5 hover:shadow-md transition-shadow flex flex-col lg:col-span-5">
                     <div class="flex items-start justify-between">
                         <div>
                             <p class="text-[11px] uppercase tracking-wide text-unib-blue-800/70">Total SKPI</p>
@@ -91,26 +132,6 @@
                         </div>
                     </div>
                 </article>
-
-                {{-- AKSI CEPAT (15%) --}}
-                <article class="card p-4 hover:shadow-md transition-shadow flex flex-col" style="flex: 0 0 15%;">
-                    <p class="mb-3 text-[11px] uppercase tracking-wide text-unib-blue-800/70">Aksi Cepat</p>
-
-                    <div class="flex-1 space-y-2">
-                        <a href="{{ route('superadmin.create-user') }}"
-                           class="btn-primary block w-full text-center text-sm">
-                            Buat User
-                        </a>
-                        <a href="{{ route('superadmin.create-jurusan') }}"
-                           class="btn-outline block w-full text-center text-sm">
-                            Tambah Jurusan
-                        </a>
-                        <a href="{{ route('superadmin.reports') }}"
-                           class="btn-outline block w-full text-center text-sm">
-                            Laporan & Statistik
-                        </a>
-                    </div>
-                </article>
             </div>
         </section>
 
@@ -143,7 +164,7 @@
                             <thead class="bg-unib-blue-50">
                                 <tr>
                                     <th class="px-3 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-unib-blue-800/80">Mahasiswa</th>
-                                    <th class="px-3 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-unib-blue-800/80">NIM</th>
+                                    <th class="px-3 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-unib-blue-800/80">NPM</th>
                                     <th class="px-3 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-unib-blue-800/80">Program Studi</th>
                                     <th class="px-3 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-unib-blue-800/80">Status</th>
                                     <th class="px-3 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-unib-blue-800/80">Reviewer</th>
@@ -168,7 +189,7 @@
                                             </div>
                                         </td>
                                         <td class="px-3 py-3 text-sm text-gray-900">
-                                            {{ $item->nim ?? ($item->user->nim ?? '—') }}
+                                            {{ $item->npm ?? ($item->user->npm ?? '—') }}
                                         </td>
                                         <td class="px-3 py-3 text-sm text-gray-900">
                                             {{ $item->jurusan->nama_jurusan ?? '—' }}
@@ -192,11 +213,11 @@
                                         <td class="px-3 py-3 text-right">
                                             <div class="flex items-center justify-end gap-2">
                                                 <a href="{{ route('superadmin.all-skpi') }}?highlight={{ $item->id }}"
-                                                   class="text-sm text-unib-blue-700 hover:underline">Lihat</a>
+                                                   class="inline-flex items-center px-2.5 py-1 rounded-lg bg-blue-600 text-white border-2 border-blue-600 hover:bg-blue-700 text-sm">Lihat</a>
                                                 @if($item->status === 'approved')
                                                     <span class="text-gray-300">•</span>
                                                     <a href="{{ route('admin.print-skpi', $item) }}" target="_blank"
-                                                       class="text-sm text-teknik-orange-700 hover:underline">Cetak</a>
+                                                       class="inline-flex items-center px-2.5 py-1 rounded-lg bg-green-600 text-white border-2 border-green-600 hover:bg-green-700 text-sm">Cetak</a>
                                                 @endif
                                             </div>
                                         </td>

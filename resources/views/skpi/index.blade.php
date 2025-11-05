@@ -1,5 +1,5 @@
 <x-app-layout>
-    <x-slot name="title">Dashboard SKPI</x-slot>
+    <x-slot name="title">Dashboard Mahasiswa</x-slot>
     
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Header -->
@@ -7,7 +7,7 @@
             <div class="bg-gradient-to-r from-unib-blue-600 to-unib-blue-700 rounded-2xl text-white p-8">
                 <div class="flex items-center justify-between">
                     <div>
-                        <h1 class="text-3xl font-bold mb-2">Dashboard SKPI</h1>
+                        <h1 class="text-3xl font-bold mb-2">Dashboard Mahasiswa</h1>
                         <p class="text-blue-100">Selamat datang, {{ auth()->user()->name }}</p>
                         <div class="flex items-center mt-4 space-x-4 text-sm">
                             <div class="flex items-center">
