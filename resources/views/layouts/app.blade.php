@@ -54,31 +54,34 @@
         <header class="bg-gradient-to-r from-blue-900 via-blue-800 to-indigo-900 text-white shadow-xl sticky top-0 z-50">
             <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex items-center justify-between h-16">
-                    <div class="flex items-center space-x-8">
-                        <a href="/" class="flex-shrink-0 flex items-center">
-                            <div class="logo-unib mr-3"></div>
-                            <div>
-                                <h1 class="text-xl font-bold tracking-tight">SKPI UNIB</h1>
-                                <p class="text-xs text-blue-300">Fakultas Teknik</p>
-                            </div>
-                        </a>
-                        @auth
-                        <div class="hidden md:flex items-center space-x-2">
+                    <a href="/" class="flex-shrink-0 flex items-center">
+                        <div class="logo-unib mr-3"></div>
+                        <div>
+                            <h1 class="text-xl font-bold tracking-tight">SKPI UNIB</h1>
+                            <p class="text-xs text-blue-300">Fakultas Teknik</p>
+                        </div>
+                    </a>
+
+                    @auth
+                    <div class="flex-1 flex justify-center">
+                        <div class="hidden md:flex items-center space-x-2 bg-white/10 px-4 py-2 rounded-lg">
                             @if(auth()->user()->role === 'user')
-                                <a href="{{ route('skpi.index') }}" class="px-3 py-2 rounded-md text-sm font-medium transition-colors {{ request()->routeIs('skpi.index') ? 'nav-link-active' : 'text-blue-100 hover:bg-white/10 hover:text-white' }}">Dashboard</a>
+                                <a href="{{ route('skpi.index') }}" class="px-3 py-2 rounded-md text-sm font-medium transition-colors {{ request()->routeIs('skpi.index') ? 'nav-link-active' : 'text-blue-100 hover:bg-white/20 hover:text-white' }}">Dashboard</a>
                             @elseif(auth()->user()->role === 'admin')
-                                <a href="{{ route('admin.dashboard') }}" class="px-3 py-2 rounded-md text-sm font-medium transition-colors {{ request()->routeIs('admin.dashboard') ? 'nav-link-active' : 'text-blue-100 hover:bg-white/10 hover:text-white' }}">Dashboard</a>
-                                <a href="{{ route('admin.skpi-list') }}" class="px-3 py-2 rounded-md text-sm font-medium transition-colors {{ request()->routeIs('admin.skpi-list') ? 'nav-link-active' : 'text-blue-100 hover:bg-white/10 hover:text-white' }}">Review SKPI</a>
+                                <a href="{{ route('admin.dashboard') }}" class="px-3 py-2 rounded-md text-sm font-medium transition-colors {{ request()->routeIs('admin.dashboard') ? 'nav-link-active' : 'text-blue-100 hover:bg-white/20 hover:text-white' }}">Dashboard</a>
+                                <a href="{{ route('admin.skpi-list') }}" class="px-3 py-2 rounded-md text-sm font-medium transition-colors {{ request()->routeIs('admin.skpi-list') ? 'nav-link-active' : 'text-blue-100 hover:bg-white/20 hover:text-white' }}">Review SKPI</a>
                             @elseif(auth()->user()->role === 'superadmin')
-                                <a href="{{ route('superadmin.dashboard') }}" class="px-3 py-2 rounded-md text-sm font-medium transition-colors {{ request()->routeIs('superadmin.dashboard') ? 'nav-link-active' : 'text-blue-100 hover:bg-white/10 hover:text-white' }}">Dashboard</a>
-                                <a href="{{ route('superadmin.users') }}" class="px-3 py-2 rounded-md text-sm font-medium transition-colors {{ request()->routeIs('superadmin.users') ? 'nav-link-active' : 'text-blue-100 hover:bg-white/10 hover:text-white' }}">Kelola User</a>
-                                <a href="{{ route('superadmin.jurusans') }}" class="px-3 py-2 rounded-md text-sm font-medium transition-colors {{ request()->routeIs('superadmin.jurusans') ? 'nav-link-active' : 'text-blue-100 hover:bg-white/10 hover:text-white' }}">Kelola Jurusan</a>
-                                <a href="{{ route('superadmin.all-skpi') }}" class="px-3 py-2 rounded-md text-sm font-medium transition-colors {{ request()->routeIs('superadmin.all-skpi') ? 'nav-link-active' : 'text-blue-100 hover:bg-white/10 hover:text-white' }}">Review SKPI</a>
-                                <a href="{{ route('superadmin.reports') }}" class="px-3 py-2 rounded-md text-sm font-medium transition-colors {{ request()->routeIs('superadmin.reports') ? 'nav-link-active' : 'text-blue-100 hover:bg-white/10 hover:text-white' }}">Laporan & Statistik</a>
+                                <a href="{{ route('superadmin.dashboard') }}" class="px-3 py-2 rounded-md text-sm font-medium transition-colors {{ request()->routeIs('superadmin.dashboard') ? 'nav-link-active' : 'text-blue-100 hover:bg-white/20 hover:text-white' }}">Dashboard</a>
+                                <a href="{{ route('superadmin.users') }}" class="px-3 py-2 rounded-md text-sm font-medium transition-colors {{ request()->routeIs('superadmin.users') ? 'nav-link-active' : 'text-blue-100 hover:bg-white/20 hover:text-white' }}">Kelola User</a>
+                                <a href="{{ route('superadmin.jurusans') }}" class="px-3 py-2 rounded-md text-sm font-medium transition-colors {{ request()->routeIs('superadmin.jurusans') ? 'nav-link-active' : 'text-blue-100 hover:bg-white/20 hover:text-white' }}">Kelola Jurusan</a>
+                                <a href="{{ route('superadmin.all-skpi') }}" class="px-3 py-2 rounded-md text-sm font-medium transition-colors {{ request()->routeIs('superadmin.all-skpi') ? 'nav-link-active' : 'text-blue-100 hover:bg-white/20 hover:text-white' }}">Review SKPI</a>
+                                <a href="{{ route('superadmin.reports') }}" class="px-3 py-2 rounded-md text-sm font-medium transition-colors {{ request()->routeIs('superadmin.reports') ? 'nav-link-active' : 'text-blue-100 hover:bg-white/20 hover:text-white' }}">Laporan & Statistik</a>
                             @endif
                         </div>
-                        @endauth
                     </div>
+                    @else
+                    <div class="flex-1"></div>
+                    @endauth
 
                     <div class="flex items-center space-x-4">
                         <a href="mailto:ft@unib.ac.id" class="hidden md:inline-flex items-center bg-white/10 px-4 py-2 text-sm font-medium rounded-md text-blue-200 hover:bg-white/20 transition-colors">
