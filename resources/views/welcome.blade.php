@@ -70,11 +70,29 @@
     <!-- Statistics & Charts Section -->
     <div class="py-16 bg-gray-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-12">
+            <div class="text-center mb-8">
                 <h2 class="text-3xl font-bold text-gray-900 mb-4">Statistik SKPI Per Program Studi</h2>
-                <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+                <p class="text-lg text-gray-600 max-w-2xl mx-auto mb-6">
                     Visualisasi data SKPI terkini untuk memantau progress dan perkembangan di setiap program studi
                 </p>
+
+                {{-- PERIODE FILTER --}}
+                <form method="GET" action="{{ route('home') }}" class="max-w-md mx-auto">
+                    <div class="flex items-end gap-2">
+                        <div class="flex-1">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Periode Wisuda</label>
+                            <select name="periode_wisuda" class="input-field w-full" onchange="this.form.submit()">
+                                <option value="">Semua Periode (Default)</option>
+                                @foreach($availablePeriods as $period)
+                                    <option value="{{ $period['number'] }}" {{ request('periode_wisuda') == $period['number'] ? 'selected' : '' }}>
+                                        {{ $period['title'] }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <a href="{{ route('home') }}" class="btn-outline px-3 py-2 text-sm">Reset</a>
+                    </div>
+                </form>
             </div>
             
             <!-- Charts Container -->

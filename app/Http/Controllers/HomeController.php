@@ -6,29 +6,53 @@ use Illuminate\Http\Request;
 use App\Models\Jurusan;
 use App\Models\SkpiData;
 use App\Models\User;
+use App\Helpers\PeriodHelper;
 use Illuminate\Support\Facades\Auth;
 
 class HomeController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        // Ambil jurusan + agregasi SKPI per status
-        $jurusans = Jurusan::active()->with(['skpiData' => function ($query) {
+        // Query builder for SKPI data with optional period filter
+        $skpiQuery = SkpiData::query();
+
+        // Add period filtering
+        if ($request->filled('periode_wisuda') && $request->periode_wisuda !== 'all') {
+            $skpiQuery->where('periode_wisuda', $request->periode_wisuda);
+        }
+
+        // Ambil jurusan + agregasi SKPI per status with period filtering
+        $jurusans = Jurusan::active()->with(['skpiData' => function ($query) use ($request) {
+            // Apply period filter if specified
+            if ($request->filled('periode_wisuda') && $request->periode_wisuda !== 'all') {
+                $query->where('periode_wisuda', $request->periode_wisuda);
+            }
             // Hindari DB::raw, pakai selectRaw agar simple
             $query->select('jurusan_id', 'status')
                   ->selectRaw('COUNT(*) as total')
                   ->groupBy('jurusan_id', 'status');
         }])->get();
-        
-        // Statistik umum
+
+        // Statistik umum with period filtering
+        $totalMahasiswa = User::where('role', 'user');
+        if ($request->filled('periode_wisuda') && $request->periode_wisuda !== 'all') {
+            // Count students who have SKPI data in the selected period
+            $totalMahasiswa = $totalMahasiswa->whereIn('id', function($query) use ($request) {
+                $query->select('user_id')
+                      ->from('skpi_data')
+                      ->where('periode_wisuda', $request->periode_wisuda);
+            });
+        }
+        $totalMahasiswaCount = $totalMahasiswa->count();
+
         $stats = [
             'total_jurusan'        => $jurusans->count(),
-            'total_skpi'           => SkpiData::count(),
+            'total_skpi'           => $skpiQuery->count(),
             // Hindari scope approved() yang belum tentu ada
-            'total_skpi_approved'  => SkpiData::where('status', 'approved')->count(),
-            'total_mahasiswa'      => User::where('role', 'user')->count(),
+            'total_skpi_approved'  => $skpiQuery->where('status', 'approved')->count(),
+            'total_mahasiswa'      => $totalMahasiswaCount,
         ];
-        
+
         // Data untuk grafik batang per jurusan
         $chartData = [
             'labels'   => [],
@@ -116,24 +140,52 @@ class HomeController extends Controller
             $i++;
         }
 
-        // Data tren bulanan (6 bulan terakhir)
+        // Data tren bulanan (6 bulan terakhir) with period filtering
         $monthlyTrend = [];
         for ($i = 5; $i >= 0; $i--) {
             $date = now()->subMonths($i);
+
+            // Count approved SKPIs for the specific month/year
+            $approvedCount = SkpiData::where('status', 'approved')
+                ->when($request->filled('periode_wisuda') && $request->periode_wisuda !== 'all', function ($query) use ($request) {
+                    return $query->where('periode_wisuda', $request->periode_wisuda);
+                })
+                ->whereYear('approved_at', $date->year)
+                ->whereMonth('approved_at', $date->month)
+                ->count();
+
+            // Count submitted SKPIs for the specific month/year
+            $submittedCount = SkpiData::where('status', 'submitted')
+                ->when($request->filled('periode_wisuda') && $request->periode_wisuda !== 'all', function ($query) use ($request) {
+                    return $query->where('periode_wisuda', $request->periode_wisuda);
+                })
+                ->whereYear('created_at', $date->year)
+                ->whereMonth('created_at', $date->month)
+                ->count();
+
             $monthlyTrend[] = [
                 'month'     => $date->format('M Y'),
-                'approved'  => SkpiData::where('status', 'approved')
-                    ->whereYear('approved_at', $date->year)
-                    ->whereMonth('approved_at', $date->month)
-                    ->count(),
-                'submitted' => SkpiData::where('status', 'submitted')
-                    ->whereYear('created_at', $date->year)
-                    ->whereMonth('created_at', $date->month)
-                    ->count(),
+                'approved'  => $approvedCount,
+                'submitted' => $submittedCount,
             ];
         }
 
-        return view('welcome', compact('jurusans', 'stats', 'chartData', 'pieData', 'monthlyTrend'));
+        // Get available periods for the dropdown
+        $availablePeriods = SkpiData::select('periode_wisuda')
+            ->whereNotNull('periode_wisuda')
+            ->distinct()
+            ->orderBy('periode_wisuda', 'desc')
+            ->pluck('periode_wisuda')
+            ->map(function ($period) {
+                $range = PeriodHelper::getPeriodRange($period);
+                return [
+                    'number' => $period,
+                    'title' => $range['title']
+                ];
+            })
+            ->values();
+
+        return view('welcome', compact('jurusans', 'stats', 'chartData', 'pieData', 'monthlyTrend', 'availablePeriods'));
     }
 
     public function dashboard()

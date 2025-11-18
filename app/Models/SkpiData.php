@@ -20,6 +20,7 @@ class SkpiData extends Model
         'tanggal_lahir',
         'nomor_ijazah',
         'tanggal_lulus',
+        'periode_wisuda',
         'gelar',
         'program_studi',
         'jurusan_id',
@@ -42,6 +43,7 @@ class SkpiData extends Model
     protected $casts = [
         'tanggal_lahir' => 'date',
         'tanggal_lulus' => 'date',
+        'periode_wisuda' => 'integer',
         'reviewed_at'   => 'datetime',
         'approved_at'   => 'datetime',
         'ipk'           => 'decimal:2',

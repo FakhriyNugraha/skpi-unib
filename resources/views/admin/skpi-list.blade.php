@@ -17,7 +17,7 @@
 
         <!-- Filters -->
         <div class="card p-6 mb-8">
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
                     <select id="status-filter" class="input-field w-full">
@@ -26,6 +26,17 @@
                         <option value="submitted">Menunggu Review</option>
                         <option value="approved">Disetujui</option>
                         <option value="rejected">Ditolak</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Periode Wisuda</label>
+                    <select id="periode-filter" class="input-field w-full">
+                        <option value="">Semua Periode</option>
+                        @foreach($availablePeriods as $period)
+                            <option value="{{ $period['number'] }}" {{ request('periode_wisuda') == $period['number'] ? 'selected' : '' }}>
+                                {{ $period['title'] }}
+                            </option>
+                        @endforeach
                     </select>
                 </div>
                 <div>
@@ -137,25 +148,32 @@
     <script>
         function applyFilters() {
             const status = document.getElementById('status-filter').value;
+            const periode = document.getElementById('periode-filter').value;
             const search = document.getElementById('search').value;
-            
+
             const params = new URLSearchParams(window.location.search);
-            
+
             if (status) params.set('status', status);
             else params.delete('status');
-            
+
+            if (periode) params.set('periode_wisuda', periode);
+            else params.delete('periode_wisuda');
+
             if (search) params.set('search', search);
             else params.delete('search');
-            
+
             window.location.search = params.toString();
         }
-        
+
         // Set filter values from URL
         document.addEventListener('DOMContentLoaded', function() {
             const params = new URLSearchParams(window.location.search);
-            
+
             if (params.get('status')) {
                 document.getElementById('status-filter').value = params.get('status');
+            }
+            if (params.get('periode_wisuda')) {
+                document.getElementById('periode-filter').value = params.get('periode_wisuda');
             }
             if (params.get('search')) {
                 document.getElementById('search').value = params.get('search');

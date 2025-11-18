@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\SkpiData;
 use App\Models\Jurusan;
+use App\Helpers\PeriodHelper;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
@@ -101,6 +102,9 @@ class SkpiController extends Controller
         $payload['user_id'] = $user->id;
         $payload['status']  = 'draft';
 
+        // Calculate and set the period based on graduation date
+        $payload['periode_wisuda'] = PeriodHelper::getPeriodeFromDate($request->tanggal_lulus);
+
         $skpiData = SkpiData::updateOrCreate(
             ['user_id' => $user->id],
             $payload
@@ -188,7 +192,13 @@ class SkpiController extends Controller
             'drive_link',
         ];
 
-        $skpi->update($request->only($allowed));
+        // Calculate and set the period based on graduation date
+        $periode_wisuda = PeriodHelper::getPeriodeFromDate($request->tanggal_lulus);
+
+        $skpi->update(array_merge(
+            $request->only($allowed),
+            ['periode_wisuda' => $periode_wisuda]
+        ));
 
         // Setelah update, langsung ke dashboard
         return redirect()->route('dashboard')->with('success', 'Data SKPI berhasil diperbarui.');

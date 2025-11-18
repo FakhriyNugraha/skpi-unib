@@ -10,11 +10,13 @@ use Illuminate\Support\Facades\DB;
 use App\Models\User;
 use App\Models\Jurusan;
 use App\Models\SkpiData;
+use App\Helpers\PeriodHelper;
 
 class SuperAdminController extends Controller
 {
-    public function dashboard()
+    public function dashboard(Request $request)
     {
+        // No period filtering for dashboard
         $stats = [
             'total_users'     => User::count(),
             'total_mahasiswa' => User::where('role', 'user')->count(),
@@ -233,6 +235,12 @@ class SuperAdminController extends Controller
             $rev = $request->reviewer;
             $query->whereHas('reviewer', fn($q) => $q->where('name','like',"%{$rev}%"));
         }
+
+        // Add period filtering
+        if ($request->filled('periode_wisuda') && $request->periode_wisuda !== 'all') {
+            $query->where('periode_wisuda', $request->periode_wisuda);
+        }
+
         if ($request->filled('search')) {
             $s = $request->search;
             $query->where(function ($q) use ($s) {
@@ -248,7 +256,22 @@ class SuperAdminController extends Controller
         $skpiList = $query->paginate(15)->appends($request->query());
         $jurusans = Jurusan::orderBy('nama_jurusan')->get(['id','nama_jurusan']);
 
-        return view('superadmin.skpi-list', compact('skpiList','jurusans'));
+        // Get available periods for the dropdown
+        $availablePeriods = SkpiData::select('periode_wisuda')
+            ->whereNotNull('periode_wisuda')
+            ->distinct()
+            ->orderBy('periode_wisuda', 'desc')
+            ->pluck('periode_wisuda')
+            ->map(function ($period) {
+                $range = PeriodHelper::getPeriodRange($period);
+                return [
+                    'number' => $period,
+                    'title' => $range['title']
+                ];
+            })
+            ->values();
+
+        return view('superadmin.skpi-list', compact('skpiList','jurusans', 'availablePeriods'));
     }
 
     public function showSkpi(SkpiData $skpi)
@@ -307,22 +330,50 @@ class SuperAdminController extends Controller
         return back()->with('success', 'SKPI berhasil ditolak.');
     }
 
-    public function reports()
+    public function reports(Request $request)
     {
-        // Statistik utama
-        $total_users = User::count();
-        $total_mahasiswa = User::where('role', 'user')->count();
+        // Query builder for SKPI data with optional period filter
+        $skpiQuery = SkpiData::query();
+
+        // Add period filtering
+        if ($request->filled('periode_wisuda') && $request->periode_wisuda !== 'all') {
+            $skpiQuery->where('periode_wisuda', $request->periode_wisuda);
+        }
+
+        // Count users who have SKPI data in the selected period (if filter is applied) for total users
+        $total_users_query = User::query();
+        if ($request->filled('periode_wisuda') && $request->periode_wisuda !== 'all') {
+            $total_users_query = $total_users_query->whereIn('id', function($query) use ($request) {
+                $query->select('user_id')
+                      ->from('skpi_data')
+                      ->where('periode_wisuda', $request->periode_wisuda);
+            });
+        }
+        $total_users = $total_users_query->count();
+
+        // Count students who have SKPI data in the selected period (if filter is applied)
+        $total_mahasiswa_query = User::where('role', 'user');
+        if ($request->filled('periode_wisuda') && $request->periode_wisuda !== 'all') {
+            $total_mahasiswa_query = $total_mahasiswa_query->whereIn('id', function($query) use ($request) {
+                $query->select('user_id')
+                      ->from('skpi_data')
+                      ->where('periode_wisuda', $request->periode_wisuda);
+            });
+        }
+        $total_mahasiswa = $total_mahasiswa_query->count();
+
+        // Total admin count should remain the same (not affected by period filter)
         $total_admin = User::whereIn('role', ['admin', 'superadmin'])->count();
-        
-        $total_skpi = SkpiData::count();
-        $approved_skpi = SkpiData::where('status', 'approved')->count();
-        $pending_skpi = SkpiData::where('status', 'submitted')->count();
-        $rejected_skpi = SkpiData::where('status', 'rejected')->count();
-        
+
+        $total_skpi = $skpiQuery->count();
+        $approved_skpi = $skpiQuery->where('status', 'approved')->count();
+        $pending_skpi = $skpiQuery->where('status', 'submitted')->count();
+        $rejected_skpi = $skpiQuery->where('status', 'rejected')->count();
+
         $approved_percentage = $total_skpi > 0 ? round(($approved_skpi / $total_skpi) * 100, 1) : 0;
         $pending_percentage = $total_skpi > 0 ? round(($pending_skpi / $total_skpi) * 100, 1) : 0;
         $rejected_percentage = $total_skpi > 0 ? round(($rejected_skpi / $total_skpi) * 100, 1) : 0;
-        
+
         $stats = [
             'total_users' => $total_users,
             'total_mahasiswa' => $total_mahasiswa,
@@ -341,7 +392,12 @@ class SuperAdminController extends Controller
 
         // Statistik per jurusan
         $jurusanStats = Jurusan::withCount([
-            'skpiData as jumlah_skpi' => fn($q) => $q->where('status', '!=', 'draft'),
+            'skpiData as jumlah_skpi' => function($q) use ($request) {
+                if ($request->filled('periode_wisuda') && $request->periode_wisuda !== 'all') {
+                    $q->where('periode_wisuda', $request->periode_wisuda);
+                }
+                $q->where('status', '!=', 'draft');
+            }
         ])
         ->where('status', 'active')
         ->orderBy('jumlah_skpi', 'desc')
@@ -349,7 +405,7 @@ class SuperAdminController extends Controller
         ->map(function ($jurusan) use ($total_skpi) {
             $jumlah_skpi = $jurusan->jumlah_skpi;
             $persentase = $total_skpi > 0 ? round(($jumlah_skpi / $total_skpi) * 100, 1) : 0;
-            
+
             return [
                 'id' => $jurusan->id,
                 'nama_jurusan' => $jurusan->nama_jurusan,
@@ -363,17 +419,37 @@ class SuperAdminController extends Controller
             'users' => fn($q) => $q->where('role', 'user')
         ])
         ->withCount([
-            'skpiData as total_skpi' => fn($q) => $q->where('status', '!=', 'draft'),
-            'skpiData as pending' => fn($q) => $q->where('status', 'submitted'),
-            'skpiData as approved' => fn($q) => $q->where('status', 'approved'),
-            'skpiData as rejected' => fn($q) => $q->where('status', 'rejected'),
+            'skpiData as total_skpi' => function($q) use ($request) {
+                if ($request->filled('periode_wisuda') && $request->periode_wisuda !== 'all') {
+                    $q->where('periode_wisuda', $request->periode_wisuda);
+                }
+                $q->where('status', '!=', 'draft');
+            },
+            'skpiData as pending' => function($q) use ($request) {
+                if ($request->filled('periode_wisuda') && $request->periode_wisuda !== 'all') {
+                    $q->where('periode_wisuda', $request->periode_wisuda);
+                }
+                $q->where('status', 'submitted');
+            },
+            'skpiData as approved' => function($q) use ($request) {
+                if ($request->filled('periode_wisuda') && $request->periode_wisuda !== 'all') {
+                    $q->where('periode_wisuda', $request->periode_wisuda);
+                }
+                $q->where('status', 'approved');
+            },
+            'skpiData as rejected' => function($q) use ($request) {
+                if ($request->filled('periode_wisuda') && $request->periode_wisuda !== 'all') {
+                    $q->where('periode_wisuda', $request->periode_wisuda);
+                }
+                $q->where('status', 'rejected');
+            },
         ])
         ->get()
         ->map(function ($jurusan) {
             $total = $jurusan->total_skpi;
             $approved = $jurusan->approved;
             $approval_rate = $total > 0 ? round(($approved / $total) * 100, 1) : 0;
-            
+
             return [
                 'nama_jurusan' => $jurusan->nama_jurusan,
                 'total_skpi' => $total,
@@ -384,6 +460,21 @@ class SuperAdminController extends Controller
             ];
         });
 
-        return view('superadmin.reports', compact('stats', 'jurusanStats', 'detailedStats'));
+        // Get available periods for the dropdown
+        $availablePeriods = SkpiData::select('periode_wisuda')
+            ->whereNotNull('periode_wisuda')
+            ->distinct()
+            ->orderBy('periode_wisuda', 'desc')
+            ->pluck('periode_wisuda')
+            ->map(function ($period) {
+                $range = PeriodHelper::getPeriodRange($period);
+                return [
+                    'number' => $period,
+                    'title' => $range['title']
+                ];
+            })
+            ->values();
+
+        return view('superadmin.reports', compact('stats', 'jurusanStats', 'detailedStats', 'availablePeriods'));
     }
 }

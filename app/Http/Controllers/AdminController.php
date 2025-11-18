@@ -42,23 +42,28 @@ class AdminController extends Controller
     public function skpiList(Request $request)
     {
         $user = Auth::user();
-        
+
         $query = SkpiData::with(['user', 'jurusan', 'reviewer', 'approver']);
-        
+
         // Admin hanya bisa melihat data dari jurusan mereka
         if ($user->role === 'admin' && $user->jurusan_id) {
             $query->where('jurusan_id', $user->jurusan_id);
         }
-        
+
         // Apply filters
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
-        
+
+        // Add period filter
+        if ($request->filled('periode_wisuda') && $request->periode_wisuda !== 'all') {
+            $query->where('periode_wisuda', $request->periode_wisuda);
+        }
+
         if ($request->filled('jurusan') && $user->role === 'superadmin') {
             $query->where('jurusan_id', $request->jurusan);
         }
-        
+
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
@@ -66,13 +71,34 @@ class AdminController extends Controller
                   ->orWhere('npm', 'LIKE', '%' . $search . '%');
             });
         }
-        
+
         $skpiList = $query->orderBy('updated_at', 'desc')->paginate(15);
-        
+
+        // Get available periods for the dropdown (only for the admin's jurisdiction)
+        $availablePeriodsQuery = SkpiData::select('periode_wisuda')
+            ->whereNotNull('periode_wisuda');
+
+        if ($user->role === 'admin' && $user->jurusan_id) {
+            $availablePeriodsQuery->where('jurusan_id', $user->jurusan_id);
+        }
+
+        $availablePeriods = $availablePeriodsQuery
+            ->distinct()
+            ->orderBy('periode_wisuda', 'desc')
+            ->pluck('periode_wisuda')
+            ->map(function ($period) {
+                $range = \App\Helpers\PeriodHelper::getPeriodRange($period);
+                return [
+                    'number' => $period,
+                    'title' => $range['title']
+                ];
+            })
+            ->values();
+
         // Preserve query parameters in pagination
         $skpiList->appends($request->query());
-        
-        return view('admin.skpi-list', compact('skpiList'));
+
+        return view('admin.skpi-list', compact('skpiList', 'availablePeriods'));
     }
 
     public function reviewSkpi(SkpiData $skpi)

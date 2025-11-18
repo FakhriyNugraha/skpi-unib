@@ -5,20 +5,41 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {{-- HEADER --}}
         <header class="mb-10">
-            <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                    <h1 class="text-3xl font-extrabold tracking-tight text-unib-blue-900">
-                        Laporan & Statistik
-                    </h1>
-                    <p class="mt-1 text-sm text-unib-blue-800/70">
-                        Visualisasi data dan statistik dari sistem SKPI
-                    </p>
+            <div class="flex flex-col gap-4">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <h1 class="text-3xl font-extrabold tracking-tight text-unib-blue-900">
+                            Laporan & Statistik
+                        </h1>
+                        <p class="mt-1 text-sm text-unib-blue-800/70">
+                            Visualisasi data dan statistik dari sistem SKPI
+                        </p>
+                    </div>
+                    <nav class="flex flex-wrap items-center gap-3">
+                        <a href="{{ route('superadmin.dashboard') }}" class="btn-outline">
+                            Dashboard
+                        </a>
+                    </nav>
                 </div>
-                <nav class="flex flex-wrap items-center gap-3">
-                    <a href="{{ route('superadmin.dashboard') }}" class="btn-outline">
-                        Dashboard
-                    </a>
-                </nav>
+
+                {{-- PERIODE FILTER --}}
+                <form method="GET" action="{{ route('superadmin.reports') }}" class="mt-4">
+                    <div class="flex items-end gap-4">
+                        <div class="flex-1">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Periode Wisuda</label>
+                            <select name="periode_wisuda" class="input-field w-full" onchange="this.form.submit()">
+                                <option value="">Semua Periode (Default)</option>
+                                @foreach($availablePeriods as $period)
+                                    <option value="{{ $period['number'] }}" {{ request('periode_wisuda') == $period['number'] ? 'selected' : '' }}>
+                                        {{ $period['title'] }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <button type="submit" class="btn-primary px-4 py-2">Filter</button>
+                        <a href="{{ route('superadmin.reports') }}" class="btn-outline px-4 py-2">Reset</a>
+                    </div>
+                </form>
             </div>
         </header>
 
@@ -37,7 +58,7 @@
                             </svg>
                         </div>
                         <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-600">Total Pengguna</p>
+                            <p class="text-sm font-medium text-gray-600">Total Pengguna Terkait</p>
                             <p class="text-2xl font-extrabold text-unib-blue-900">{{ $stats['total_users'] ?? 0 }}</p>
                         </div>
                     </div>
@@ -58,7 +79,7 @@
                             </svg>
                         </div>
                         <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-600">Total SKPI</p>
+                            <p class="text-sm font-medium text-gray-600">Total SKPI Terverifikasi</p>
                             <p class="text-2xl font-extrabold text-teknik-orange-700">{{ $stats['total_skpi'] ?? 0 }}</p>
                         </div>
                     </div>
@@ -79,7 +100,7 @@
                             </svg>
                         </div>
                         <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-600">Total Jurusan</p>
+                            <p class="text-sm font-medium text-gray-600">Jurusan Terlibat SKPI</p>
                             <p class="text-2xl font-extrabold text-green-700">{{ $stats['total_jurusan'] ?? 0 }}</p>
                         </div>
                     </div>
@@ -100,7 +121,7 @@
                             </svg>
                         </div>
                         <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-600">Rata-rata Approval</p>
+                            <p class="text-sm font-medium text-gray-600">Tingkat Kelulusan SKPI</p>
                             <p class="text-2xl font-extrabold text-purple-700">{{ $stats['approval_percentage'] ?? 0 }}%</p>
                         </div>
                     </div>
@@ -120,31 +141,31 @@
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {{-- GRAFIK STATUS SKPI --}}
                 <div class="bg-white rounded-xl shadow-md p-6 border border-gray-100">
-                    <h3 class="text-lg font-semibold text-unib-blue-900 mb-4">Distribusi Status SKPI</h3>
+                    <h3 class="text-lg font-semibold text-unib-blue-900 mb-4">Status Proses SKPI</h3>
                     <div class="space-y-4">
                         <div>
                             <div class="flex justify-between mb-1">
-                                <span class="text-sm font-medium text-green-700">Disetujui</span>
+                                <span class="text-sm font-medium text-green-700">Lulus/Terbukti</span>
                                 <span class="text-sm font-medium text-green-700">{{ $stats['approved_skpi'] ?? 0 }}</span>
                             </div>
                             <div class="w-full bg-gray-200 rounded-full h-3">
                                 <div class="bg-green-600 h-3 rounded-full" style="width: {{ $stats['approved_percentage'] ?? 0 }}%"></div>
                             </div>
                         </div>
-                        
+
                         <div>
                             <div class="flex justify-between mb-1">
-                                <span class="text-sm font-medium text-blue-700">Menunggu Review</span>
+                                <span class="text-sm font-medium text-blue-700">Dalam Proses</span>
                                 <span class="text-sm font-medium text-blue-700">{{ $stats['pending_skpi'] ?? 0 }}</span>
                             </div>
                             <div class="w-full bg-gray-200 rounded-full h-3">
                                 <div class="bg-blue-600 h-3 rounded-full" style="width: {{ $stats['pending_percentage'] ?? 0 }}%"></div>
                             </div>
                         </div>
-                        
+
                         <div>
                             <div class="flex justify-between mb-1">
-                                <span class="text-sm font-medium text-red-700">Ditolak</span>
+                                <span class="text-sm font-medium text-red-700">Perlu Perbaikan</span>
                                 <span class="text-sm font-medium text-red-700">{{ $stats['rejected_skpi'] ?? 0 }}</span>
                             </div>
                             <div class="w-full bg-gray-200 rounded-full h-3">
@@ -156,15 +177,15 @@
                     <div class="mt-6 grid grid-cols-3 gap-4 text-center">
                         <div>
                             <div class="text-2xl font-bold text-green-600">{{ $stats['approved_percentage'] ?? 0 }}%</div>
-                            <div class="text-xs text-gray-600">Disetujui</div>
+                            <div class="text-xs text-gray-600">Lulus</div>
                         </div>
                         <div>
                             <div class="text-2xl font-bold text-blue-600">{{ $stats['pending_percentage'] ?? 0 }}%</div>
-                            <div class="text-xs text-gray-600">Menunggu</div>
+                            <div class="text-xs text-gray-600">Dalam Proses</div>
                         </div>
                         <div>
                             <div class="text-2xl font-bold text-red-600">{{ $stats['rejected_percentage'] ?? 0 }}%</div>
-                            <div class="text-xs text-gray-600">Ditolak</div>
+                            <div class="text-xs text-gray-600">Perlu Revisi</div>
                         </div>
                     </div>
                 </div>

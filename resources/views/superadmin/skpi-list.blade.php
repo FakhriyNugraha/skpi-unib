@@ -27,7 +27,7 @@
         {{-- FILTERS (server-side) --}}
         <div class="card p-6 mb-8">
             <form method="GET" action="{{ route('superadmin.all-skpi') }}">
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
                         <select name="status" class="input-field">
@@ -46,6 +46,18 @@
                             @foreach($jurusans as $j)
                                 <option value="{{ $j->id }}" {{ (string)request('jurusan')===(string)$j->id ? 'selected' : '' }}>
                                     {{ $j->nama_jurusan }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Periode Wisuda</label>
+                        <select name="periode_wisuda" class="input-field">
+                            <option value="">Semua Periode</option>
+                            @foreach($availablePeriods as $period)
+                                <option value="{{ $period['number'] }}" {{ request('periode_wisuda') == $period['number'] ? 'selected' : '' }}>
+                                    {{ $period['title'] }}
                                 </option>
                             @endforeach
                         </select>
