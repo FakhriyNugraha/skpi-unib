@@ -90,7 +90,6 @@
                                 @endforeach
                             </select>
                         </div>
-                        <a href="{{ route('home') }}" class="btn-outline px-3 py-2 text-sm">Reset</a>
                     </div>
                 </form>
             </div>

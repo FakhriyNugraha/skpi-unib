@@ -27,10 +27,10 @@
         {{-- FILTERS (server-side) --}}
         <div class="card p-6 mb-8">
             <form method="GET" action="{{ route('superadmin.all-skpi') }}">
-                <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
-                    <div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                    <div class="flex flex-col">
                         <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                        <select name="status" class="input-field">
+                        <select name="status" class="input-field w-full min-h-[42px]">
                             <option value="">Semua Status</option>
                             <option value="draft" {{ request('status')=='draft'?'selected':'' }}>Draft</option>
                             <option value="submitted" {{ request('status')=='submitted'?'selected':'' }}>Submitted</option>
@@ -39,9 +39,9 @@
                         </select>
                     </div>
 
-                    <div>
+                    <div class="flex flex-col">
                         <label class="block text-sm font-medium text-gray-700 mb-2">Program Studi</label>
-                        <select name="jurusan" class="input-field">
+                        <select name="jurusan" class="input-field w-full min-h-[42px]">
                             <option value="">Semua Prodi</option>
                             @foreach($jurusans as $j)
                                 <option value="{{ $j->id }}" {{ (string)request('jurusan')===(string)$j->id ? 'selected' : '' }}>
@@ -51,9 +51,9 @@
                         </select>
                     </div>
 
-                    <div>
+                    <div class="flex flex-col">
                         <label class="block text-sm font-medium text-gray-700 mb-2">Periode Wisuda</label>
-                        <select name="periode_wisuda" class="input-field">
+                        <select name="periode_wisuda" class="input-field w-full min-h-[42px]">
                             <option value="">Semua Periode</option>
                             @foreach($availablePeriods as $period)
                                 <option value="{{ $period['number'] }}" {{ request('periode_wisuda') == $period['number'] ? 'selected' : '' }}>
@@ -63,18 +63,19 @@
                         </select>
                     </div>
 
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Reviewer</label>
-                        <input type="text" name="reviewer" value="{{ request('reviewer') }}" class="input-field" placeholder="Nama reviewer">
+                    <div class="flex flex-col">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Nama Reviewer</label>
+                        <input type="text" name="reviewer" value="{{ request('reviewer') }}" class="input-field w-full min-h-[42px]" placeholder="Cari nama reviewer..." maxlength="50">
                     </div>
 
                     <div class="flex items-end">
-                        <button type="submit" class="btn-primary w-full px-3 py-2 text-sm">Filter</button>
+                        <button type="submit" class="btn-primary px-3 py-3 w-full">Filter</button>
                     </div>
                 </div>
 
                 <div class="mt-4">
-                    <input type="text" name="search" value="{{ request('search') }}" class="input-field"
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Pencarian Umum</label>
+                    <input type="text" name="search" value="{{ request('search') }}" class="input-field w-full"
                            placeholder="Cari nama, NIM, email, atau nama prodi…">
                 </div>
             </form>
@@ -100,7 +101,7 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reviewer</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Approver</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Diupdate</th>
-                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-100">
@@ -151,32 +152,30 @@
                                     {{ optional($row->updated_at)->format('d M Y H:i') }}
                                 </td>
 
-                                <td class="px-6 py-3 whitespace-nowrap">
-                                    <div class="flex items-center justify-end gap-1">
-                                        <a href="{{ route('superadmin.skpi.show', $row) }}"
-                                           class="btn-outline px-2 py-1 text-xs"
-                                           title="Lihat">
-                                            Lihat
+                                <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium space-x-2">
+                                    <a href="{{ route('superadmin.skpi.show', $row) }}"
+                                       class="inline-flex items-center px-3 py-1 rounded bg-blue-600 text-white border-2 border-blue-600 hover:bg-blue-700"
+                                       title="Lihat">
+                                        Lihat
+                                    </a>
+
+                                    @if($status === 'submitted')
+                                        <button type="button" class="inline-flex items-center px-3 py-1 rounded bg-green-600 text-white border-2 border-green-600 hover:bg-green-700 approve-btn" data-skpi-id="{{ $row->id }}" data-action="approve">
+                                            Setujui
+                                        </button>
+
+                                        <button type="button" class="inline-flex items-center px-3 py-1 rounded bg-red-600 text-white border-2 border-red-600 hover:bg-red-700 reject-btn" data-skpi-id="{{ $row->id }}" data-action="reject">
+                                            Tolak
+                                        </button>
+                                    @endif
+
+                                    @if($status === 'approved')
+                                        <a href="{{ route('superadmin.skpi.print', $row) }}" target="_blank"
+                                           class="inline-flex items-center px-3 py-1 rounded bg-amber-500 text-white border-2 border-amber-500 hover:bg-amber-600"
+                                           title="Cetak">
+                                            Cetak
                                         </a>
-
-                                        @if($status === 'submitted')
-                                            <button type="button" class="btn-primary px-2 py-1 text-xs approve-btn" data-skpi-id="{{ $row->id }}" data-action="approve">
-                                                Approve
-                                            </button>
-
-                                            <button type="button" class="btn-outline px-2 py-1 text-xs reject-btn" data-skpi-id="{{ $row->id }}" data-action="reject">
-                                                Reject
-                                            </button>
-                                        @endif
-
-                                        @if($status === 'approved')
-                                            <a href="{{ route('superadmin.skpi.print', $row) }}" target="_blank"
-                                               class="btn-outline px-2 py-1 text-xs"
-                                               title="Cetak">
-                                                Cetak
-                                            </a>
-                                        @endif
-                                    </div>
+                                    @endif
                                 </td>
                             </tr>
                         @empty

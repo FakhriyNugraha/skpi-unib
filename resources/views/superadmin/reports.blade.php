@@ -37,7 +37,6 @@
                             </select>
                         </div>
                         <button type="submit" class="btn-primary px-4 py-2">Filter</button>
-                        <a href="{{ route('superadmin.reports') }}" class="btn-outline px-4 py-2">Reset</a>
                     </div>
                 </form>
             </div>

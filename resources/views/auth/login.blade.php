@@ -57,15 +57,6 @@
                     <div>
                         <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Email</label>
                         <div class="relative">
-                            <!-- Left icon -->
-                            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                                <!-- Envelope icon -->
-                                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                          d="M16 12H8m12 0a8 8 0 11-16 0 8 8 0 0116 0zm-6 4v1.5a2.5 2.5 0 005 0V12" />
-                                </svg>
-                            </div>
-
                             <input
                                 id="email"
                                 name="email"
@@ -75,8 +66,14 @@
                                 autofocus
                                 value="{{ old('email') }}"
                                 placeholder="Masukkan email Anda"
-                                class="appearance-none relative block w-full pl-10 pr-3 py-3 border placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-unib-blue-500 focus:border-unib-blue-500 sm:text-sm @error('email') border-red-500 @else border-gray-300 @enderror"
+                                class="appearance-none relative block w-full pl-10 pr-3 py-3 bg-blue-50 border placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-unib-blue-500 focus:border-unib-blue-500 sm:text-sm @error('email') border-red-500 bg-red-50 @else border-blue-100 @enderror"
                             >
+                            <!-- Left icon: person -->
+                            <span class="absolute left-0 inset-y-0 flex items-center pl-3">
+                                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                            </span>
                         </div>
                         @error('email')
                         <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
@@ -87,15 +84,6 @@
                     <div>
                         <label for="password" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
                         <div class="relative">
-                            <!-- Left icon -->
-                            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                                <!-- Lock icon -->
-                                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                          d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                                </svg>
-                            </div>
-
                             <input
                                 id="password"
                                 name="password"
@@ -103,10 +91,16 @@
                                 autocomplete="current-password"
                                 required
                                 placeholder="Masukkan password Anda"
-                                class="appearance-none relative block w-full pl-10 pr-10 py-3 border placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-unib-blue-500 focus:border-unib-blue-500 sm:text-sm @error('password') border-red-500 @else border-gray-300 @enderror"
+                                class="appearance-none relative block w-full pl-10 pr-10 py-3 bg-blue-50 border placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-unib-blue-500 focus:border-unib-blue-500 sm:text-sm @error('password') border-red-500 bg-red-50 @else border-blue-100 @enderror"
                             >
+                            <!-- Left icon: lock -->
+                            <span class="absolute left-0 inset-y-0 flex items-center pl-3">
+                                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                </svg>
+                            </span>
 
-                            <!-- Right icon (toggle) -->
+                            <!-- Right icon (toggle show/hide) -->
                             <button
                                 id="togglePassword"
                                 type="button"
@@ -115,12 +109,12 @@
                                 class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 focus:outline-none"
                             >
                                 <!-- eye closed (default) -->
-                                <svg id="icon-eye-closed" class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <svg id="icon-eye-closed" class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                          d="M3 3l18 18M10.477 10.477A3 3 0 0112 9c3 0 5.5 1.5 7 3-0.398 0.398-0.83 0.768-1.29 1.104M6.7 6.7C5.074 7.646 3.735 8.83 3 12c1.5 1.5 4 3 7 3 1.046 0 2.042-.162 2.963-.462" />
+                                          d="M3 3l18 18M10.477 10.477A3 3 0 0112 9c3 0 5.5 1.5 7 3-.398.398-.83.768-1.29 1.104M6.7 6.7C5.074 7.646 3.735 8.83 3 12c1.5 1.5 4 3 7 3 1.046 0 2.042-.162 2.963-.462" />
                                 </svg>
                                 <!-- eye open -->
-                                <svg id="icon-eye-open" class="h-5 w-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <svg id="icon-eye-open" class="h-5 w-5 hidden text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                           d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                     <circle cx="12" cy="12" r="3" stroke-width="2" />
@@ -149,10 +143,11 @@
                     <!-- Submit -->
                     <div>
                         <button type="submit"
-                                class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-unib-blue-600 hover:bg-unib-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-unib-blue-500 transition-all duration-200">
+                                class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-unib-blue-600 hover:bg-unib-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-unib-blue-500 transition-all duration-200 transform hover:scale-[1.02]">
                             <span class="absolute left-0 inset-y-0 flex items-center pl-3">
                                 <svg class="h-5 w-5 text-unib-blue-200 group-hover:text-unib-blue-100 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                          d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
                                 </svg>
                             </span>
                             Masuk
