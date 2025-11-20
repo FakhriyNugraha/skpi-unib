@@ -20,45 +20,47 @@
                     </p>
                     <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 justify-center lg:justify-start">
                         @auth
-                            <a href="{{ route('dashboard') }}" class="btn-secondary text-center transform hover:scale-105 transition-all duration-200">
+                            {{-- BUTTON DASHBOARD SAYA --}}
+                            <a href="{{ route('dashboard') }}" class="btn-secondary text-center transform transition duration-300 ease-out hover:scale-105 hover:-translate-y-1 hover:shadow-2xl">
                                 <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
                                 </svg>
                                 Dashboard Saya
                             </a>
                         @else
-                            <a href="{{ route('login') }}" class="btn-secondary text-center transform hover:scale-105 transition-all duration-200">
+                            {{-- BUTTON LOGIN HERO --}}
+                            <a href="{{ route('login') }}" class="btn-secondary text-center transform transition duration-300 ease-out hover:scale-110 hover:-translate-y-1 hover:shadow-2xl">
                                 <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
                                 </svg>
                                 Login
                             </a>
-                        <a href="{{ route('register') }}" class="bg-white text-teknik-orange-600 px-6 py-3 rounded-xl font-semibold text-center transform hover:scale-105 hover:bg-gray-100 transition-all duration-200 shadow">
-                            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
-                            </svg>
-                            Daftar Akun
-                        </a>
-
+                            {{-- BUTTON DAFTAR AKUN HERO --}}
+                            <a href="{{ route('register') }}" class="bg-white text-teknik-orange-600 px-6 py-3 rounded-xl font-semibold text-center hover:bg-gray-100 transform transition duration-300 ease-out hover:scale-110 hover:-translate-y-1 hover:shadow-2xl flex items-center justify-center">
+                                <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+                                </svg>
+                                Daftar Akun
+                            </a>
                         @endauth
                     </div>
                 </div>
                 
                 <!-- Statistics Cards -->
                 <div class="grid grid-cols-2 gap-4">
-                    <div class="bg-white bg-opacity-10 backdrop-blur-sm rounded-2xl p-6 border border-white border-opacity-20 text-center transform hover:scale-105 transition-all duration-300">
+                    <div class="bg-white bg-opacity-10 backdrop-blur-sm rounded-2xl p-6 border border-white border-opacity-20 text-center btn-animated">
                         <div class="text-4xl font-bold text-teknik-orange-400 mb-2 animate-bounce">{{ $stats['total_jurusan'] }}</div>
                         <div class="text-sm text-gray-300">Program Studi</div>
                     </div>
-                    <div class="bg-white bg-opacity-10 backdrop-blur-sm rounded-2xl p-6 border border-white border-opacity-20 text-center transform hover:scale-105 transition-all duration-300">
+                    <div class="bg-white bg-opacity-10 backdrop-blur-sm rounded-2xl p-6 border border-white border-opacity-20 text-center btn-animated">
                         <div class="text-4xl font-bold text-teknik-orange-400 mb-2 animate-bounce" style="animation-delay: 0.1s">{{ $stats['total_skpi_approved'] }}</div>
                         <div class="text-sm text-gray-300">SKPI Disetujui</div>
                     </div>
-                    <div class="bg-white bg-opacity-10 backdrop-blur-sm rounded-2xl p-6 border border-white border-opacity-20 text-center transform hover:scale-105 transition-all duration-300">
+                    <div class="bg-white bg-opacity-10 backdrop-blur-sm rounded-2xl p-6 border border-white border-opacity-20 text-center btn-animated">
                         <div class="text-4xl font-bold text-teknik-orange-400 mb-2 animate-bounce" style="animation-delay: 0.2s">{{ $stats['total_mahasiswa'] }}</div>
                         <div class="text-sm text-gray-300">Mahasiswa Terdaftar</div>
                     </div>
-                    <div class="bg-white bg-opacity-10 backdrop-blur-sm rounded-2xl p-6 border border-white border-opacity-20 text-center transform hover:scale-105 transition-all duration-300">
+                    <div class="bg-white bg-opacity-10 backdrop-blur-sm rounded-2xl p-6 border border-white border-opacity-20 text-center btn-animated">
                         <div class="text-4xl font-bold text-teknik-orange-400 mb-2 animate-bounce" style="animation-delay: 0.3s">{{ $stats['total_skpi'] }}</div>
                         <div class="text-sm text-gray-300">Total SKPI</div>
                     </div>
@@ -139,7 +141,7 @@
             
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 @foreach($jurusans as $jurusan)
-                <div class="card p-6 hover:shadow-2xl transition-all duration-300 border-l-4 border-teknik-orange-500 transform hover:-translate-y-2">
+                <div class="card p-6 btn-animated border-l-4 border-teknik-orange-500 transform hover:-translate-y-2 hover:shadow-2xl">
                     <div class="flex items-center mb-4">
                         <div class="w-12 h-12 bg-gradient-to-br from-teknik-orange-500 to-teknik-orange-600 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-lg">
                             {{ $jurusan->kode_jurusan }}
@@ -192,7 +194,7 @@
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                <div class="text-center transform hover:scale-105 transition-all duration-300">
+                <div class="text-center btn-animated">
                     <div class="w-20 h-20 bg-gradient-to-br from-unib-blue-500 to-unib-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg hover:shadow-xl transition-shadow">
                         <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
@@ -202,7 +204,7 @@
                     <p class="text-gray-600 text-sm leading-relaxed">Form yang user-friendly dengan validasi otomatis dan upload dokumen pendukung</p>
                 </div>
                 
-                <div class="text-center transform hover:scale-105 transition-all duration-300">
+                <div class="text-center btn-animated">
                     <div class="w-20 h-20 bg-gradient-to-br from-teknik-orange-500 to-teknik-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg hover:shadow-xl transition-shadow">
                         <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -212,7 +214,7 @@
                     <p class="text-gray-600 text-sm leading-relaxed">Sistem review multi-level dari admin jurusan untuk memastikan kualitas data</p>
                 </div>
                 
-                <div class="text-center transform hover:scale-105 transition-all duration-300">
+                <div class="text-center btn-animated">
                     <div class="w-20 h-20 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg hover:shadow-xl transition-shadow">
                         <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
@@ -222,7 +224,7 @@
                     <p class="text-gray-600 text-sm leading-relaxed">Output PDF profesional dengan format resmi dan logo universitas</p>
                 </div>
                 
-                <div class="text-center transform hover:scale-105 transition-all duration-300">
+                <div class="text-center btn-animated">
                     <div class="w-20 h-20 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg hover:shadow-xl transition-shadow">
                         <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
@@ -245,17 +247,19 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative">
             <h2 class="text-4xl font-bold mb-4">Siap Mengajukan SKPI Anda?</h2>
             <p class="text-xl text-orange-100 mb-8 max-w-3xl mx-auto leading-relaxed">
-                Bergabung dengan ribuan mahasiswa Fakultas Teknik lainnya dan dapatkan SKPI digital Anda hari ini juga!
+                Bergabung dengan mahasiswa Fakultas Teknik lainnya dan dapatkan SKPI digital Anda hari ini juga!
             </p>
             @guest
             <div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-6">
-                <a href="{{ route('register') }}" class="bg-white text-teknik-orange-600 px-8 py-4 rounded-xl font-semibold text-lg hover:bg-gray-100 transition-all duration-200 transform hover:scale-105 shadow-lg">
+                {{-- BUTTON DAFTAR SEKARANG CTA --}}
+                <a href="{{ route('register') }}" class="bg-white text-teknik-orange-600 px-8 py-4 rounded-xl font-semibold text-lg hover:bg-gray-100 transform transition duration-300 ease-out hover:scale-110 hover:-translate-y-1 hover:shadow-2xl">
                     <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
                     </svg>
                     Daftar Sekarang
                 </a>
-                <a href="{{ route('login') }}" class="border-2 border-white text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-white hover:text-teknik-orange-600 transition-all duration-200 transform hover:scale-105">
+                {{-- BUTTON LOGIN CTA --}}
+                <a href="{{ route('login') }}" class="btn-cta flex items-center justify-center transform transition duration-300 ease-out hover:scale-110 hover:-translate-y-1 hover:shadow-2xl">
                     <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
                     </svg>

@@ -87,7 +87,7 @@
                     @endauth
 
                     <div class="flex items-center space-x-4">
-                        <a href="mailto:ft@unib.ac.id" class="hidden md:inline-flex items-center bg-white/10 px-4 py-2 text-sm font-medium rounded-md text-blue-200 hover:bg-white/20 transition-colors">
+                        <a href="https://mail.google.com/mail/?view=cm&to=ft@unib.ac.id" class="hidden md:inline-flex items-center bg-white/10 px-4 py-2 text-sm font-medium rounded-md text-blue-200 hover:bg-white/20 transition-colors" target="_blank">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
                             Pengaduan
                         </a>
@@ -116,7 +116,7 @@
                                             <svg class="w-5 h-5 mr-3 text-gray-400 group-hover:text-teknik-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                                             Profile Saya
                                         </a>
-                                        <a href="mailto:ft@unib.ac.id" class="flex items-center md:hidden px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 group" role="menuitem">
+                                        <a href="https://mail.google.com/mail/?view=cm&to=ft@unib.ac.id" class="flex items-center md:hidden px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 group" role="menuitem" target="_blank">
                                             <svg class="w-5 h-5 mr-3 text-gray-400 group-hover:text-teknik-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
                                             Pengaduan
                                         </a>

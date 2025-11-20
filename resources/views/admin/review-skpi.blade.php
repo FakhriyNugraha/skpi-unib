@@ -69,7 +69,7 @@
                 <div class="card p-6">
                     <h2 class="text-xl font-semibold text-gray-900 mb-6 flex items-center">
                         <svg class="w-5 h-5 mr-2 text-unib-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z"/>
+                            <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01-.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z"/>
                         </svg>
                         Informasi Akademik
                     </h2>
@@ -171,12 +171,76 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Dokumen</label>
                             <div class="bg-gray-50 p-4 rounded-lg">
-                                <div class="flex items-center justify-between">
-                                    <a href="{{ $skpi->drive_link }}" target="_blank" class="text-sm text-unib-blue-600 hover:text-unib-blue-800 font-medium">
+                                <div class="flex items-center space-x-3">
+                                    <a href="{{ $skpi->drive_link }}" target="_blank" class="btn-primary text-sm px-4 py-2 inline-flex items-center">
+                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                        </svg>
                                         Lihat Sertifikat
                                     </a>
-                                    <button type="button" id="checkDriveBtn" class="btn-primary text-xs px-3 py-1.5">
-                                        Periksa
+                                    
+                                    <!-- Button "Periksa" warna hijau -->
+                                    <button 
+                                        type="button" 
+                                        id="checkDriveBtn"
+                                        class="btn-primary bg-green-600 hover:bg-green-700 text-white text-sm px-4 py-2 inline-flex items-center"
+                                    >
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            viewBox="0 0 24 24"
+                                            class="w-4 h-4 mr-2"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            stroke-width="1.6"
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                        >
+                                            <!-- Pin chip atas -->
+                                            <path d="M9 2.5V4.5" />
+                                            <path d="M12 2.5V4.5" />
+                                            <path d="M15 2.5V4.5" />
+
+                                            <!-- Pin chip bawah -->
+                                            <path d="M9 19.5V21.5" />
+                                            <path d="M12 19.5V21.5" />
+                                            <path d="M15 19.5V21.5" />
+
+                                            <!-- Pin chip kiri -->
+                                            <path d="M3 9H5" />
+                                            <path d="M3 12H5" />
+                                            <path d="M3 15H5" />
+
+                                            <!-- Pin chip kanan -->
+                                            <path d="M19 9H21" />
+                                            <path d="M19 12H21" />
+                                            <path d="M19 15H21" />
+
+                                            <!-- Body chip -->
+                                            <rect x="6" y="5" width="12" height="14" rx="2" />
+
+                                            <!-- Otak di dalam chip -->
+                                            <path d="
+                                                M11 8.5
+                                                C11 7.7 11.6 7 12.4 7
+                                                C13.2 7 13.8 7.7 13.8 8.5
+                                                C14.6 8.6 15.2 9.3 15.2 10.1
+                                                C15.2 10.6 15 11 14.7 11.3
+                                                C15.1 11.7 15.3 12.2 15.3 12.8
+                                                C15.3 13.8 14.5 14.6 13.5 14.6
+                                                L13.1 14.6
+                                                C12.9 15.1 12.5 15.4 12 15.4
+                                                C11.5 15.4 11.1 15.1 10.9 14.6
+                                                L10.5 14.6
+                                                C9.5 14.6 8.7 13.8 8.7 12.8
+                                                C8.7 12.2 8.9 11.7 9.3 11.3
+                                                C9 11 8.8 10.6 8.8 10.1
+                                                C8.8 9.3 9.4 8.6 10.2 8.5
+                                                C10.2 7.7 10.7 7 11.5 7
+                                                C11.6 7 11.8 7 11.9 7.1
+                                            " />
+                                        </svg>
+                                        <span>Periksa</span>
                                     </button>
                                 </div>
                             </div>
@@ -528,7 +592,7 @@
                                 }
                                 html += `<span class="text-xs ${detail.status === 'tersedia' ? 'text-green-600' : 'text-red-600'}">${detail.status}</span>`;
                                 if (detail.file_name) {
-                                    html += `<span class="text-xs text-gray-500 ml-2 truncate max-w-xs" title="${detail.file_name}">${detail.file_name.length > 30 ? detail.file_name.substring(0, 30) + '...' : detail.file_name}</span>`;
+                                    html += `<span class="text-xs text-gray-500 ml-2 truncate max-w-xs" title="${detail.file_name}">${detail.file_name.length > 30 ? detail.file_name.substring(0, 30) + '...' : ''}</span>`;
                                 }
                                 html += '</div>';
                                 html += '</div>';
@@ -586,7 +650,7 @@
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    if (error.message && error.message.includes('Class \\"Google\\\\Client\" not found')) {
+                    if (error.message && error.message.includes('Class \\"Google\\\\Client\\" not found')) {
                         scanResultsContent.innerHTML = '<span class="text-red-600">Google API Client belum diinstall. Jalankan: composer require google/apiclient</span>';
                     } else {
                         scanResultsContent.innerHTML = '<span class="text-red-600">Terjadi kesalahan saat memeriksa folder Google Drive: ' + error.message + '</span>';
