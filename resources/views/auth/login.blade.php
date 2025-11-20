@@ -7,6 +7,11 @@
 
     <title>Login - SKPI UNIB</title>
 
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('images/logounib.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('images/logounib.png') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('images/logounib.png') }}">
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700" rel="stylesheet" />
