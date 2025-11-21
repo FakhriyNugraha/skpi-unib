@@ -49,8 +49,20 @@
             </div>
         </div>
 
+
         <!-- SKPI List -->
         <div class="card overflow-hidden">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-medium text-gray-900">Daftar SKPI</h3>
+
+                <a href="{{ route('admin.print-bulk-form') }}" class="btn bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white focus:ring-purple-300 px-4 py-2 text-sm font-medium transition-all duration-200 flex items-center shadow-lg hover:shadow-xl rounded-lg">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                    </svg>
+                    Cetak Banyak
+                </a>
+            </div>
+
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
@@ -125,7 +137,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="6" class="px-6 py-12 text-center">
+                            <td colspan="7" class="px-6 py-12 text-center">
                                 <svg class="w-12 h-12 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                 </svg>
@@ -136,7 +148,7 @@
                     </tbody>
                 </table>
             </div>
-            
+
             @if($skpiList->hasPages())
             <div class="px-6 py-3 border-t border-gray-200 bg-gray-50">
                 {{ $skpiList->links() }}
@@ -144,6 +156,7 @@
             @endif
         </div>
     </div>
+
 
     <script>
         function applyFilters() {
@@ -178,6 +191,8 @@
             if (params.get('search')) {
                 document.getElementById('search').value = params.get('search');
             }
-        });
+
+
+
     </script>
 </x-app-layout>

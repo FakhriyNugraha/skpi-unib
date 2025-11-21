@@ -94,12 +94,13 @@ Route::middleware(['auth', 'role:admin,superadmin'])
             ->name('print-skpi')
             ->whereNumber('skpi');
 
-        // Bulk print routes for approved SKPI
-        Route::post('/skpi/bulk-print-selected', [AdminController::class, 'bulkPrintSelected'])
-            ->name('bulk-print-selected');
-
-        Route::post('/skpi/bulk-print-all', [AdminController::class, 'bulkPrintAllApproved'])
-            ->name('bulk-print-all');
+        // Bulk print routes
+        Route::get('/skpi/print-bulk', [AdminController::class, 'printBulkForm'])
+            ->name('print-bulk-form');
+        Route::post('/skpi/print-bulk', [AdminController::class, 'printBulk'])
+            ->name('print-bulk');
+        Route::get('/skpi/print-bulk-all', [AdminController::class, 'printBulkAll'])
+            ->name('print-bulk-all');
 
         Route::post('/skpi/{skpi}/verify-drive', [\App\Http\Controllers\DriveVerificationController::class, 'verifyDriveContents'])
             ->name('verify-drive')

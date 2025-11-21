@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SKPI - {{ $skpi->nama_lengkap }}</title>
+    <title>SKPI - Cetak Banyak</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Times+New+Roman:ital,wght@0,400;0,700;1,400&display=swap');
 
@@ -241,12 +241,18 @@
 </head>
 <body>
     <!-- Tombol Cetak -->
-    <div class="no-print" style="position: fixed; top: 20px; right: 20px; z-index: 1000;">
-        <button onclick="window.print()" style="background-color: #1e3a8a; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-family: Arial, sans-serif;">
-            Cetak
+    <div class="no-print" style="position: fixed; top: 20px; right: 30px; z-index: 900;">
+        <button onclick="window.print()" style="background-color: #1e3a8a; color: white; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-family: Arial, sans-serif; font-size: 14px; font-weight: 500; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); transition: all 0.2s ease-in-out;">
+            Cetak Semua SKPI
         </button>
     </div>
 
-    @include('skpi._print-body', ['skpi' => $skpi])
+    @foreach($skpis as $index => $skpi)
+        @include('skpi._print-body', ['skpi' => $skpi])
+
+        @if(!$loop->last)
+            <div class="page-break"></div>
+        @endif
+    @endforeach
 </body>
 </html>

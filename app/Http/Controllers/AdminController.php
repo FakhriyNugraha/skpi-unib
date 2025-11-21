@@ -150,16 +150,104 @@ class AdminController extends Controller
     public function printSkpi(SkpiData $skpi)
     {
         $user = Auth::user();
-        
+
         // Admin hanya bisa print data dari jurusan mereka
         if ($user->role === 'admin' && $user->jurusan_id && $skpi->jurusan_id !== $user->jurusan_id) {
             abort(403, 'Anda tidak dapat mengakses data dari jurusan lain.');
         }
-        
+
         if ($skpi->status !== 'approved') {
             return redirect()->route('admin.skpi-list')->with('error', 'Hanya SKPI yang sudah disetujui yang dapat dicetak.');
         }
 
         return view('skpi.print', compact('skpi'));
     }
+
+    public function printBulkForm()
+    {
+        $user = Auth::user();
+
+        $query = SkpiData::with(['jurusan', 'approver'])->where('status', 'approved');
+
+        // Admin hanya bisa melihat data dari jurusan mereka
+        if ($user->role === 'admin' && $user->jurusan_id) {
+            $query->where('jurusan_id', $user->jurusan_id);
+        }
+
+        $skpis = $query->orderBy('nama_lengkap')->get();
+
+        // Get available periods for filtering
+        $periodQuery = SkpiData::select('periode_wisuda')
+            ->where('status', 'approved')
+            ->whereNotNull('periode_wisuda');
+
+        if ($user->role === 'admin' && $user->jurusan_id) {
+            $periodQuery->where('jurusan_id', $user->jurusan_id);
+        }
+
+        $availablePeriods = $periodQuery
+            ->distinct()
+            ->orderBy('periode_wisuda', 'desc')
+            ->get()
+            ->map(function ($period) {
+                $range = \App\Helpers\PeriodHelper::getPeriodRange($period->periode_wisuda);
+                return [
+                    'number' => $period->periode_wisuda,
+                    'title' => $range['title']
+                ];
+            })
+            ->values();
+
+        return view('admin.print-bulk-form', compact('skpis', 'availablePeriods'));
+    }
+
+    public function printBulk(Request $request)
+    {
+        $user = Auth::user();
+
+        $request->validate([
+            'skpi_ids' => 'required|array|min:1',
+            'skpi_ids.*' => 'integer|exists:skpi_data,id'
+        ]);
+
+        $skpiIds = $request->skpi_ids;
+
+        // Query SKPI yang approved dan hanya dari jurusan yang sesuai jika admin
+        $query = SkpiData::with(['jurusan', 'approver'])
+            ->where('status', 'approved')
+            ->whereIn('id', $skpiIds);
+
+        if ($user->role === 'admin' && $user->jurusan_id) {
+            $query->where('jurusan_id', $user->jurusan_id);
+        }
+
+        $skpis = $query->get();
+
+        if ($skpis->isEmpty()) {
+            return redirect()->route('admin.skpi-list')->with('error', 'Tidak ada SKPI yang valid ditemukan atau Anda tidak memiliki akses ke SKPI tersebut.');
+        }
+
+        return view('skpi.print-bulk', ['skpis' => $skpis]);
+    }
+
+    public function printBulkAll()
+    {
+        $user = Auth::user();
+
+        // Query semua SKPI yang approved
+        $query = SkpiData::with(['jurusan', 'approver'])->where('status', 'approved');
+
+        if ($user->role === 'admin' && $user->jurusan_id) {
+            $query->where('jurusan_id', $user->jurusan_id);
+        }
+
+        $skpis = $query->get();
+
+        if ($skpis->isEmpty()) {
+            return redirect()->route('admin.skpi-list')->with('error', 'Tidak ada SKPI approved yang ditemukan.');
+        }
+
+        return view('skpi.print-bulk', ['skpis' => $skpis]);
+    }
+
 }
