@@ -131,18 +131,12 @@
                         @enderror
                     </div>
 
-                    <!-- Remember + Forgot -->
+                    <!-- Remember -->
                     <div class="flex items-center justify-between">
                         <label class="inline-flex items-center">
                             <input id="remember_me" name="remember" type="checkbox" class="h-4 w-4 text-unib-blue-600 focus:ring-unib-blue-500 border-gray-300 rounded">
                             <span class="ml-2 text-sm text-gray-700">Ingat saya</span>
                         </label>
-
-                        @if (Route::has('password.request'))
-                            <a href="{{ route('password.request') }}" class="text-sm font-medium text-unib-blue-600 hover:text-unib-blue-500 transition-colors">
-                                Lupa password?
-                            </a>
-                        @endif
                     </div>
 
                     <!-- Submit -->

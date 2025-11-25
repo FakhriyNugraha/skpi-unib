@@ -26,9 +26,9 @@ class SkpiDataSeeder extends Seeder
         }
 
         foreach ($students as $student) {
-            // Randomly assign period 112, 113, or 114
-            $selectedPeriod = [112, 113, 114][array_rand([112, 113, 114])];
-            
+            // Randomly assign period 112, 113, 114, or 115 based on new schedule
+            $selectedPeriod = [112, 113, 114, 115][array_rand([112, 113, 114, 115])];
+
             // Determine the date range for the selected period
             $periodRange = PeriodHelper::getPeriodRange($selectedPeriod);
 

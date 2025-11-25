@@ -72,6 +72,7 @@
                                 <a href="{{ route('skpi.index') }}" class="px-3 py-2 rounded-md text-sm font-medium transition-colors {{ request()->routeIs('skpi.index') ? 'nav-link-active' : 'text-blue-100 hover:bg-white/20 hover:text-white' }}">Dashboard</a>
                             @elseif(auth()->user()->role === 'admin')
                                 <a href="{{ route('admin.dashboard') }}" class="px-3 py-2 rounded-md text-sm font-medium transition-colors {{ request()->routeIs('admin.dashboard') ? 'nav-link-active' : 'text-blue-100 hover:bg-white/20 hover:text-white' }}">Dashboard</a>
+                                <a href="{{ route('admin.users-jurusan.index') }}" class="px-3 py-2 rounded-md text-sm font-medium transition-colors {{ request()->routeIs('admin.users-jurusan.index') ? 'nav-link-active' : 'text-blue-100 hover:bg-white/20 hover:text-white' }}">Kelola User</a>
                                 <a href="{{ route('admin.skpi-list') }}" class="px-3 py-2 rounded-md text-sm font-medium transition-colors {{ request()->routeIs('admin.skpi-list') ? 'nav-link-active' : 'text-blue-100 hover:bg-white/20 hover:text-white' }}">Review SKPI</a>
                             @elseif(auth()->user()->role === 'superadmin')
                                 <a href="{{ route('superadmin.dashboard') }}" class="px-3 py-2 rounded-md text-sm font-medium transition-colors {{ request()->routeIs('superadmin.dashboard') ? 'nav-link-active' : 'text-blue-100 hover:bg-white/20 hover:text-white' }}">Dashboard</a>

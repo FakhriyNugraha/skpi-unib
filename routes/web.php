@@ -106,12 +106,26 @@ Route::middleware(['auth', 'role:admin,superadmin'])
             ->name('verify-drive')
             ->whereNumber('skpi');
 
-        // Users - admin hanya bisa melihat, superadmin bisa mengelola
+        // Users - admin hanya bisa melihat list (not manage), superadmin bisa mengelola
+        // For admin, this will show their department's users only
         Route::get('/users', [SuperAdminController::class, 'users'])->name('users');
-        
+
         // Jurusans - admin hanya bisa melihat, superadmin bisa mengelola
         Route::get('/jurusans', [SuperAdminController::class, 'jurusans'])->name('jurusans');
         Route::get('/jurusan', [SuperAdminController::class, 'jurusans'])->name('jurusan'); // Alias untuk kompatibilitas
+
+        // User management for admin jurusan (department admin) - use route names that match controller redirects
+        // Use different route paths to avoid conflicts with superadmin routes
+        Route::middleware('admin.jurusan')
+            ->prefix('users-jurusan') // Use different prefix to avoid conflicts
+            ->group(function () {
+                Route::get('/', [\App\Http\Controllers\AdminUserManagementController::class, 'index'])->name('users-jurusan.index');
+                Route::get('/create', [\App\Http\Controllers\AdminUserManagementController::class, 'create'])->name('users-jurusan.create');
+                Route::post('/', [\App\Http\Controllers\AdminUserManagementController::class, 'store'])->name('users-jurusan.store');
+                Route::get('/{user}/edit', [\App\Http\Controllers\AdminUserManagementController::class, 'edit'])->name('users-jurusan.edit')->whereNumber('user');
+                Route::put('/{user}', [\App\Http\Controllers\AdminUserManagementController::class, 'update'])->name('users-jurusan.update')->whereNumber('user');
+                Route::delete('/{user}', [\App\Http\Controllers\AdminUserManagementController::class, 'destroy'])->name('users-jurusan.destroy')->whereNumber('user');
+            });
     });
 
 // ============================
@@ -203,6 +217,11 @@ Route::middleware(['auth', 'role:superadmin'])
         // SKPI detail & print (versi superadmin)
         Route::get('/skpi/{skpi}', [SuperAdminController::class, 'showSkpi'])->name('skpi.show')->whereNumber('skpi');
         Route::get('/skpi/{skpi}/print', [SuperAdminController::class, 'printSkpi'])->name('skpi.print')->whereNumber('skpi');
+
+        // Bulk print routes for superadmin
+        Route::get('/skpi/print-bulk', [SuperAdminController::class, 'printBulkForm'])->name('print-bulk-form');
+        Route::post('/skpi/print-bulk', [SuperAdminController::class, 'printBulk'])->name('print-bulk');
+        Route::get('/skpi/print-bulk-all', [SuperAdminController::class, 'printBulkAll'])->name('print-bulk-all');
 
         // Approve/Reject oleh superadmin
         Route::post('/skpi/{skpi}/approve', [SuperAdminController::class, 'approveSkpi'])->name('approve-skpi')->whereNumber('skpi');

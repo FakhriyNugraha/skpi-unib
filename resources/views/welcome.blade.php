@@ -54,7 +54,12 @@
                     </div>
                     <div class="bg-white bg-opacity-10 backdrop-blur-sm rounded-2xl p-6 border border-white border-opacity-20 text-center btn-animated">
                         <div class="text-4xl font-bold text-teknik-orange-400 mb-2 animate-bounce" style="animation-delay: 0.1s">{{ $stats['total_skpi_approved'] }}</div>
-                        <div class="text-sm text-gray-300">SKPI Disetujui</div>
+                        <div class="text-sm text-gray-300">
+                            SKPI Disetujui
+                            @if($selectedPeriodTitle)
+                                <span class="block text-[11px] text-gray-300/80 mt-1">Periode {{ $selectedPeriodTitle }}</span>
+                            @endif
+                        </div>
                     </div>
                     <div class="bg-white bg-opacity-10 backdrop-blur-sm rounded-2xl p-6 border border-white border-opacity-20 text-center btn-animated">
                         <div class="text-4xl font-bold text-teknik-orange-400 mb-2 animate-bounce" style="animation-delay: 0.2s">{{ $stats['total_mahasiswa'] }}</div>
@@ -86,8 +91,8 @@
                             <select name="periode_wisuda" class="input-field w-full" onchange="this.form.submit()">
                                 <option value="">Semua Periode (Default)</option>
                                 @foreach($availablePeriods as $period)
-                                    <option value="{{ $period['number'] }}" {{ request('periode_wisuda') == $period['number'] ? 'selected' : '' }}>
-                                        {{ $period['title'] }}
+                                    <option value="{{ $period['number'] }}" {{ $selectedPeriod == $period['number'] ? 'selected' : '' }}>
+                                        {{ $period['title'] }} ({{ $period['number'] }})
                                     </option>
                                 @endforeach
                             </select>
@@ -101,17 +106,29 @@
                 <!-- Bar Chart - SKPI per Prodi -->
                 <div class="lg:col-span-2">
                     <div class="card p-6">
-                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Status SKPI per Program Studi</h3>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                            @if($selectedPeriodTitle)
+                                Status SKPI per Program Studi ({{ $selectedPeriodTitle }})
+                            @else
+                                Status SKPI per Program Studi
+                            @endif
+                        </h3>
                         <div class="relative h-80">
                             <canvas id="skpiChart"></canvas>
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Pie Chart - Distribusi Mahasiswa -->
                 <div class="lg:col-span-1">
                     <div class="card p-6">
-                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Distribusi Mahasiswa</h3>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                            @if($selectedPeriodTitle)
+                                Distribusi Mahasiswa ({{ $selectedPeriodTitle }})
+                            @else
+                                Distribusi Mahasiswa
+                            @endif
+                        </h3>
                         <div class="relative h-80">
                             <canvas id="mahasiswaChart"></canvas>
                         </div>
@@ -121,7 +138,13 @@
 
             <!-- Trend Line Chart -->
             <div class="card p-6 mb-8">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Tren SKPI 6 Bulan Terakhir</h3>
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                    @if($selectedPeriodTitle)
+                        Tren SKPI {{ $selectedPeriodTitle }}
+                    @else
+                        Tren SKPI 6 Bulan Terakhir
+                    @endif
+                </h3>
                 <div class="relative h-64">
                     <canvas id="trendChart"></canvas>
                 </div>
@@ -153,18 +176,18 @@
                     </div>
                     <p class="text-gray-600 text-sm mb-4 leading-relaxed">{{ $jurusan->deskripsi }}</p>
                     
-                    <!-- Mini Statistics -->
+                    <!-- Mini Statistics (global; bisa nanti diupgrade ikut filter juga kalau mau) -->
                     <div class="bg-gradient-to-r from-blue-50 to-orange-50 rounded-lg p-4 mb-4">
                         <div class="grid grid-cols-2 gap-4 text-center">
                             <div>
                                 <div class="text-lg font-bold text-unib-blue-600">
-                                    {{ $jurusan->skpiData->where('status', 'approved')->sum('total') ?? 0 }}
+                                    {{ $jurusan->skpiData->where('status', 'approved')->count() ?? 0 }}
                                 </div>
                                 <div class="text-xs text-gray-600">SKPI Approved</div>
                             </div>
                             <div>
                                 <div class="text-lg font-bold text-teknik-orange-600">
-                                    {{ $jurusan->skpiData->whereIn('status', ['submitted'])->sum('total') ?? 0 }}
+                                    {{ $jurusan->skpiData->whereIn('status', ['submitted'])->count() ?? 0 }}
                                 </div>
                                 <div class="text-xs text-gray-600">Dalam Review</div>
                             </div>
@@ -207,7 +230,7 @@
                 <div class="text-center btn-animated">
                     <div class="w-20 h-20 bg-gradient-to-br from-teknik-orange-500 to-teknik-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg hover:shadow-xl transition-shadow">
                         <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 9 0 0118 0z"></path>
                         </svg>
                     </div>
                     <h3 class="text-lg font-semibold text-gray-900 mb-3">Verifikasi Berlapis</h3>
@@ -217,7 +240,7 @@
                 <div class="text-center btn-animated">
                     <div class="w-20 h-20 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg hover:shadow-xl transition-shadow">
                         <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a 2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
                         </svg>
                     </div>
                     <h3 class="text-lg font-semibold text-gray-900 mb-3">Cetak Digital</h3>
@@ -254,14 +277,14 @@
                 {{-- BUTTON DAFTAR SEKARANG CTA --}}
                 <a href="{{ route('register') }}" class="bg-white text-teknik-orange-600 px-8 py-4 rounded-xl font-semibold text-lg hover:bg-gray-100 transform transition duration-300 ease-out hover:scale-110 hover:-translate-y-1 hover:shadow-2xl">
                     <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a 4 4 0 11-8 0 4 4 0 018 0zM3 20a 6 6 0 0112 0v1H3v-1z"></path>
                     </svg>
                     Daftar Sekarang
                 </a>
                 {{-- BUTTON LOGIN CTA --}}
                 <a href="{{ route('login') }}" class="btn-cta flex items-center justify-center transform transition duration-300 ease-out hover:scale-110 hover:-translate-y-1 hover:shadow-2xl">
                     <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a 3 3 0 01-3 3H6a 3 3 0 01-3-3V7a 3 3 0 013-3h7a 3 3 0 013 3v1"></path>
                     </svg>
                     Login
                 </a>
@@ -277,15 +300,28 @@
         Chart.defaults.font.family = 'Inter, sans-serif';
         Chart.defaults.color = '#374151';
 
+        // Data dari backend
+        const barData      = {!! json_encode($chartData) !!};
+        const pieData      = {!! json_encode($pieData) !!};
+        const monthlyTrend = {!! json_encode($monthlyTrend) !!};
+
+        const barTitle = {!! json_encode($selectedPeriodTitle ? 'Distribusi SKPI ' . $selectedPeriodTitle : 'Distribusi SKPI Keseluruhan') !!};
+        const pieTitle = {!! json_encode($selectedPeriodTitle ? 'Distribusi Mahasiswa ' . $selectedPeriodTitle : 'Distribusi Mahasiswa Keseluruhan') !!};
+        const lineTitle = {!! json_encode($selectedPeriodTitle ? 'Tren SKPI ' . $selectedPeriodTitle : 'Tren SKPI 6 Bulan Terakhir') !!};
+
         // Bar Chart - SKPI per Prodi
         const ctxBar = document.getElementById('skpiChart').getContext('2d');
         new Chart(ctxBar, {
             type: 'bar',
-            data: {!! json_encode($chartData) !!},
+            data: barData,
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
+                    title: {
+                        display: true,
+                        text: barTitle,
+                    },
                     legend: {
                         position: 'top',
                         labels: { usePointStyle: true, padding: 20 }
@@ -313,11 +349,15 @@
         const ctxPie = document.getElementById('mahasiswaChart').getContext('2d');
         new Chart(ctxPie, {
             type: 'doughnut',
-            data: {!! json_encode($pieData) !!},
+            data: pieData,
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
+                    title: {
+                        display: true,
+                        text: pieTitle,
+                    },
                     legend: {
                         position: 'bottom',
                         labels: {
@@ -327,7 +367,7 @@
                                 const data = chart.data;
                                 if (data.labels.length && data.datasets.length) {
                                     return data.labels.map((label, i) => {
-                                        const value = data.datasets[0].data[i];
+                                        const value = data.datasets[0].data[i] || 0;
                                         return {
                                             text: `${label}: ${value}`,
                                             fillStyle: data.datasets[0].backgroundColor[i],
@@ -350,8 +390,9 @@
                         callbacks: {
                             label: function(context) {
                                 const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                const percentage = ((context.parsed / total) * 100).toFixed(1);
-                                return `${context.label}: ${context.parsed} mahasiswa (${percentage}%)`;
+                                const value = context.parsed || 0;
+                                const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                                return `${context.label}: ${value} mahasiswa (${percentage}%)`;
                             }
                         }
                     }
@@ -363,16 +404,15 @@
 
         // Line Chart - Trend
         const ctxLine = document.getElementById('trendChart').getContext('2d');
-        const monthlyTrendData = {!! json_encode($monthlyTrend) !!};
         
         new Chart(ctxLine, {
             type: 'line',
             data: {
-                labels: monthlyTrendData.map(item => item.month),
+                labels: monthlyTrend.map(item => item.month),
                 datasets: [
                     {
                         label: 'SKPI Disetujui',
-                        data: monthlyTrendData.map(item => item.approved),
+                        data: monthlyTrend.map(item => item.approved),
                         borderColor: 'rgba(25, 135, 84, 1)',
                         backgroundColor: 'rgba(25, 135, 84, 0.1)',
                         borderWidth: 3,
@@ -386,7 +426,7 @@
                     },
                     {
                         label: 'SKPI Disubmit',
-                        data: monthlyTrendData.map(item => item.submitted),
+                        data: monthlyTrend.map(item => item.submitted),
                         borderColor: 'rgba(13, 110, 253, 1)',
                         backgroundColor: 'rgba(13, 110, 253, 0.1)',
                         borderWidth: 3,
@@ -404,6 +444,10 @@
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
+                    title: {
+                        display: true,
+                        text: lineTitle,
+                    },
                     legend: { position: 'top', labels: { usePointStyle: true, padding: 20 } },
                     tooltip: {
                         backgroundColor: 'rgba(0, 0, 0, 0.8)',

@@ -15,6 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => \App\Http\Middleware\RoleMiddleware::class,
             'phone.required' => \App\Http\Middleware\EnsurePhoneFilled::class,
+            'admin.jurusan' => \App\Http\Middleware\AdminJurusanMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

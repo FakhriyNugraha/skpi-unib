@@ -184,7 +184,7 @@
                 // Create form and submit
                 const form = document.createElement('form');
                 form.method = 'POST';
-                form.action = '{{ route('admin.print-bulk') }}';
+                form.action = '{{ route('superadmin.print-bulk') }}';
 
                 // Add CSRF token
                 const csrfToken = document.createElement('input');
@@ -209,7 +209,7 @@
             // Print all button
             printAllBtn.addEventListener('click', function() {
                 if (confirm('Anda yakin ingin mencetak semua SKPI yang approved?')) {
-                    window.location.href = '{{ route('admin.print-bulk-all') }}';
+                    window.location.href = '{{ route('superadmin.print-bulk-all') }}';
                 }
             });
 

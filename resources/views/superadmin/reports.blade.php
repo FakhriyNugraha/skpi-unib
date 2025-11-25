@@ -31,7 +31,7 @@
                                 <option value="">Semua Periode (Default)</option>
                                 @foreach($availablePeriods as $period)
                                     <option value="{{ $period['number'] }}" {{ request('periode_wisuda') == $period['number'] ? 'selected' : '' }}>
-                                        {{ $period['title'] }}
+                                        {{ $period['title'] }} ({{ $period['number'] }})
                                     </option>
                                 @endforeach
                             </select>

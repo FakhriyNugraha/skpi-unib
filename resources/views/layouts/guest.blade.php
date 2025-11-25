@@ -48,7 +48,7 @@
                 </div>
 
                 <div class="w-full sm:max-w-md bg-white px-6 py-8 shadow-xl rounded-2xl">
-                    {{ $slot }}
+                    {{ $slot ?? '' }}
                 </div>
             </div>
         </div>

@@ -38,7 +38,13 @@ class SuperAdminController extends Controller
     /* Users */
     public function users(Request $request)
     {
+        $currentUser = Auth::user();
         $query = User::with('jurusan')->latest();
+
+        // Filter berdasarkan jurusan jika user adalah admin biasa (bukan superadmin)
+        if ($currentUser && $currentUser->role === 'admin' && $currentUser->jurusan_id) {
+            $query->where('jurusan_id', $currentUser->jurusan_id);
+        }
 
         if ($request->filled('role'))    $query->where('role', $request->role);
         if ($request->filled('jurusan')) $query->where('jurusan_id', $request->jurusan);
@@ -289,6 +295,81 @@ class SuperAdminController extends Controller
 
         $skpi->load(['user','jurusan','approver']);
         return view('skpi.print', compact('skpi'));
+    }
+
+    public function printBulkForm(Request $request)
+    {
+        $query = SkpiData::with(['jurusan', 'approver'])
+            ->where('status', 'approved');
+
+        // Apply filters if they exist in the request
+        if ($request->filled('periode_wisuda') && $request->periode_wisuda !== 'all') {
+            $query->where('periode_wisuda', $request->periode_wisuda);
+        }
+
+        if ($request->filled('search')) {
+            $s = $request->search;
+            $query->where(function ($q) use ($s) {
+                $q->where('nama_lengkap','like',"%{$s}%")
+                  ->orWhere('npm','like',"%{$s}%")
+                  ->orWhere('program_studi','like',"%{$s}%");
+            });
+        }
+
+        $skpis = $query->get();
+
+        // Get available periods for the dropdown
+        $availablePeriods = SkpiData::select('periode_wisuda')
+            ->whereNotNull('periode_wisuda')
+            ->distinct()
+            ->orderBy('periode_wisuda', 'desc')
+            ->pluck('periode_wisuda')
+            ->map(function ($period) {
+                $range = PeriodHelper::getPeriodRange($period);
+                return [
+                    'number' => $period,
+                    'title' => $range['title']
+                ];
+            })
+            ->values();
+
+        return view('superadmin.print-bulk-form', compact('skpis', 'availablePeriods'));
+    }
+
+    public function printBulk(Request $request)
+    {
+        $request->validate([
+            'skpi_ids' => 'required|array|min:1',
+            'skpi_ids.*' => 'integer|exists:skpi_data,id'
+        ]);
+
+        $skpiIds = $request->skpi_ids;
+
+        // Query all approved SKPIs (superadmin can access all)
+        $skpis = SkpiData::with(['jurusan', 'approver'])
+            ->where('status', 'approved')
+            ->whereIn('id', $skpiIds)
+            ->get();
+
+        if ($skpis->isEmpty()) {
+            return redirect()->route('superadmin.all-skpi')->with('error', 'Tidak ada SKPI yang valid ditemukan.');
+        }
+
+        return view('skpi.print-bulk', ['skpis' => $skpis]);
+    }
+
+    public function printBulkAll()
+    {
+        // Query all approved SKPIs (superadmin can access all)
+        $skpis = SkpiData::with(['jurusan', 'approver'])
+            ->where('status', 'approved')
+            ->get();
+
+        if ($skpis->isEmpty()) {
+            return redirect()->route('superadmin.all-skpi')->with('error', 'Tidak ada SKPI approved yang ditemukan.');
+        }
+
+        return view('skpi.print-bulk', ['skpis' => $skpis]);
     }
 
     public function approveSkpi(SkpiData $skpi)

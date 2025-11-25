@@ -13,47 +13,60 @@ class HomeController extends Controller
 {
     public function index(Request $request)
     {
-        // Query builder for SKPI data with optional period filter
+        // Ambil periode yang dipilih dari request
+        $selectedPeriod = $request->input('periode_wisuda');
+        $hasPeriodFilter = $selectedPeriod && $selectedPeriod !== 'all';
+
+        $periodRange = null;
+        $selectedPeriodTitle = null;
+
+        if ($hasPeriodFilter) {
+            // PeriodHelper mengembalikan ['start' => Carbon, 'end' => Carbon, 'title' => string]
+            $periodRange = PeriodHelper::getPeriodRange($selectedPeriod);
+            $selectedPeriodTitle = $periodRange['title'];
+        }
+
+        // Query builder SKPI (akan dipakai berkali-kali)
         $skpiQuery = SkpiData::query();
 
-        // Add period filtering
-        if ($request->filled('periode_wisuda') && $request->periode_wisuda !== 'all') {
-            $skpiQuery->where('periode_wisuda', $request->periode_wisuda);
+        if ($hasPeriodFilter) {
+            $skpiQuery->where('periode_wisuda', $selectedPeriod);
         }
 
-        // Ambil jurusan + agregasi SKPI per status with period filtering
-        $jurusans = Jurusan::active()->with(['skpiData' => function ($query) use ($request) {
-            // Apply period filter if specified
-            if ($request->filled('periode_wisuda') && $request->periode_wisuda !== 'all') {
-                $query->where('periode_wisuda', $request->periode_wisuda);
-            }
-            // Hindari DB::raw, pakai selectRaw agar simple
-            $query->select('jurusan_id', 'status')
-                  ->selectRaw('COUNT(*) as total')
-                  ->groupBy('jurusan_id', 'status');
-        }])->get();
+        // Ambil jurusan aktif
+        $jurusans = Jurusan::active()->get();
 
-        // Statistik umum with period filtering
+        // Data agregat SKPI per jurusan & status (untuk bar chart, dll)
+        $jurusanSkpiData = SkpiData::selectRaw('jurusan_id, status, COUNT(*) as total')
+            ->when($hasPeriodFilter, function ($query) use ($selectedPeriod) {
+                return $query->where('periode_wisuda', $selectedPeriod);
+            })
+            ->groupBy('jurusan_id', 'status')
+            ->get()
+            ->groupBy('jurusan_id');
+
+        // Statistik umum
         $totalMahasiswa = User::where('role', 'user');
-        if ($request->filled('periode_wisuda') && $request->periode_wisuda !== 'all') {
-            // Count students who have SKPI data in the selected period
-            $totalMahasiswa = $totalMahasiswa->whereIn('id', function($query) use ($request) {
+
+        if ($hasPeriodFilter) {
+            // Hanya mahasiswa yang punya SKPI di periode terpilih
+            $totalMahasiswa->whereIn('id', function ($query) use ($selectedPeriod) {
                 $query->select('user_id')
-                      ->from('skpi_data')
-                      ->where('periode_wisuda', $request->periode_wisuda);
+                    ->from('skpi_data')
+                    ->where('periode_wisuda', $selectedPeriod);
             });
         }
+
         $totalMahasiswaCount = $totalMahasiswa->count();
 
         $stats = [
-            'total_jurusan'        => $jurusans->count(),
-            'total_skpi'           => $skpiQuery->count(),
-            // Hindari scope approved() yang belum tentu ada
-            'total_skpi_approved'  => $skpiQuery->where('status', 'approved')->count(),
-            'total_mahasiswa'      => $totalMahasiswaCount,
+            'total_jurusan'       => $jurusans->count(),
+            'total_skpi'          => (clone $skpiQuery)->count(),
+            'total_skpi_approved' => (clone $skpiQuery)->where('status', 'approved')->count(),
+            'total_mahasiswa'     => $totalMahasiswaCount,
         ];
 
-        // Data untuk grafik batang per jurusan
+        // DATA BAR CHART (SKPI per Prodi)
         $chartData = [
             'labels'   => [],
             'datasets' => [
@@ -88,7 +101,7 @@ class HomeController extends Controller
             ],
         ];
 
-        // Palet warna untuk pie (akan diulang jika jurusan > jumlah warna)
+        // Palet warna PIE
         $palette = [
             'rgba(30, 58, 138, 0.8)',   // unib-blue-800
             'rgba(249, 115, 22, 0.8)',  // teknik-orange-500
@@ -100,77 +113,121 @@ class HomeController extends Controller
             'rgba(14, 165, 233, 0.8)',  // sky-500
         ];
 
-        // Data untuk pie chart (distribusi mahasiswa per jurusan) — format Chart.js yang benar
+        // DATA PIE (Distribusi Mahasiswa per Jurusan)
         $pieData = [
             'labels'   => [],
             'datasets' => [
                 [
                     'data'            => [],
-                    'backgroundColor' => [], // diisi per-slice agar tidak kosong
+                    'backgroundColor' => [],
                 ],
             ],
         ];
 
-        // Isi data chart
-        $i = 0;
-        foreach ($jurusans as $jurusan) {
-            $chartData['labels'][] = $jurusan->kode_jurusan;
+        // Isi dataset bar & pie
+        if ($jurusans->count() > 0) {
+            $i = 0;
+            foreach ($jurusans as $jurusan) {
+                $chartData['labels'][] = $jurusan->kode_jurusan;
 
-            // Hitung agregasi status per jurusan (sudah di-preload melalui with('skpiData'))
-            $draft     = $jurusan->skpiData->where('status', 'draft')->sum('total') ?? 0;
-            $submitted = $jurusan->skpiData->where('status', 'submitted')->sum('total') ?? 0;
-            $approved  = $jurusan->skpiData->where('status', 'approved')->sum('total') ?? 0;
-            $rejected  = $jurusan->skpiData->where('status', 'rejected')->sum('total') ?? 0;
+                // Agregat SKPI per status untuk jurusan ini (sudah terfilter periode di $jurusanSkpiData)
+                $jurusanData = $jurusanSkpiData->get($jurusan->id, collect());
 
-            $chartData['datasets'][0]['data'][] = $draft;
-            $chartData['datasets'][1]['data'][] = $submitted;
-            $chartData['datasets'][2]['data'][] = $approved;
-            $chartData['datasets'][3]['data'][] = $rejected;
+                $draft     = $jurusanData->where('status', 'draft')->sum('total');
+                $submitted = $jurusanData->where('status', 'submitted')->sum('total');
+                $approved  = $jurusanData->where('status', 'approved')->sum('total');
+                $rejected  = $jurusanData->where('status', 'rejected')->sum('total');
 
-            // Data pie: jumlah mahasiswa per jurusan
-            $mahasiswaCount = User::where('role', 'user')
-                                  ->where('jurusan_id', $jurusan->id)
-                                  ->count();
+                $chartData['datasets'][0]['data'][] = (int) $draft;
+                $chartData['datasets'][1]['data'][] = (int) $submitted;
+                $chartData['datasets'][2]['data'][] = (int) $approved;
+                $chartData['datasets'][3]['data'][] = (int) $rejected;
 
-            $pieData['labels'][]                   = $jurusan->nama_jurusan;
-            $pieData['datasets'][0]['data'][]      = $mahasiswaCount;
-            // Pastikan ada warna untuk setiap slice
-            $pieData['datasets'][0]['backgroundColor'][] = $palette[$i % count($palette)];
+                // Pie chart: jumlah mahasiswa per jurusan yang punya SKPI di periode yg dipilih
+                $mahasiswaCount = User::where('role', 'user')
+                    ->where('jurusan_id', $jurusan->id)
+                    ->when($hasPeriodFilter, function ($query) use ($selectedPeriod) {
+                        return $query->whereIn('id', function ($subQuery) use ($selectedPeriod) {
+                            $subQuery->select('user_id')
+                                ->from('skpi_data')
+                                ->where('periode_wisuda', $selectedPeriod);
+                        });
+                    })
+                    ->count();
 
-            $i++;
+                $pieData['labels'][] = $jurusan->nama_jurusan;
+                $pieData['datasets'][0]['data'][] = (int) $mahasiswaCount;
+                $pieData['datasets'][0]['backgroundColor'][] = $palette[$i % count($palette)];
+
+                $i++;
+            }
+        } else {
+            // Tidak ada jurusan
+            $chartData['labels'] = [];
+            foreach ($chartData['datasets'] as &$dataset) {
+                $dataset['data'] = [];
+            }
+            $pieData['labels'] = [];
+            $pieData['datasets'][0]['data'] = [];
+            $pieData['datasets'][0]['backgroundColor'] = [];
         }
 
-        // Data tren bulanan (6 bulan terakhir) with period filtering
+        // LINE CHART - Tren Bulanan
         $monthlyTrend = [];
-        for ($i = 5; $i >= 0; $i--) {
-            $date = now()->subMonths($i);
 
-            // Count approved SKPIs for the specific month/year
-            $approvedCount = SkpiData::where('status', 'approved')
-                ->when($request->filled('periode_wisuda') && $request->periode_wisuda !== 'all', function ($query) use ($request) {
-                    return $query->where('periode_wisuda', $request->periode_wisuda);
-                })
-                ->whereYear('approved_at', $date->year)
-                ->whereMonth('approved_at', $date->month)
-                ->count();
+        if ($hasPeriodFilter && $periodRange) {
+            // Jika periode dipilih → gunakan range periode (mis: Jan–Mar 2026 → 3 bulan saja)
+            $currentDate = $periodRange['start']->copy()->startOfMonth();
+            $endOfMonth  = $periodRange['end']->copy()->endOfMonth();
 
-            // Count submitted SKPIs for the specific month/year
-            $submittedCount = SkpiData::where('status', 'submitted')
-                ->when($request->filled('periode_wisuda') && $request->periode_wisuda !== 'all', function ($query) use ($request) {
-                    return $query->where('periode_wisuda', $request->periode_wisuda);
-                })
-                ->whereYear('created_at', $date->year)
-                ->whereMonth('created_at', $date->month)
-                ->count();
+            while ($currentDate->lte($endOfMonth)) {
+                $year  = $currentDate->year;
+                $month = $currentDate->month;
 
-            $monthlyTrend[] = [
-                'month'     => $date->format('M Y'),
-                'approved'  => $approvedCount,
-                'submitted' => $submittedCount,
-            ];
+                $approvedCount = SkpiData::where('status', 'approved')
+                    ->where('periode_wisuda', $selectedPeriod)
+                    ->whereYear('approved_at', $year)
+                    ->whereMonth('approved_at', $month)
+                    ->count();
+
+                $submittedCount = SkpiData::where('status', 'submitted')
+                    ->where('periode_wisuda', $selectedPeriod)
+                    ->whereYear('created_at', $year)
+                    ->whereMonth('created_at', $month)
+                    ->count();
+
+                $monthlyTrend[] = [
+                    'month'     => $currentDate->format('M Y'),
+                    'approved'  => (int) $approvedCount,
+                    'submitted' => (int) $submittedCount,
+                ];
+
+                $currentDate->addMonth();
+            }
+        } else {
+            // Tidak ada periode dipilih → default 6 bulan terakhir (global)
+            for ($i = 5; $i >= 0; $i--) {
+                $date = now()->subMonths($i);
+
+                $approvedCount = SkpiData::where('status', 'approved')
+                    ->whereYear('approved_at', $date->year)
+                    ->whereMonth('approved_at', $date->month)
+                    ->count();
+
+                $submittedCount = SkpiData::where('status', 'submitted')
+                    ->whereYear('created_at', $date->year)
+                    ->whereMonth('created_at', $date->month)
+                    ->count();
+
+                $monthlyTrend[] = [
+                    'month'     => $date->format('M Y'),
+                    'approved'  => (int) $approvedCount,
+                    'submitted' => (int) $submittedCount,
+                ];
+            }
         }
 
-        // Get available periods for the dropdown
+        // Daftar periode untuk dropdown
         $availablePeriods = SkpiData::select('periode_wisuda')
             ->whereNotNull('periode_wisuda')
             ->distinct()
@@ -180,12 +237,21 @@ class HomeController extends Controller
                 $range = PeriodHelper::getPeriodRange($period);
                 return [
                     'number' => $period,
-                    'title' => $range['title']
+                    'title'  => $range['title'],
                 ];
             })
             ->values();
 
-        return view('welcome', compact('jurusans', 'stats', 'chartData', 'pieData', 'monthlyTrend', 'availablePeriods'));
+        return view('welcome', [
+            'jurusans'            => $jurusans,
+            'stats'               => $stats,
+            'chartData'           => $chartData,
+            'pieData'             => $pieData,
+            'monthlyTrend'        => $monthlyTrend,
+            'availablePeriods'    => $availablePeriods,
+            'selectedPeriod'      => $selectedPeriod,
+            'selectedPeriodTitle' => $selectedPeriodTitle,
+        ]);
     }
 
     public function dashboard()

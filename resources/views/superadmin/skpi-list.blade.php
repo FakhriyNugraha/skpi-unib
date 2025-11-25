@@ -27,7 +27,7 @@
         {{-- FILTERS (server-side) --}}
         <div class="card p-6 mb-8">
             <form method="GET" action="{{ route('superadmin.all-skpi') }}">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div class="flex flex-col">
                         <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
                         <select name="status" class="input-field w-full min-h-[42px]">
@@ -57,15 +57,10 @@
                             <option value="">Semua Periode</option>
                             @foreach($availablePeriods as $period)
                                 <option value="{{ $period['number'] }}" {{ request('periode_wisuda') == $period['number'] ? 'selected' : '' }}>
-                                    {{ $period['title'] }}
+                                    {{ $period['title'] }} ({{ $period['number'] }})
                                 </option>
                             @endforeach
                         </select>
-                    </div>
-
-                    <div class="flex flex-col">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Nama Reviewer</label>
-                        <input type="text" name="reviewer" value="{{ request('reviewer') }}" class="input-field w-full min-h-[42px]" placeholder="Cari nama reviewer..." maxlength="50">
                     </div>
 
                     <div class="flex items-end">
@@ -85,8 +80,16 @@
         <div class="card">
             <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
                 <div class="font-semibold text-gray-900">Daftar SKPI</div>
-                <div class="text-sm text-gray-500">
-                    Halaman ini: {{ $skpiList->count() }} • Total: {{ $skpiList->total() }}
+                <div class="text-sm text-gray-500 flex items-center gap-4">
+                    @if(request('status') === 'approved' || empty(request('status')))
+                        <a href="{{ route('superadmin.print-bulk-form') }}" class="btn-primary flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                            </svg>
+                            Cetak Banyak
+                        </a>
+                    @endif
+                    <span>Halaman ini: {{ $skpiList->count() }} • Total: {{ $skpiList->total() }}</span>
                 </div>
             </div>
 
@@ -98,8 +101,6 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">NIM</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Program Studi</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reviewer</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Approver</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Diupdate</th>
                             <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                         </tr>
@@ -140,14 +141,6 @@
                                     </span>
                                 </td>
 
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    {{ data_get($row,'reviewer.name','—') }}
-                                </td>
-
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    {{ data_get($row,'approver.name','—') }}
-                                </td>
-
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     {{ optional($row->updated_at)->format('d M Y H:i') }}
                                 </td>
@@ -156,15 +149,25 @@
                                     <a href="{{ route('superadmin.skpi.show', $row) }}"
                                        class="inline-flex items-center px-3 py-1 rounded bg-blue-600 text-white border-2 border-blue-600 hover:bg-blue-700"
                                        title="Lihat">
+                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                        </svg>
                                         Lihat
                                     </a>
 
                                     @if($status === 'submitted')
                                         <button type="button" class="inline-flex items-center px-3 py-1 rounded bg-green-600 text-white border-2 border-green-600 hover:bg-green-700 approve-btn" data-skpi-id="{{ $row->id }}" data-action="approve">
+                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                            </svg>
                                             Setujui
                                         </button>
 
                                         <button type="button" class="inline-flex items-center px-3 py-1 rounded bg-red-600 text-white border-2 border-red-600 hover:bg-red-700 reject-btn" data-skpi-id="{{ $row->id }}" data-action="reject">
+                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
                                             Tolak
                                         </button>
                                     @endif
@@ -173,6 +176,9 @@
                                         <a href="{{ route('superadmin.skpi.print', $row) }}" target="_blank"
                                            class="inline-flex items-center px-3 py-1 rounded bg-amber-500 text-white border-2 border-amber-500 hover:bg-amber-600"
                                            title="Cetak">
+                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                                            </svg>
                                             Cetak
                                         </a>
                                     @endif
