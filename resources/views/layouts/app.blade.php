@@ -221,6 +221,140 @@
             }
         });
     })();
+
+    // Generic confirmation modal
+    document.addEventListener('DOMContentLoaded', function() {
+        // Create generic confirmation modal
+        const confirmationModal = document.createElement('div');
+        confirmationModal.id = 'genericConfirmationModal';
+        confirmationModal.className = 'fixed inset-0 z-50 hidden';
+        confirmationModal.setAttribute('aria-hidden', 'true');
+        confirmationModal.innerHTML = `
+            <div id="modalOverlay" class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
+            <div class="absolute inset-0 flex items-center justify-center p-4">
+                <div class="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-gray-200">
+                    <div class="p-6">
+                        <div class="flex justify-center mb-4">
+                            <div id="modalIcon" class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
+                                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                        </div>
+                        <h3 id="modalTitle" class="text-lg font-semibold text-gray-900 text-center">
+                            Konfirmasi Aksi
+                        </h3>
+                        <p id="modalContent" class="mt-3 text-sm text-gray-600 text-center">
+                            Apakah Anda yakin ingin melakukan aksi ini?
+                        </p>
+                        <div class="mt-6 flex flex-col sm:flex-row justify-center sm:gap-3 gap-2">
+                            <button type="button" id="cancelGenericConfirm"
+                                    class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 inline-flex items-center justify-center">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                                Batal
+                            </button>
+                            <button type="button" id="confirmGenericAction"
+                                    class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 shadow-sm inline-flex items-center justify-center">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                Ya, Lanjutkan
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(confirmationModal);
+
+        // Modal elements
+        const modal = document.getElementById('genericConfirmationModal');
+        const overlay = document.getElementById('modalOverlay');
+        const btnCancel = document.getElementById('cancelGenericConfirm');
+        const btnConfirm = document.getElementById('confirmGenericAction');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalContent = document.getElementById('modalContent');
+        const modalIcon = document.getElementById('modalIcon');
+
+        // Close modal functions
+        const closeModal = () => {
+            modal.classList.add('hidden');
+            document.body.style.overflow = '';
+        };
+
+        // Open modal function
+        const openModal = (title, content, actionType, confirmAction) => {
+            // Set modal title and content
+            modalTitle.textContent = title;
+            modalContent.innerHTML = content;
+
+            // Set icon and button colors based on action type
+            let iconColor = 'blue-600';
+            let iconBg = 'bg-blue-100';
+            let buttonColor = 'bg-blue-600 hover:bg-blue-700';
+
+            switch (actionType) {
+                case 'delete':
+                    iconColor = 'red-600';
+                    iconBg = 'bg-red-100';
+                    buttonColor = 'bg-red-600 hover:bg-red-700';
+                    break;
+                case 'update':
+                    iconColor = 'amber-600';
+                    iconBg = 'bg-amber-100';
+                    buttonColor = 'bg-amber-500 hover:bg-amber-600';
+                    break;
+                case 'save':
+                    iconColor = 'green-600';
+                    iconBg = 'bg-green-100';
+                    buttonColor = 'bg-green-600 hover:bg-green-700';
+                    break;
+            }
+
+            // Update icon
+            modalIcon.className = `w-12 h-12 rounded-full ${iconBg} flex items-center justify-center`;
+            modalIcon.innerHTML = `
+                <svg class="w-6 h-6 text-${iconColor.replace('-', '')}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            `;
+
+            // Update confirm button color
+            btnConfirm.className = `px-4 py-2 rounded-lg ${buttonColor} text-white shadow-sm inline-flex items-center justify-center`;
+
+            // Store the action to execute when confirmed
+            modal.dataset.confirmAction = confirmAction;
+
+            // Show modal
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            btnConfirm.focus();
+        };
+
+        // Event listeners for modal
+        overlay?.addEventListener('click', closeModal);
+        btnCancel?.addEventListener('click', closeModal);
+
+        btnConfirm?.addEventListener('click', function() {
+            if (modal.dataset.confirmAction) {
+                eval(modal.dataset.confirmAction);
+            }
+            closeModal();
+        });
+
+        // Escape key to close modal
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && !modal.classList.contains('hidden')) closeModal();
+        });
+
+        // Listen for custom events to open the modal
+        window.addEventListener('open-generic-confirmation', function(e) {
+            const detail = e.detail;
+            openModal(detail.title, detail.content, detail.actionType, detail.confirmAction);
+        });
+    });
     </script>
 </body>
 </html>

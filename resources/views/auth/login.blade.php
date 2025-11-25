@@ -162,6 +162,22 @@
                     </p>
                 </form>
 
+                <!-- Password Reminder Card -->
+                <div class="mt-6 rounded-lg border border-amber-200 bg-amber-50 p-4">
+                    <div class="flex items-start">
+                        <svg class="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-medium text-amber-800">Lupa Password?</h3>
+                            <p class="mt-1 text-xs text-amber-700">
+                                Jika Anda lupa password, silakan hubungi admin jurusan terkait Anda untuk bantuan pengaturan ulang password.
+                                Untuk admin jurusan, hubungi super admin. Untuk mahasiswa, hubungi admin jurusan masing-masing.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Default Login Info (opsional) -->
                 <div class="mt-8 rounded-lg border border-blue-200 bg-blue-50 p-4">
                     <h3 class="mb-2 text-sm font-medium text-blue-800">Info Login Default:</h3>

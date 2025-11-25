@@ -15,7 +15,7 @@
             </div>
         </div>
 
-        <form method="POST" action="{{ route('superadmin.update-user', $user) }}" class="space-y-8">
+        <form id="superadmin-user-edit-form" method="POST" action="{{ route('superadmin.update-user', $user) }}" class="space-y-8">
             @csrf
             @method('PUT')
 
@@ -30,7 +30,7 @@
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label for="name" class="block text-sm font-medium text-gray-700 mb-2">Nama Lengkap *</label>
+                        <label for="name" class="block text-sm font-medium text-gray-700 mb-2">Nama Lengkap <span class="text-red-500">*</span></label>
                         <input type="text" name="name" id="name" class="input-field @error('name') border-red-500 @enderror" 
                                value="{{ old('name', $user->name) }}" required>
                         @error('name')
@@ -39,7 +39,7 @@
                     </div>
 
                     <div>
-                        <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Email *</label>
+                        <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Email <span class="text-red-500">*</span></label>
                         <input type="email" name="email" id="email" class="input-field @error('email') border-red-500 @enderror" 
                                value="{{ old('email', $user->email) }}" required>
                         @error('email')
@@ -48,7 +48,7 @@
                     </div>
 
                     <div>
-                        <label for="role" class="block text-sm font-medium text-gray-700 mb-2">Role *</label>
+                        <label for="role" class="block text-sm font-medium text-gray-700 mb-2">Role <span class="text-red-500">*</span></label>
                         <select name="role" id="role" class="input-field @error('role') border-red-500 @enderror" required onchange="toggleFields()">
                             <option value="user" {{ old('role', $user->role) == 'user' ? 'selected' : '' }}>Mahasiswa</option>
                             <option value="admin" {{ old('role', $user->role) == 'admin' ? 'selected' : '' }}>Admin</option>
@@ -60,7 +60,7 @@
                     </div>
 
                     <div>
-                        <label for="status" class="block text-sm font-medium text-gray-700 mb-2">Status *</label>
+                        <label for="status" class="block text-sm font-medium text-gray-700 mb-2">Status <span class="text-red-500">*</span></label>
                         <select name="status" id="status" class="input-field @error('status') border-red-500 @enderror" required>
                             <option value="active" {{ old('status', $user->status) == 'active' ? 'selected' : '' }}>Aktif</option>
                             <option value="inactive" {{ old('status', $user->status) == 'inactive' ? 'selected' : '' }}>Tidak Aktif</option>
@@ -172,14 +172,14 @@
             <div class="card p-6">
                 <div class="flex items-center justify-between">
                     <div class="text-sm text-gray-600">
-                        <p>* Field wajib diisi</p>
+                        <p><span class="text-red-500">*</span> Field wajib diisi</p>
                         <p class="mt-1">Terakhir diupdate: {{ $user->updated_at->format('d M Y H:i') }}</p>
                     </div>
                     <div class="flex space-x-4">
                         <a href="{{ route('superadmin.users') }}" class="btn-outline">
                             Batal
                         </a>
-                        <button type="submit" class="btn-primary">
+                        <button type="button" class="btn-primary" onclick="submitFormWithConfirmation()">
                             Update User
                         </button>
                     </div>
@@ -189,6 +189,17 @@
     </div>
 
     <script>
+        function submitFormWithConfirmation() {
+            window.dispatchEvent(new CustomEvent('open-generic-confirmation', {
+                detail: {
+                    title: 'Konfirmasi Perbarui',
+                    content: 'Apakah Anda yakin ingin memperbarui data user ini?',
+                    actionType: 'update',
+                    confirmAction: 'document.getElementById(\'superadmin-user-edit-form\').submit()'
+                }
+            }));
+        }
+
         function toggleFields() {
             const role = document.getElementById('role').value;
             const npmField = document.getElementById('npm-field');

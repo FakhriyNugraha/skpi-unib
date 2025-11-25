@@ -152,31 +152,131 @@ class DriveVerificationController extends Controller
         }
 
         if (!$serviceAccountFile) {
-            \Log::error('No Google Drive credential file specified');
-            throw new \Exception('File credentials Google Drive tidak dispesifikasikan. Atur GOOGLE_DRIVE_SERVICE_ACCOUNT_FILE atau GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON_BASE64 di .env');
+            \Log::warning('Google Drive credential not configured, returning basic file info only');
+            // Jika credentials tidak disiapkan, hanya kembalikan informasi basic tanpa verifikasi
+            return [
+                'folder_id' => $folderId,
+                'folder_url' => $skpi->drive_link,
+                'total_achievements' => 0,
+                'total_documents_in_drive' => 0,
+                'total_files_scanned' => 0,
+                'matched_items' => [],
+                'missing_items' => [],
+                'status' => 'skipped',
+                'message' => 'Verifikasi Google Drive tidak aktif karena konfigurasi belum lengkap. Fitur ini akan aktif jika administrator mengkonfigurasi GOOGLE_DRIVE_SERVICE_ACCOUNT_FILE atau GOOGLE_DRIVE_SERVICE_JSON_BASE64 di .env.',
+                'scan_summary' => [
+                    'pdf_count' => 0,
+                    'image_count' => 0,
+                    'document_count' => 0
+                ],
+                'progress' => [
+                    'current' => 0,
+                    'total' => 0,
+                    'percentage' => 0
+                ],
+                'validation_score' => [
+                    'percentage' => 0,
+                    'message' => 'Verifikasi Google Drive sedang dinonaktifkan. Untuk mengaktifkan: 1) Buat service account di Google Cloud Console 2) Aktifkan Google Drive API 3) Unduh credential JSON 4) Encode ke base64 dan taruh di variabel GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON_BASE64 di .env',
+                    'details' => [],
+                    'status' => 'info'
+                ]
+            ];
         }
 
         if (!file_exists($serviceAccountFile)) {
-            \Log::error('Google Drive credential file not found', [
-                'serviceAccountFile' => $serviceAccountFile,
-                'base64_env_set' => !empty($serviceAccountJsonBase64),
-                'file_path_env_set' => !empty(isset($_ENV['GOOGLE_DRIVE_SERVICE_ACCOUNT_FILE']) ? $_ENV['GOOGLE_DRIVE_SERVICE_ACCOUNT_FILE'] : env('GOOGLE_DRIVE_SERVICE_ACCOUNT_FILE')),
-                'cwd' => getcwd(),
-                'storage_path' => storage_path(),
-                'storage_app_path' => storage_path('app')
+            \Log::warning('Google Drive credential file not found, returning basic info', [
+                'serviceAccountFile' => $serviceAccountFile
             ]);
-
-            throw new \Exception('File credentials Google Drive tidak ditemukan. Atur GOOGLE_DRIVE_SERVICE_ACCOUNT_FILE atau GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON_BASE64 di .env');
+            // Jika file credentials tidak ditemukan, hanya kembalikan informasi basic
+            return [
+                'folder_id' => $folderId,
+                'folder_url' => $skpi->drive_link,
+                'total_achievements' => 0,
+                'total_documents_in_drive' => 0,
+                'total_files_scanned' => 0,
+                'matched_items' => [],
+                'missing_items' => [],
+                'status' => 'skipped',
+                'message' => 'File credential Google Drive tidak ditemukan. Atur GOOGLE_DRIVE_SERVICE_ACCOUNT_FILE atau GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON_BASE64 di .env',
+                'scan_summary' => [
+                    'pdf_count' => 0,
+                    'image_count' => 0,
+                    'document_count' => 0
+                ],
+                'progress' => [
+                    'current' => 0,
+                    'total' => 0,
+                    'percentage' => 0
+                ],
+                'validation_score' => [
+                    'percentage' => 0,
+                    'message' => 'Verifikasi Google Drive sedang dinonaktifkan karena file credential tidak ditemukan. Pastikan variabel GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON_BASE64 di .env berisi credential base64 yang valid',
+                    'details' => [],
+                    'status' => 'info'
+                ]
+            ];
         }
 
         if (is_dir($serviceAccountFile)) {
-            \Log::error('Google Drive credential path points to directory', ['path' => $serviceAccountFile]);
-            throw new \Exception('Path credential Google Drive menunjuk ke direktori, bukan file: '.$serviceAccountFile);
+            \Log::warning('Google Drive credential path points to directory, returning basic info', ['path' => $serviceAccountFile]);
+            return [
+                'folder_id' => $folderId,
+                'folder_url' => $skpi->drive_link,
+                'total_achievements' => 0,
+                'total_documents_in_drive' => 0,
+                'total_files_scanned' => 0,
+                'matched_items' => [],
+                'missing_items' => [],
+                'status' => 'skipped',
+                'message' => "Path credential Google Drive menunjuk ke direktori, bukan file: {$serviceAccountFile}",
+                'scan_summary' => [
+                    'pdf_count' => 0,
+                    'image_count' => 0,
+                    'document_count' => 0
+                ],
+                'progress' => [
+                    'current' => 0,
+                    'total' => 0,
+                    'percentage' => 0
+                ],
+                'validation_score' => [
+                    'percentage' => 0,
+                    'message' => 'Verifikasi Google Drive gagal karena path credential tidak valid. Path harus mengarah ke file credential, bukan direktori.',
+                    'details' => [],
+                    'status' => 'info'
+                ]
+            ];
         }
 
         if (!is_readable($serviceAccountFile)) {
-            \Log::error('Google Drive credential file is not readable', ['file' => $serviceAccountFile]);
-            throw new \Exception('File credentials Google Drive tidak dapat dibaca: '.$serviceAccountFile);
+            \Log::warning('Google Drive credential file is not readable, returning basic info', ['file' => $serviceAccountFile]);
+            return [
+                'folder_id' => $folderId,
+                'folder_url' => $skpi->drive_link,
+                'total_achievements' => 0,
+                'total_documents_in_drive' => 0,
+                'total_files_scanned' => 0,
+                'matched_items' => [],
+                'missing_items' => [],
+                'status' => 'skipped',
+                'message' => "File credentials Google Drive tidak dapat dibaca: {$serviceAccountFile}",
+                'scan_summary' => [
+                    'pdf_count' => 0,
+                    'image_count' => 0,
+                    'document_count' => 0
+                ],
+                'progress' => [
+                    'current' => 0,
+                    'total' => 0,
+                    'percentage' => 0
+                ],
+                'validation_score' => [
+                    'percentage' => 0,
+                    'message' => 'Verifikasi Google Drive sedang dinonaktifkan karena file credential tidak dapat diakses. Pastikan file credential memiliki izin akses yang tepat.',
+                    'details' => [],
+                    'status' => 'info'
+                ]
+            ];
         }
 
         \Log::info('Successfully loaded Google Drive credentials', ['file' => $serviceAccountFile]);
@@ -981,4 +1081,5 @@ class DriveVerificationController extends Controller
         // Average the score across all sentences
         return count($sentences) > 0 ? min(100, $matchScore / count($sentences)) : 0;
     }
+
 }

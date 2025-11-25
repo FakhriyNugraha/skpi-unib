@@ -15,7 +15,7 @@
             </div>
         </div>
 
-        <form action="{{ route('admin.users-jurusan.update', $user) }}" method="POST">
+        <form id="user-edit-form" action="{{ route('admin.users-jurusan.update', $user) }}" method="POST">
             @csrf
             @method('PUT')
 
@@ -127,11 +127,24 @@
                     <a href="{{ route('admin.users-jurusan.index') }}" class="btn-outline">
                         Batal
                     </a>
-                    <button type="submit" class="btn-primary">
+                    <button type="button" class="btn-primary" onclick="submitFormWithConfirmation()">
                         Perbarui Mahasiswa
                     </button>
                 </div>
             </div>
         </form>
     </div>
+
+    <script>
+        function submitFormWithConfirmation() {
+            window.dispatchEvent(new CustomEvent('open-generic-confirmation', {
+                detail: {
+                    title: 'Konfirmasi Perbarui',
+                    content: 'Apakah Anda yakin ingin memperbarui data mahasiswa ini?',
+                    actionType: 'update',
+                    confirmAction: 'document.getElementById(\'user-edit-form\').submit()'
+                }
+            }));
+        }
+    </script>
 </x-app-layout>

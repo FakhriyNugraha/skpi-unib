@@ -48,7 +48,15 @@ class SuperAdminController extends Controller
 
         if ($request->filled('role'))    $query->where('role', $request->role);
         if ($request->filled('jurusan')) $query->where('jurusan_id', $request->jurusan);
-        if ($request->filled('status'))  $query->where('status', $request->status);
+
+        // Filter berdasarkan periode wisuda (menggunakan data dari skpi_data)
+        if ($request->filled('periode_wisuda') && $request->periode_wisuda !== 'all') {
+            $skpiUsers = SkpiData::where('periode_wisuda', $request->periode_wisuda)
+                ->pluck('user_id')
+                ->toArray();
+
+            $query->whereIn('id', $skpiUsers);
+        }
 
         if ($request->filled('search')) {
             $s = $request->search;
@@ -60,8 +68,33 @@ class SuperAdminController extends Controller
             });
         }
 
+        // Dapatkan periode wisuda yang tersedia untuk dropdown
+        $periodQuery = SkpiData::select('periode_wisuda')
+            ->whereNotNull('periode_wisuda');
+
+        // Filter berdasarkan jurusan hanya jika user adalah admin biasa
+        if ($currentUser && $currentUser->role === 'admin' && $currentUser->jurusan_id) {
+            $periodQuery->where('jurusan_id', $currentUser->jurusan_id);
+        }
+
+        $periodNumbers = $periodQuery
+            ->distinct()
+            ->orderBy('periode_wisuda', 'desc')
+            ->pluck('periode_wisuda')
+            ->values();
+
+        // Format periods with their date ranges
+        $availablePeriods = collect();
+        foreach ($periodNumbers as $periodNumber) {
+            $periodInfo = \App\Helpers\PeriodHelper::getPeriodRange($periodNumber);
+            $availablePeriods->push([
+                'number' => $periodNumber,
+                'title' => $periodInfo['title']
+            ]);
+        }
+
         $users = $query->paginate(15)->appends($request->query());
-        return view('superadmin.users', compact('users'));
+        return view('superadmin.users', compact('users', 'availablePeriods'));
     }
 
     public function createUser()
@@ -119,7 +152,17 @@ class SuperAdminController extends Controller
             'jurusan_id' => ['nullable','exists:jurusans,id'],
             'phone'      => ['nullable','string','max:15'],
             'address'    => ['nullable','string'],
-            'password'   => ['nullable','string','min:8','confirmed'],
+            'password'   => [
+                'nullable',
+                'string',
+                'min:8',
+                'confirmed',
+                function ($attribute, $value, $fail) use ($user) {
+                    if (Hash::check($value, $user->password)) {
+                        $fail('Password baru tidak boleh sama dengan password sebelumnya.');
+                    }
+                },
+            ],
             'npm'        => [Rule::requiredIf(fn() => $request->role === 'user'),
                              'nullable','string','max:9','regex:/^[A-Za-z0-9]+$/',
                              Rule::unique('users','npm')->ignore($user->id)],

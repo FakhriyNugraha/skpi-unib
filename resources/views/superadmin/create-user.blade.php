@@ -15,7 +15,7 @@
             </div>
         </div>
 
-        <form method="POST" action="{{ route('superadmin.store-user') }}" class="space-y-8">
+        <form id="superadmin-user-create-form" method="POST" action="{{ route('superadmin.store-user') }}" class="space-y-8">
             @csrf
 
             <!-- Informasi Dasar -->
@@ -174,7 +174,7 @@
                         <a href="{{ route('superadmin.users') }}" class="btn-outline">
                             Batal
                         </a>
-                        <button type="submit" class="btn-primary">
+                        <button type="button" class="btn-primary" onclick="submitFormWithConfirmation()">
                             Simpan User
                         </button>
                     </div>
@@ -184,6 +184,17 @@
     </div>
 
     <script>
+        function submitFormWithConfirmation() {
+            window.dispatchEvent(new CustomEvent('open-generic-confirmation', {
+                detail: {
+                    title: 'Konfirmasi Simpan',
+                    content: 'Apakah Anda yakin ingin menyimpan data user ini?',
+                    actionType: 'save',
+                    confirmAction: 'document.getElementById(\'superadmin-user-create-form\').submit()'
+                }
+            }));
+        }
+
         function toggleFields() {
             const role = document.getElementById('role').value;
             const npmField = document.getElementById('npm-field');

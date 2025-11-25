@@ -61,7 +61,7 @@
                     <h2 class="text-xl font-semibold text-gray-900">Informasi Profile</h2>
                 </div>
 
-                <form method="post" action="{{ route('profile.update') }}" enctype="multipart/form-data">
+                <form id="profile-form" method="post" action="{{ route('profile.update') }}" enctype="multipart/form-data">
                     @csrf
                     @method('patch')
 
@@ -184,7 +184,9 @@
                     </div>
 
                     <div class="flex items-center justify-end mt-6 pt-6 border-t border-gray-200">
-                        <button type="submit" class="btn-primary">Simpan Perubahan</button>
+                        <button type="button" class="btn-primary">
+                            Simpan Perubahan
+                        </button>
                     </div>
                 </form>
             </div>
@@ -199,7 +201,7 @@
                     <h2 class="text-xl font-semibold text-gray-900">Update Password</h2>
                 </div>
 
-                <form method="post" action="{{ route('password.update') }}">
+                <form id="password-form" method="post" action="{{ route('password.update') }}">
                     @csrf
                     @method('put')
 
@@ -230,7 +232,9 @@
                     </div>
 
                     <div class="flex items-center justify-end mt-6 pt-6 border-t border-gray-200">
-                        <button type="submit" class="btn-primary">Update Password</button>
+                        <button type="button" class="btn-primary">
+                            Update Password
+                        </button>
                     </div>
                 </form>
             </div>
@@ -467,8 +471,151 @@
                 deleteAccountForm.submit();
             });
 
+
             window.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape' && !deleteAccountModal.classList.contains('hidden')) closeDeleteAccount();
+            });
+        });
+    </script>
+
+    <!-- Confirmation Modal for Profile Update -->
+    <div id="profileConfirmModal" class="fixed inset-0 z-50 hidden" aria-hidden="true">
+        <div id="profileModalOverlay" class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
+        <div class="absolute inset-0 flex items-center justify-center p-4">
+            <div class="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-gray-200">
+                <div class="p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 text-center">
+                        Konfirmasi Perbarui Profil
+                    </h3>
+                    <p class="mt-3 text-sm text-gray-600 text-center">
+                        Apakah Anda yakin ingin memperbarui informasi profil ini?
+                    </p>
+                    <div class="mt-6 flex flex-col sm:flex-row justify-center sm:gap-3 gap-2">
+                        <button type="button" id="cancelProfileConfirm"
+                                class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 inline-flex items-center justify-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                            Batal
+                        </button>
+                        <button type="button" id="confirmProfileUpdate"
+                                class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 shadow-sm inline-flex items-center justify-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            Ya, Simpan
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal for Password Update -->
+    <div id="passwordConfirmModal" class="fixed inset-0 z-50 hidden" aria-hidden="true">
+        <div id="passwordModalOverlay" class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
+        <div class="absolute inset-0 flex items-center justify-center p-4">
+            <div class="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-gray-200">
+                <div class="p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 text-center">
+                        Konfirmasi Update Password
+                    </h3>
+                    <p class="mt-3 text-sm text-gray-600 text-center">
+                        Apakah Anda yakin ingin mengganti password Anda?
+                    </p>
+                    <div class="mt-6 flex flex-col sm:flex-row justify-center sm:gap-3 gap-2">
+                        <button type="button" id="cancelPasswordConfirm"
+                                class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 inline-flex items-center justify-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                            Batal
+                        </button>
+                        <button type="button" id="confirmPasswordUpdate"
+                                class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 shadow-sm inline-flex items-center justify-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            Ya, Update
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Profile Update Modal
+            const profileModal = document.getElementById('profileConfirmModal');
+            const profileOverlay = document.getElementById('profileModalOverlay');
+            const profileCancelBtn = document.getElementById('cancelProfileConfirm');
+            const profileConfirmBtn = document.getElementById('confirmProfileUpdate');
+
+            // Password Update Modal
+            const passwordModal = document.getElementById('passwordConfirmModal');
+            const passwordOverlay = document.getElementById('passwordModalOverlay');
+            const passwordCancelBtn = document.getElementById('cancelPasswordConfirm');
+            const passwordConfirmBtn = document.getElementById('confirmPasswordUpdate');
+
+            // Profile Update Button
+            const profileForm = document.getElementById('profile-form');
+            const profileSubmitBtn = document.querySelector('#profile-form .btn-primary');
+
+            // Password Update Button
+            const passwordForm = document.getElementById('password-form');
+            const passwordSubmitBtn = document.querySelector('#password-form .btn-primary');
+
+            // Open Profile Modal
+            profileSubmitBtn?.addEventListener('click', function(e) {
+                e.preventDefault();
+                profileModal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+                profileConfirmBtn.focus();
+            });
+
+            // Open Password Modal
+            passwordSubmitBtn?.addEventListener('click', function(e) {
+                e.preventDefault();
+                passwordModal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+                passwordConfirmBtn.focus();
+            });
+
+            // Close Profile Modal
+            function closeProfileModal() {
+                profileModal.classList.add('hidden');
+                document.body.style.overflow = '';
+            }
+
+            profileOverlay?.addEventListener('click', closeProfileModal);
+            profileCancelBtn?.addEventListener('click', closeProfileModal);
+
+            // Close Password Modal
+            function closePasswordModal() {
+                passwordModal.classList.add('hidden');
+                document.body.style.overflow = '';
+            }
+
+            passwordOverlay?.addEventListener('click', closePasswordModal);
+            passwordCancelBtn?.addEventListener('click', closePasswordModal);
+
+            // Confirm Profile Update
+            profileConfirmBtn?.addEventListener('click', function() {
+                profileForm.submit();
+            });
+
+            // Confirm Password Update
+            passwordConfirmBtn?.addEventListener('click', function() {
+                passwordForm.submit();
+            });
+
+            // ESC key to close modals
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    if (!profileModal.classList.contains('hidden')) closeProfileModal();
+                    if (!passwordModal.classList.contains('hidden')) closePasswordModal();
+                }
             });
         });
     </script>

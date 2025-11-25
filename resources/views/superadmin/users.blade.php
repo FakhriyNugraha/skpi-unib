@@ -69,7 +69,7 @@
         <!-- Filters -->
         <div class="card p-6 mb-8">
             <form method="GET" action="{{ route('superadmin.users') }}">
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Role</label>
                         <select name="role" class="input-field">
@@ -91,11 +91,14 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                        <select name="status" class="input-field">
-                            <option value="">Semua Status</option>
-                            <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Aktif</option>
-                            <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>Tidak Aktif</option>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Periode Wisuda</label>
+                        <select name="periode_wisuda" class="input-field">
+                            <option value="">Semua Periode</option>
+                            @foreach($availablePeriods as $period)
+                                <option value="{{ $period['number'] }}" {{ request('periode_wisuda') == $period['number'] ? 'selected' : '' }}>
+                                    {{ $period['number'] }} - {{ $period['title'] }}
+                                </option>
+                            @endforeach
                         </select>
                     </div>
                     <div class="flex items-end">
@@ -103,7 +106,8 @@
                     </div>
                 </div>
                 <div class="mt-4">
-                    <input type="text" name="search" placeholder="Cari nama, email, NPM..." class="input-field" 
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Pencarian Umum</label>
+                    <input type="text" name="search" placeholder="Cari nama, email, NPM..." class="input-field w-full"
                            value="{{ request('search') }}">
                 </div>
             </form>
@@ -170,16 +174,32 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium space-x-2">
                                 <a href="{{ route('superadmin.edit-user', $user) }}" class="inline-flex items-center px-3 py-1 rounded bg-amber-500 text-white border-2 border-amber-500 hover:bg-amber-600">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                    </svg>
                                     Edit
                                 </a>
                                 @if($user->id != auth()->id())
-                                <button 
+                                <button
                                     type="button"
-                                    class="inline-flex items-center px-3 py-1 rounded bg-red-600 text-white hover:bg-red-700 delete-user-btn"
-                                    data-user-id="{{ $user->id }}"
-                                    data-user-name="{{ $user->name }}">
+                                    class="inline-flex items-center px-3 py-1 rounded bg-red-600 text-white hover:bg-red-700"
+                                    onclick="window.dispatchEvent(new CustomEvent('open-generic-confirmation', {
+                                        detail: {
+                                            title: 'Konfirmasi Hapus',
+                                            content: 'Apakah Anda yakin ingin menghapus user <strong>{{ $user->name }}</strong>?<br>Aksi ini tidak dapat dibatalkan.',
+                                            actionType: 'delete',
+                                            confirmAction: 'document.getElementById(\'delete-form-{{ $user->id }}\').submit()'
+                                        }
+                                    }));">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
                                     Hapus
                                 </button>
+                                <form id="delete-form-{{ $user->id }}" action="{{ route('superadmin.delete-user', $user) }}" method="POST" class="hidden">
+                                    @csrf
+                                    @method('DELETE')
+                                </form>
                                 @endif
                             </td>
                         </tr>

@@ -15,7 +15,7 @@
             </div>
         </div>
 
-        <form action="{{ route('admin.users-jurusan.store') }}" method="POST">
+        <form id="user-create-form" action="{{ route('admin.users-jurusan.store') }}" method="POST">
             @csrf
 
             <div class="card p-6">
@@ -114,11 +114,24 @@
                     <a href="{{ route('admin.users-jurusan.index') }}" class="btn-outline">
                         Batal
                     </a>
-                    <button type="submit" class="btn-primary">
+                    <button type="button" class="btn-primary" onclick="submitFormWithConfirmation()">
                         Simpan Mahasiswa
                     </button>
                 </div>
             </div>
         </form>
     </div>
+
+    <script>
+        function submitFormWithConfirmation() {
+            window.dispatchEvent(new CustomEvent('open-generic-confirmation', {
+                detail: {
+                    title: 'Konfirmasi Simpan',
+                    content: 'Apakah Anda yakin ingin menyimpan data mahasiswa ini?',
+                    actionType: 'save',
+                    confirmAction: 'document.getElementById(\'user-create-form\').submit()'
+                }
+            }));
+        }
+    </script>
 </x-app-layout>

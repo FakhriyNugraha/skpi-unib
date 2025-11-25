@@ -197,7 +197,17 @@ class AdminUserManagementController extends Controller
             'phone'      => ['nullable', 'string', 'max:15'],
             'address'    => ['nullable', 'string'],
             'status'     => ['required', Rule::in(['active', 'inactive'])],
-            'password'   => ['nullable', 'string', 'min:8', 'confirmed'],
+            'password'   => [
+                'nullable',
+                'string',
+                'min:8',
+                'confirmed',
+                function ($attribute, $value, $fail) use ($user) {
+                    if (Hash::check($value, $user->password)) {
+                        $fail('Password baru tidak boleh sama dengan password sebelumnya.');
+                    }
+                },
+            ],
             'npm'        => ['required', 'string', 'max:9', 'regex:/^[A-Za-z0-9]+$/', Rule::unique('users', 'npm')->ignore($user->id)],
         ]);
 

@@ -257,7 +257,7 @@
                                 <div class="ml-3">
                                     <h3 class="text-sm font-bold text-yellow-800">Petunjuk Pengisian Link Google Drive:</h3>
                                     <div class="mt-2 text-sm text-yellow-700">
-                                        <p class="mb-2">Unggah semua bukti pada <strong>Google Drive</strong> dan pastikan aksesnya bisa dilihat oleh reviewer.</p>
+                                        <p class="mb-2">Unggah semua bukti pada <strong>Google Drive</strong> dan pastikan aksesnya bisa dilihat oleh <strong>reviewer</strong>.</p>
                                         <p class="mb-2"><strong>Di dalam folder tersebut, pisahkan subfolder sesuai kategori:</strong></p>
                                         <ul class="list-disc pl-5 space-y-1">
                                             <li class="font-medium"><span class="text-gray-700">Prestasi Akademik</span> - Dokumen bukti prestasi akademik (piagam, sertifikat, dll)</li>

@@ -208,9 +208,14 @@
 
             // Print all button
             printAllBtn.addEventListener('click', function() {
-                if (confirm('Anda yakin ingin mencetak semua SKPI yang approved?')) {
-                    window.location.href = '{{ route('admin.print-bulk-all') }}';
-                }
+                window.dispatchEvent(new CustomEvent('open-generic-confirmation', {
+                    detail: {
+                        title: 'Konfirmasi Cetak Semua',
+                        content: 'Apakah Anda yakin ingin mencetak semua SKPI yang approved?',
+                        actionType: 'save', // Using save color since it's a print action
+                        confirmAction: 'window.location.href = \'{{ route('admin.print-bulk-all') }}\''
+                    }
+                }));
             });
 
             // Initialize counter
