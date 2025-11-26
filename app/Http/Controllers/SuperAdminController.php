@@ -305,6 +305,7 @@ class SuperAdminController extends Controller
         $skpiList = $query->paginate(15)->appends($request->query());
         $jurusans = Jurusan::orderBy('nama_jurusan')->get(['id','nama_jurusan']);
 
+
         // Get available periods for the dropdown
         $availablePeriods = SkpiData::select('periode_wisuda')
             ->whereNotNull('periode_wisuda')
@@ -456,12 +457,14 @@ class SuperAdminController extends Controller
 
     public function reports(Request $request)
     {
-        // Query builder for SKPI data with optional period filter
-        $skpiQuery = SkpiData::query();
+        // Query builder untuk SKPI yang masuk perhitungan visual:
+        // hanya status selain 'draft' agar persentase sesuai bar (approved + submitted + rejected)
+        $baseSkpiQuery = SkpiData::query()
+            ->where('status', '!=', 'draft');
 
         // Add period filtering
         if ($request->filled('periode_wisuda') && $request->periode_wisuda !== 'all') {
-            $skpiQuery->where('periode_wisuda', $request->periode_wisuda);
+            $baseSkpiQuery->where('periode_wisuda', $request->periode_wisuda);
         }
 
         // Count users who have SKPI data in the selected period (if filter is applied) for total users
@@ -489,52 +492,71 @@ class SuperAdminController extends Controller
         // Total admin count should remain the same (not affected by period filter)
         $total_admin = User::whereIn('role', ['admin', 'superadmin'])->count();
 
-        $total_skpi = $skpiQuery->count();
-        $approved_skpi = $skpiQuery->where('status', 'approved')->count();
-        $pending_skpi = $skpiQuery->where('status', 'submitted')->count();
-        $rejected_skpi = $skpiQuery->where('status', 'rejected')->count();
+        // Hitung total dan per status (non-draft saja)
+        $total_skpi     = (clone $baseSkpiQuery)->count();
+        $approved_skpi  = (clone $baseSkpiQuery)->where('status', 'approved')->count();
+        $pending_skpi   = (clone $baseSkpiQuery)->where('status', 'submitted')->count();
+        $rejected_skpi  = (clone $baseSkpiQuery)->where('status', 'rejected')->count();
 
+        // Persentase untuk visual bar
         $approved_percentage = $total_skpi > 0 ? round(($approved_skpi / $total_skpi) * 100, 1) : 0;
-        $pending_percentage = $total_skpi > 0 ? round(($pending_skpi / $total_skpi) * 100, 1) : 0;
+        $pending_percentage  = $total_skpi > 0 ? round(($pending_skpi  / $total_skpi) * 100, 1) : 0;
         $rejected_percentage = $total_skpi > 0 ? round(($rejected_skpi / $total_skpi) * 100, 1) : 0;
 
         $stats = [
-            'total_users' => $total_users,
-            'total_mahasiswa' => $total_mahasiswa,
-            'total_admin' => $total_admin,
-            'total_skpi' => $total_skpi,
-            'approved_skpi' => $approved_skpi,
-            'pending_skpi' => $pending_skpi,
-            'rejected_skpi' => $rejected_skpi,
-            'approval_percentage' => $approved_percentage,
-            'pending_percentage' => $pending_percentage,
-            'rejected_percentage' => $rejected_percentage,
-            'total_jurusan' => Jurusan::count(),
-            'active_jurusan' => Jurusan::where('status', 'active')->count(),
-            'inactive_jurusan' => Jurusan::where('status', 'inactive')->count(),
+            'total_users'          => $total_users,
+            'total_mahasiswa'      => $total_mahasiswa,
+            'total_admin'          => $total_admin,
+            'total_skpi'           => $total_skpi,
+            'approved_skpi'        => $approved_skpi,
+            'pending_skpi'         => $pending_skpi,
+            'rejected_skpi'        => $rejected_skpi,
+            // KEY DIGANTI: sekarang 'approved_percentage'
+            'approved_percentage'  => $approved_percentage,
+            'pending_percentage'   => $pending_percentage,
+            'rejected_percentage'  => $rejected_percentage,
+            'total_jurusan'        => Jurusan::count(),
+            'active_jurusan'       => Jurusan::where('status', 'active')->count(),
+            'inactive_jurusan'     => Jurusan::where('status', 'inactive')->count(),
         ];
 
-        // Statistik per jurusan
+        // Statistik per jurusan - showing all SKPIs with verified/unverified breakdown
         $jurusanStats = Jurusan::withCount([
             'skpiData as jumlah_skpi' => function($q) use ($request) {
                 if ($request->filled('periode_wisuda') && $request->periode_wisuda !== 'all') {
                     $q->where('periode_wisuda', $request->periode_wisuda);
                 }
                 $q->where('status', '!=', 'draft');
+            },
+            'skpiData as jumlah_skpi_approved' => function($q) use ($request) {
+                if ($request->filled('periode_wisuda') && $request->periode_wisuda !== 'all') {
+                    $q->where('periode_wisuda', $request->periode_wisuda);
+                }
+                $q->where('status', 'approved');
+            },
+            'skpiData as jumlah_skpi_unapproved' => function($q) use ($request) {
+                if ($request->filled('periode_wisuda') && $request->periode_wisuda !== 'all') {
+                    $q->where('periode_wisuda', $request->periode_wisuda);
+                }
+                $q->whereNotIn('status', ['approved', 'draft']);
             }
         ])
         ->where('status', 'active')
         ->orderBy('jumlah_skpi', 'desc')
         ->get()
         ->map(function ($jurusan) use ($total_skpi) {
-            $jumlah_skpi = $jurusan->jumlah_skpi;
-            $persentase = $total_skpi > 0 ? round(($jumlah_skpi / $total_skpi) * 100, 1) : 0;
+            $jumlah_skpi       = $jurusan->jumlah_skpi;          // Count all non-draft SKPIs
+            $jumlah_approved   = $jurusan->jumlah_skpi_approved; // Count approved SKPIs
+            $jumlah_unapproved = $jurusan->jumlah_skpi_unapproved;
+            $persentase        = $total_skpi > 0 ? round(($jumlah_skpi / $total_skpi) * 100, 1) : 0;
 
             return [
-                'id' => $jurusan->id,
-                'nama_jurusan' => $jurusan->nama_jurusan,
-                'jumlah_skpi' => $jumlah_skpi,
-                'persentase' => $persentase,
+                'id'                => $jurusan->id,
+                'nama_jurusan'      => $jurusan->nama_jurusan,
+                'jumlah_skpi'       => $jumlah_skpi,
+                'jumlah_approved'   => $jumlah_approved,
+                'jumlah_unapproved' => $jumlah_unapproved,
+                'persentase'        => $persentase,
             ];
         });
 
@@ -570,17 +592,17 @@ class SuperAdminController extends Controller
         ])
         ->get()
         ->map(function ($jurusan) {
-            $total = $jurusan->total_skpi;
-            $approved = $jurusan->approved;
+            $total         = $jurusan->total_skpi;
+            $approved      = $jurusan->approved;
             $approval_rate = $total > 0 ? round(($approved / $total) * 100, 1) : 0;
 
             return [
-                'nama_jurusan' => $jurusan->nama_jurusan,
-                'total_skpi' => $total,
-                'approved' => $approved,
-                'pending' => $jurusan->pending,
-                'rejected' => $jurusan->rejected,
-                'approval_rate' => $approval_rate,
+                'nama_jurusan'   => $jurusan->nama_jurusan,
+                'total_skpi'     => $total,
+                'approved'       => $approved,
+                'pending'        => $jurusan->pending,
+                'rejected'       => $jurusan->rejected,
+                'approval_rate'  => $approval_rate,
             ];
         });
 
@@ -594,7 +616,7 @@ class SuperAdminController extends Controller
                 $range = PeriodHelper::getPeriodRange($period);
                 return [
                     'number' => $period,
-                    'title' => $range['title']
+                    'title'  => $range['title']
                 ];
             })
             ->values();

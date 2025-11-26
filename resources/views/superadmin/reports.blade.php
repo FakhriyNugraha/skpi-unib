@@ -69,7 +69,7 @@
                     </div>
                 </div>
 
-                {{-- TOTAL SKPI --}}
+                {{-- TOTAL SKPI TERVERIFIKASI --}}
                 <div class="bg-white rounded-xl shadow-md p-6 border border-gray-100 hover:shadow-lg transition-shadow">
                     <div class="flex items-center">
                         <div class="flex-shrink-0 w-12 h-12 rounded-full bg-teknik-orange-100 flex items-center justify-center">
@@ -79,14 +79,14 @@
                         </div>
                         <div class="ml-4">
                             <p class="text-sm font-medium text-gray-600">Total SKPI Terverifikasi</p>
-                            <p class="text-2xl font-extrabold text-teknik-orange-700">{{ $stats['total_skpi'] ?? 0 }}</p>
+                            <p class="text-2xl font-extrabold text-teknik-orange-700">{{ $stats['approved_skpi'] ?? 0 }}</p>
                         </div>
                     </div>
                     <div class="mt-4 pt-4 border-t border-gray-100">
                         <div class="w-full bg-gray-200 rounded-full h-2">
-                            <div class="bg-teknik-orange-600 h-2 rounded-full" style="width: {{ $stats['approval_percentage'] ?? 0 }}%"></div>
+                            <div class="bg-teknik-orange-600 h-2 rounded-full" style="width: {{ $stats['approved_percentage'] ?? 0 }}%"></div>
                         </div>
-                        <div class="mt-1 text-xs text-gray-600">{{ $stats['approval_percentage'] ?? 0 }}% disetujui</div>
+                        <div class="mt-1 text-xs text-gray-600">{{ $stats['approved_percentage'] ?? 0 }}% dari SKPI non-draft</div>
                     </div>
                 </div>
 
@@ -120,8 +120,8 @@
                             </svg>
                         </div>
                         <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-600">Tingkat Kelulusan SKPI</p>
-                            <p class="text-2xl font-extrabold text-purple-700">{{ $stats['approval_percentage'] ?? 0 }}%</p>
+                            <p class="text-sm font-medium text-gray-600">Tingkat Persetujuan SKPI</p>
+                            <p class="text-2xl font-extrabold text-purple-700">{{ $stats['approved_percentage'] ?? 0 }}%</p>
                         </div>
                     </div>
                     <div class="mt-4 pt-4 border-t border-gray-100">
@@ -197,7 +197,9 @@
                         <div>
                             <div class="flex justify-between mb-1">
                                 <span class="text-sm font-medium text-unib-blue-700">{{ $jurusan['nama_jurusan'] }}</span>
-                                <span class="text-sm font-medium text-unib-blue-700">{{ $jurusan['jumlah_skpi'] }}</span>
+                                <span class="text-sm font-medium text-unib-blue-700">
+                                    {{ $jurusan['jumlah_skpi'] }} ({{ $jurusan['jumlah_approved'] }} Terverifikasi, {{ $jurusan['jumlah_unapproved'] }} Belum)
+                                </span>
                             </div>
                             <div class="w-full bg-gray-200 rounded-full h-3">
                                 <div class="bg-unib-blue-600 h-3 rounded-full" style="width: {{ $jurusan['persentase'] }}%"></div>

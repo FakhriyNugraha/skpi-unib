@@ -566,30 +566,19 @@
                         // Detailed document matching with percentages and content analysis
                         if (results.validation_score && results.validation_score.details) {
                             html += '<div class="mt-4 space-y-3">';
-                            html += '<h4 class="font-medium text-gray-800">Kesesuaian Dokumen per Jenis (Berdasarkan Analisis Isi Konten):</h4>';
-                            html += '<p class="text-xs text-gray-600">Kesesuaian dihitung berdasarkan analisis isi konten dokumen terhadap data yang diinput mahasiswa</p>';
-                            
+                            html += '<h4 class="font-medium text-gray-800">Status Dokumen per Jenis:</h4>';
+
                             results.validation_score.details.forEach(detail => {
                                 let statusColor = 'text-gray-600 bg-gray-100';
-                                let confidenceColor = 'text-gray-500';
                                 if (detail.status === 'tersedia') {
                                     statusColor = 'text-green-600 bg-green-100';
-                                    // Color based on integrity level
-                                    if (detail.confidence >= 80) confidenceColor = 'text-green-600';
-                                    else if (detail.confidence >= 60) confidenceColor = 'text-blue-600';
-                                    else if (detail.confidence >= 40) confidenceColor = 'text-yellow-600';
-                                    else confidenceColor = 'text-red-600';
                                 } else {
                                     statusColor = 'text-red-600 bg-red-100';
                                 }
-                                
+
                                 html += '<div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border">';
                                 html += `<span class="text-sm font-medium">${detail.type}</span>`;
                                 html += `<div class="flex items-center space-x-2">`;
-                                html += `<span class="px-2 py-1 rounded text-xs ${statusColor}">Kesesuaian: ${detail.percentage}%</span>`;
-                                if (detail.status === 'tersedia') {
-                                    html += `<span class="px-2 py-1 rounded text-xs ${confidenceColor}" title="Tingkat integritas berdasarkan analisis isi konten">Integritas: ${detail.confidence}%</span>`;
-                                }
                                 html += `<span class="text-xs ${detail.status === 'tersedia' ? 'text-green-600' : 'text-red-600'}">${detail.status}</span>`;
                                 if (detail.file_name) {
                                     html += `<span class="text-xs text-gray-500 ml-2 truncate max-w-xs" title="${detail.file_name}">${detail.file_name.length > 30 ? detail.file_name.substring(0, 30) + '...' : ''}</span>`;
@@ -597,7 +586,7 @@
                                 html += '</div>';
                                 html += '</div>';
                             });
-                            
+
                             html += '</div>';
                         }
                         

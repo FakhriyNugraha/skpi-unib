@@ -6,6 +6,7 @@ use App\Models\SkpiData;
 use Illuminate\Http\Request;
 use Google\Client;
 use Google\Service\Drive;
+use OpenAI\Laravel\Facades\OpenAI;
 
 class DriveVerificationController extends Controller
 {
@@ -976,7 +977,15 @@ class DriveVerificationController extends Controller
                 $achievementContent
             );
 
-            $result['semantic_score'] = $contentMatchScore * 0.7 + $contentSimilarity * 0.3;
+            // Gunakan OpenAI untuk analisis semantik yang lebih canggih jika API key tersedia
+            $openaiSemanticScore = 0;
+            if (!empty(env('OPENAI_API_KEY'))) {
+                $openaiSemanticScore = $this->getOpenAISemanticScore($fileContent, $achievementContent);
+            }
+
+            $result['semantic_score'] = $openaiSemanticScore > 0
+                ? ($contentMatchScore * 0.3 + $contentSimilarity * 0.2 + $openaiSemanticScore * 0.5)
+                : ($contentMatchScore * 0.7 + $contentSimilarity * 0.3);
             $result['content_similarity'] = $contentSimilarity;
             $result['has_relevant_content'] = $contentMatchScore > 5;
             $result['relevant_keywords_found'] = $foundKeywords;
@@ -1082,4 +1091,46 @@ class DriveVerificationController extends Controller
         return count($sentences) > 0 ? min(100, $matchScore / count($sentences)) : 0;
     }
 
+    /**
+     * Mendapatkan skor semantik menggunakan OpenAI API
+     */
+    private function getOpenAISemanticScore($fileContent, $achievementContent)
+    {
+        try {
+            $client = \OpenAI::client(env('OPENAI_API_KEY'));
+
+            // Ambil sebagian konten untuk mengurangi biaya dan waktu
+            $truncatedFileContent = substr($fileContent, 0, 3000);
+            $truncatedAchievementContent = substr($achievementContent, 0, 800);
+
+            $prompt = "Kamu adalah asisten yang ahli dalam memverifikasi kecocokan dokumen.
+            Berikan penilaian dari 0-100 untuk seberapa relevan isi dokumen berikut dengan deskripsi prestasi berikut.
+            Fokus pada kesesuaian konten, bukan hanya kesamaan kata.
+
+            Isi Dokumen: {$truncatedFileContent}
+
+            Deskripsi Prestasi: {$truncatedAchievementContent}
+
+            Berikan hanya skor numerik antara 0-100 tanpa penjelasan tambahan:";
+
+            $response = $client->chat()->create([
+                'model' => env('OPENAI_MODEL', 'gpt-3.5-turbo'),
+                'messages' => [
+                    ['role' => 'user', 'content' => $prompt]
+                ],
+                'max_tokens' => 10,
+                'temperature' => 0.1,
+                'timeout' => 30
+            ]);
+
+            $result = $response->choices[0]->message->content;
+            $score = (int) preg_replace('/[^\d]/', '', $result);
+
+            // Pastikan skor dalam rentang 0-100
+            return max(0, min(100, $score));
+        } catch (\Exception $e) {
+            \Log::error('OpenAI API error: ' . $e->getMessage());
+            return 0; // Kembalikan 0 jika gagal, agar tidak menghentikan proses
+        }
+    }
 }
