@@ -48,7 +48,7 @@
                             </label>
                             <div class="relative">
                                 <input id="name" name="name" type="text" autocomplete="name" required
-                                       class="appearance-none relative block w-full pl-10 pr-3 py-3 border placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-unib-blue-500 focus:border-unib-blue-500 focus:z-10 sm:text-sm border-gray-300 @error('name') border-red-500 @enderror"
+                                       class="appearance-none relative block w-full pl-10 pr-3 py-3 bg-blue-50 border placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-unib-blue-500 focus:border-unib-blue-500 sm:text-sm @error('name') border-red-500 bg-red-50 @else border-blue-100 @enderror"
                                        placeholder="Masukkan nama lengkap" value="{{ old('name') }}">
                                 <span class="absolute left-0 inset-y-0 flex items-center pl-3">
                                     <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -68,7 +68,7 @@
                             </label>
                             <div class="relative">
                                 <select id="jurusan_id" name="jurusan_id" required
-                                        class="appearance-none relative block w-full pl-10 pr-10 py-3 border placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-unib-blue-500 focus:border-unib-blue-500 focus:z-10 sm:text-sm border-gray-300 @error('jurusan_id') border-red-500 @enderror">
+                                        class="appearance-none relative block w-full pl-10 pr-10 py-3 bg-blue-50 border placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-unib-blue-500 focus:border-unib-blue-500 sm:text-sm @error('jurusan_id') border-red-500 bg-red-50 @else border-blue-100 @enderror bg-[url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e\")] bg-no-repeat bg-[right_12px_center]">
                                     <option value="">Pilih Program Studi</option>
                                     @php
                                         $prefMap = [
@@ -93,11 +93,6 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
                                     </svg>
                                 </span>
-                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                    </svg>
-                                </div>
                             </div>
                             @error('jurusan_id')
                                 <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
@@ -111,7 +106,7 @@
                             </label>
                             <div class="relative">
                                 <input id="npm" name="npm" type="text" autocomplete="off" required maxlength="9"
-                                       class="appearance-none relative block w-full pl-10 pr-3 py-3 border placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-unib-blue-500 focus:border-unib-blue-500 focus:z-10 sm:text-sm border-gray-300 tracking-wider @error('npm') border-red-500 @enderror"
+                                       class="appearance-none relative block w-full pl-10 pr-3 py-3 bg-blue-50 border placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-unib-blue-500 focus:border-unib-blue-500 sm:text-sm @error('npm') border-red-500 bg-red-50 @else border-blue-100 @enderror tracking-wider"
                                        placeholder="Pilih Program Studi untuk mengisi prefix"
                                        value="{{ old('npm') }}">
                                 <span class="absolute left-0 inset-y-0 flex items-center pl-3">
@@ -133,7 +128,7 @@
                             </label>
                             <div class="relative">
                                 <input id="email" name="email" type="email" autocomplete="email" required
-                                       class="appearance-none relative block w-full pl-10 pr-3 py-3 border placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-unib-blue-500 focus:border-unib-blue-500 focus:z-10 sm:text-sm border-gray-300 @error('email') border-red-500 @enderror"
+                                       class="appearance-none relative block w-full pl-10 pr-3 py-3 bg-blue-50 border placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-unib-blue-500 focus:border-unib-blue-500 sm:text-sm @error('email') border-red-500 bg-red-50 @else border-blue-100 @enderror"
                                        placeholder="Masukkan email Anda" value="{{ old('email') }}">
                                 <span class="absolute left-0 inset-y-0 flex items-center pl-3">
                                     <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -153,7 +148,7 @@
                             </label>
                             <div class="relative">
                                 <input id="password" name="password" type="password" autocomplete="new-password" required
-                                       class="appearance-none relative block w-full pl-10 pr-3 py-3 border placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-unib-blue-500 focus:border-unib-blue-500 focus:z-10 sm:text-sm border-gray-300 @error('password') border-red-500 @enderror"
+                                       class="appearance-none relative block w-full pl-10 pr-3 py-3 bg-blue-50 border placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-unib-blue-500 focus:border-unib-blue-500 sm:text-sm @error('password') border-red-500 bg-red-50 @else border-blue-100 @enderror"
                                        placeholder="Masukkan password (min. 8 karakter)">
                                 <span class="absolute left-0 inset-y-0 flex items-center pl-3">
                                     <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -173,7 +168,7 @@
                             </label>
                             <div class="relative">
                                 <input id="password_confirmation" name="password_confirmation" type="password" autocomplete="new-password" required
-                                       class="appearance-none relative block w-full pl-10 pr-3 py-3 border placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-unib-blue-500 focus:border-unib-blue-500 focus:z-10 sm:text-sm border-gray-300 @error('password_confirmation') border-red-500 @enderror"
+                                       class="appearance-none relative block w-full pl-10 pr-3 py-3 bg-blue-50 border placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-unib-blue-500 focus:border-unib-blue-500 sm:text-sm @error('password_confirmation') border-red-500 bg-red-50 @else border-blue-100 @enderror"
                                        placeholder="Ulangi password Anda">
                                 <span class="absolute left-0 inset-y-0 flex items-center pl-3">
                                     <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">

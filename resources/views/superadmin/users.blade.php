@@ -83,7 +83,15 @@
                         <label class="block text-sm font-medium text-gray-700 mb-2">Jurusan</label>
                         <select name="jurusan" class="input-field">
                             <option value="">Semua Jurusan</option>
-                            @foreach(\App\Models\Jurusan::all() as $jurusan)
+                            @foreach(\App\Models\Jurusan::orderByRaw("CASE nama_jurusan
+                                WHEN 'Informatika' THEN 1
+                                WHEN 'Teknik Sipil' THEN 2
+                                WHEN 'Teknik Elektro' THEN 3
+                                WHEN 'Teknik Mesin' THEN 4
+                                WHEN 'Arsitektur' THEN 5
+                                WHEN 'Sistem Informasi' THEN 6
+                                ELSE 99
+                            END")->get() as $jurusan)
                                 <option value="{{ $jurusan->id }}" {{ request('jurusan') == $jurusan->id ? 'selected' : '' }}>
                                     {{ $jurusan->nama_jurusan }}
                                 </option>

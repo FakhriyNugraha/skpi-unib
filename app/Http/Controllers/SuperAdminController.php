@@ -99,7 +99,16 @@ class SuperAdminController extends Controller
 
     public function createUser()
     {
-        $jurusans = Jurusan::active()->orderBy('nama_jurusan')->get();
+        $jurusans = Jurusan::active()
+            ->orderByRaw("CASE nama_jurusan
+                WHEN 'Informatika' THEN 1
+                WHEN 'Teknik Sipil' THEN 2
+                WHEN 'Teknik Elektro' THEN 3
+                WHEN 'Teknik Mesin' THEN 4
+                WHEN 'Arsitektur' THEN 5
+                WHEN 'Sistem Informasi' THEN 6
+                ELSE 99
+            END")->get();
         return view('superadmin.create-user', compact('jurusans'));
     }
 
@@ -138,7 +147,16 @@ class SuperAdminController extends Controller
 
     public function editUser(User $user)
     {
-        $jurusans = Jurusan::active()->orderBy('nama_jurusan')->get();
+        $jurusans = Jurusan::active()
+            ->orderByRaw("CASE nama_jurusan
+                WHEN 'Informatika' THEN 1
+                WHEN 'Teknik Sipil' THEN 2
+                WHEN 'Teknik Elektro' THEN 3
+                WHEN 'Teknik Mesin' THEN 4
+                WHEN 'Arsitektur' THEN 5
+                WHEN 'Sistem Informasi' THEN 6
+                ELSE 99
+            END")->get();
         return view('superadmin.edit-user', compact('user','jurusans'));
     }
 
@@ -190,7 +208,16 @@ class SuperAdminController extends Controller
     /* Jurusans */
     public function jurusans()
     {
-        $jurusans = Jurusan::with(['users','skpiData'])->orderBy('nama_jurusan')->get();
+        $jurusans = Jurusan::with(['users','skpiData'])
+            ->orderByRaw("CASE nama_jurusan
+                WHEN 'Informatika' THEN 1
+                WHEN 'Teknik Sipil' THEN 2
+                WHEN 'Teknik Elektro' THEN 3
+                WHEN 'Teknik Mesin' THEN 4
+                WHEN 'Arsitektur' THEN 5
+                WHEN 'Sistem Informasi' THEN 6
+                ELSE 99
+            END")->get();
         return view('superadmin.jurusans', compact('jurusans'));
     }
 
@@ -247,10 +274,39 @@ class SuperAdminController extends Controller
 
     public function toggleJurusanStatus(Jurusan $jurusan)
     {
-        $jurusan->status = $jurusan->status === 'active' ? 'inactive' : 'active';
-        $jurusan->save();
+        try {
+            $newStatus = request()->input('status');
 
-        return back()->with('success', 'Status program studi berhasil diubah.');
+            // If status parameter is provided, use it; otherwise toggle the status
+            if ($newStatus && in_array($newStatus, ['active', 'inactive'])) {
+                $jurusan->status = $newStatus;
+            } else {
+                // Toggle the status as before
+                $jurusan->status = $jurusan->status === 'active' ? 'inactive' : 'active';
+            }
+
+            $jurusan->save();
+
+            if (request()->ajax() || request()->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Status program studi berhasil diubah.',
+                    'status' => $jurusan->status
+                ]);
+            }
+
+            return back()->with('success', 'Status program studi berhasil diubah.');
+        } catch (\Exception $e) {
+            if (request()->ajax() || request()->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Gagal mengubah status program studi.',
+                    'error' => $e->getMessage()
+                ], 500);
+            }
+
+            return back()->with('error', 'Gagal mengubah status program studi.');
+        }
     }
 
     public function destroyJurusan(Jurusan $jurusan)
@@ -303,7 +359,15 @@ class SuperAdminController extends Controller
         }
 
         $skpiList = $query->paginate(15)->appends($request->query());
-        $jurusans = Jurusan::orderBy('nama_jurusan')->get(['id','nama_jurusan']);
+        $jurusans = Jurusan::orderByRaw("CASE nama_jurusan
+                WHEN 'Informatika' THEN 1
+                WHEN 'Teknik Sipil' THEN 2
+                WHEN 'Teknik Elektro' THEN 3
+                WHEN 'Teknik Mesin' THEN 4
+                WHEN 'Arsitektur' THEN 5
+                WHEN 'Sistem Informasi' THEN 6
+                ELSE 99
+            END")->get(['id','nama_jurusan']);
 
 
         // Get available periods for the dropdown
@@ -590,6 +654,15 @@ class SuperAdminController extends Controller
                 $q->where('status', 'rejected');
             },
         ])
+        ->orderByRaw("CASE nama_jurusan
+            WHEN 'Informatika' THEN 1
+            WHEN 'Teknik Sipil' THEN 2
+            WHEN 'Teknik Elektro' THEN 3
+            WHEN 'Teknik Mesin' THEN 4
+            WHEN 'Arsitektur' THEN 5
+            WHEN 'Sistem Informasi' THEN 6
+            ELSE 99
+        END")
         ->get()
         ->map(function ($jurusan) {
             $total         = $jurusan->total_skpi;

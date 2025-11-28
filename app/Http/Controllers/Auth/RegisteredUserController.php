@@ -20,7 +20,16 @@ class RegisteredUserController extends Controller
      */
     public function create(): View
     {
-        $jurusans = \App\Models\Jurusan::active()->orderBy('nama_jurusan')->get();
+        $jurusans = \App\Models\Jurusan::active()
+            ->orderByRaw("CASE nama_jurusan
+                WHEN 'Informatika' THEN 1
+                WHEN 'Teknik Sipil' THEN 2
+                WHEN 'Teknik Elektro' THEN 3
+                WHEN 'Teknik Mesin' THEN 4
+                WHEN 'Arsitektur' THEN 5
+                WHEN 'Sistem Informasi' THEN 6
+                ELSE 99
+            END")->get();
         
         // Ambil statistik dari HomeController
         $stats = [

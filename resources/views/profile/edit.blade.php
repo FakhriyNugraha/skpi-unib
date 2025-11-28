@@ -426,7 +426,7 @@
                 passwordInput.name = 'password';
                 deleteForm.appendChild(passwordInput);
             }
-            
+
             // Delete Account Modal
             const deleteAccountForm = document.getElementById('delete-account-form');
             const btnOpenDeleteAccount = document.getElementById('openDeleteAccountModal');
@@ -441,7 +441,7 @@
                 document.body.style.overflow = 'hidden';
                 deleteAccountPassword.focus();
             };
-            
+
             const closeDeleteAccount = () => {
                 deleteAccountModal.classList.add('hidden');
                 document.body.style.overflow = '';
@@ -452,7 +452,7 @@
 
             deleteAccountOverlay?.addEventListener('click', closeDeleteAccount);
             btnCancelDeleteAccount?.addEventListener('click', closeDeleteAccount);
-            
+
             btnConfirmDeleteAccount?.addEventListener('click', () => {
                 const password = deleteAccountPassword.value.trim();
                 if (!password) {
@@ -460,17 +460,88 @@
                     deleteAccountPassword.focus();
                     return;
                 }
-                
+
                 // Set password value to hidden form and submit
                 const passwordInput = deleteAccountForm.querySelector('input[name="password"]');
                 if (passwordInput) {
                     passwordInput.value = password;
                 }
-                
+
                 closeDeleteAccount();
                 deleteAccountForm.submit();
             });
 
+            // Input validation for numeric fields
+            const npmInput = document.getElementById('npm');
+            const nipInput = document.getElementById('nip');
+            const phoneInput = document.getElementById('phone');
+
+            // Function to allow only numbers and specific characters for phone
+            function validateNumericInput(e, allowPhoneChars = false) {
+                // Get the character that was pressed
+                const char = String.fromCharCode(e.which);
+
+                // Allow numbers (0-9)
+                if (/[0-9]/.test(char)) {
+                    return true;
+                }
+
+                // Allow specific characters for phone numbers
+                if (allowPhoneChars && /[+\-\s\(\)]/.test(char)) {
+                    return true;
+                }
+
+                // Block everything else
+                e.preventDefault();
+                return false;
+            }
+
+            // Add event listeners to numeric fields
+            if (npmInput) {
+                npmInput.addEventListener('keypress', function(e) {
+                    validateNumericInput(e, false);
+                });
+
+                // Prevent paste of non-numeric values
+                npmInput.addEventListener('paste', function(e) {
+                    setTimeout(() => {
+                        this.value = this.value.replace(/[^0-9]/g, '');
+                    }, 10);
+                });
+            }
+
+            if (nipInput) {
+                nipInput.addEventListener('keypress', function(e) {
+                    validateNumericInput(e, false);
+                });
+
+                // Prevent paste of non-numeric values
+                nipInput.addEventListener('paste', function(e) {
+                    setTimeout(() => {
+                        this.value = this.value.replace(/[^0-9]/g, '');
+                    }, 10);
+                });
+            }
+
+            if (phoneInput) {
+                phoneInput.addEventListener('keypress', function(e) {
+                    validateNumericInput(e, true);
+                });
+
+                // Limit to 14 characters max
+                phoneInput.addEventListener('input', function(e) {
+                    if (this.value.length > 14) {
+                        this.value = this.value.substring(0, 14);
+                    }
+                });
+
+                // Prevent paste of non-numeric values
+                phoneInput.addEventListener('paste', function(e) {
+                    setTimeout(() => {
+                        this.value = this.value.replace(/[^0-9+\s\-\(\)]/g, '').substring(0, 14);
+                    }, 10);
+                });
+            }
 
             window.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape' && !deleteAccountModal.classList.contains('hidden')) closeDeleteAccount();

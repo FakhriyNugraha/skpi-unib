@@ -39,7 +39,16 @@ class SkpiController extends Controller
             return redirect()->route('skpi.index')->with('error', 'Data SKPI Anda sudah disubmit dan tidak dapat diedit.');
         }
 
-        $jurusans = Jurusan::active()->orderBy('nama_jurusan')->get();
+        $jurusans = Jurusan::active()
+            ->orderByRaw("CASE nama_jurusan
+                WHEN 'Informatika' THEN 1
+                WHEN 'Teknik Sipil' THEN 2
+                WHEN 'Teknik Elektro' THEN 3
+                WHEN 'Teknik Mesin' THEN 4
+                WHEN 'Arsitektur' THEN 5
+                WHEN 'Sistem Informasi' THEN 6
+                ELSE 99
+            END")->get();
 
         // kunci prodi & gelar berdasarkan user/jurusan (logika contoh)
         $lockedProgramStudi = optional($user->jurusan)->nama_jurusan ?? ($existingSkpi->program_studi ?? '');
@@ -129,7 +138,16 @@ class SkpiController extends Controller
             return redirect()->route('skpi.index')->with('error', 'Data SKPI tidak dapat diedit.');
         }
 
-        $jurusans = Jurusan::active()->orderBy('nama_jurusan')->get();
+        $jurusans = Jurusan::active()
+            ->orderByRaw("CASE nama_jurusan
+                WHEN 'Informatika' THEN 1
+                WHEN 'Teknik Sipil' THEN 2
+                WHEN 'Teknik Elektro' THEN 3
+                WHEN 'Teknik Mesin' THEN 4
+                WHEN 'Arsitektur' THEN 5
+                WHEN 'Sistem Informasi' THEN 6
+                ELSE 99
+            END")->get();
         $existingSkpi = $skpi->load(['jurusan']);
 
         $lockedProgramStudi = optional(auth()->user()->jurusan)->nama_jurusan ?? ($existingSkpi->program_studi ?? '');
@@ -210,6 +228,11 @@ class SkpiController extends Controller
 
         if (!$skpi->canBeSubmitted()) {
             return redirect()->route('skpi.index')->with('error', 'Data SKPI tidak dapat disubmit.');
+        }
+
+        // Check if the jurusan is active
+        if ($skpi->jurusan && $skpi->jurusan->status === 'inactive') {
+            return redirect()->route('skpi.index')->with('error', 'Maaf, masa pengajuan SKPI telah berakhir, silahkan hubungi admin program studi terkait untuk informasi lebih lanjut.');
         }
 
         $skpi->update([

@@ -136,7 +136,7 @@
         {{-- GRAFIK DASHBOARD --}}
         <section class="mb-10">
             <h2 class="text-2xl font-bold text-unib-blue-900 mb-6">Statistik Visual</h2>
-            
+
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {{-- GRAFIK STATUS SKPI --}}
                 <div class="bg-white rounded-xl shadow-md p-6 border border-gray-100">
@@ -172,7 +172,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="mt-6 grid grid-cols-3 gap-4 text-center">
                         <div>
                             <div class="text-2xl font-bold text-green-600">{{ $stats['approved_percentage'] ?? 0 }}%</div>
@@ -188,7 +188,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 {{-- GRAFIK JURUSAN --}}
                 <div class="bg-white rounded-xl shadow-md p-6 border border-gray-100">
                     <h3 class="text-lg font-semibold text-unib-blue-900 mb-4">Distribusi SKPI per Jurusan</h3>
@@ -214,7 +214,7 @@
         {{-- TABEL DATA --}}
         <section>
             <h2 class="text-2xl font-bold text-unib-blue-900 mb-6">Detail Statistik</h2>
-            
+
             <div class="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
                 <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
                     <div class="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">

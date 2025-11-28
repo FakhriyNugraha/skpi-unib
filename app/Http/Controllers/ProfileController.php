@@ -32,7 +32,7 @@ class ProfileController extends Controller
         $rules = [
             'name'   => ['required', 'string', 'max:255'],
             'email'  => ['required', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
-            'phone'  => [$forcePhone ? 'required' : 'nullable', 'string', 'max:20'],
+            'phone'  => [$forcePhone ? 'required' : 'nullable', 'string', 'max:14', 'regex:/^[0-9+\s\-\(\)]+$/'],
             'address'=> ['nullable', 'string', 'max:1000'],
             'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
         ];
@@ -44,7 +44,7 @@ class ProfileController extends Controller
                 'required',
                 'string',
                 'max:9',
-                'regex:/^[A-Za-z0-9]+$/',
+                'regex:/^[0-9]+$/',
                 Rule::unique('users', 'npm')->ignore($user->id),
             ];
         } elseif (in_array($user->role, ['admin', 'superadmin'])) {
@@ -52,6 +52,7 @@ class ProfileController extends Controller
                 'nullable',
                 'string',
                 'max:20',
+                'regex:/^[0-9]+$/',
                 Rule::unique('users', 'nip')->ignore($user->id),
             ];
         }
