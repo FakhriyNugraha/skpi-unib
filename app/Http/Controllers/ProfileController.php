@@ -43,8 +43,8 @@ class ProfileController extends Controller
             $rules['npm'] = [
                 'required',
                 'string',
-                'max:9',
-                'regex:/^[0-9]+$/',
+                'max:20', // Increased limit to accommodate format like G1A0XXYYY
+                'regex:/^[A-Za-z0-9]+$/',
                 Rule::unique('users', 'npm')->ignore($user->id),
             ];
         } elseif (in_array($user->role, ['admin', 'superadmin'])) {
