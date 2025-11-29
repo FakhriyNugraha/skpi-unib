@@ -75,7 +75,7 @@
     </div>
 
     <!-- Statistics & Charts Section -->
-    <div class="py-16 bg-gray-50">
+    <div id="stats" class="py-16 bg-gray-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-8">
                 <h2 class="text-3xl font-bold text-gray-900 mb-4">Statistik SKPI Per Program Studi</h2>
@@ -153,7 +153,7 @@
     </div>
 
     <!-- Program Studi Grid -->
-    <div class="py-16 bg-white">
+    <div id="programs" class="py-16 bg-white">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-12">
                 <h2 class="text-3xl font-bold text-gray-900 mb-4">Program Studi Fakultas Teknik</h2>
@@ -207,7 +207,7 @@
     </div>
 
     <!-- Features Section -->
-    <div class="py-16 bg-gradient-to-r from-gray-50 to-blue-50">
+    <div id="features" class="py-16 bg-gradient-to-r from-gray-50 to-blue-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-12">
                 <h2 class="text-3xl font-bold text-gray-900 mb-4">Fitur Unggulan Sistem SKPI</h2>
@@ -255,6 +255,44 @@
                     </div>
                     <h3 class="text-lg font-semibold text-gray-900 mb-3">Keamanan Terjamin</h3>
                     <p class="text-gray-600 text-sm leading-relaxed">Sistem keamanan berlapis dengan enkripsi data dan akses terkontrol</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Video Tutorial Section -->
+    <div id="tutorial" class="py-16 bg-gradient-to-br from-gray-100 to-blue-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                    Panduan Bagi Mahasiswa Pada Sistem Ini
+                </h2>
+                <p class="text-lg text-gray-600 max-w-3xl mx-auto">
+                    Tonton video tutorial berikut untuk memahami cara menggunakan sistem SKPI dengan mudah dan efektif
+                </p>
+            </div>
+
+            <div class="max-w-4xl mx-auto">
+                <div class="relative rounded-2xl overflow-hidden shadow-2xl border-4 border-gray-200 bg-white">
+                    <div class="relative pt-[56.25%]">
+                        <iframe
+                            class="w-full h-full absolute inset-0 rounded-lg"
+                            src="https://www.youtube.com/embed/QiT8o_xJE1Q"
+                            title="Panduan Sistem SKPI"
+                            frameborder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowfullscreen>
+                        </iframe>
+                    </div>
+                </div>
+
+                <div class="mt-8 text-center">
+                    <div class="inline-flex items-center bg-white rounded-full px-6 py-3 shadow-lg border border-gray-200">
+                        <svg class="w-5 h-5 text-red-600 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/>
+                        </svg>
+                        <span class="text-gray-700 font-medium">Video Tutorial - Panduan Penggunaan Sistem SKPI</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -499,6 +537,84 @@
             const elementsToObserve = document.querySelectorAll('.card, .transform');
             elementsToObserve.forEach(el => observer.observe(el));
             setTimeout(animateCounters, 1000);
+
+            // Smooth scrolling for anchor links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+
+                    const targetId = this.getAttribute('href');
+                    const targetElement = document.querySelector(targetId);
+
+                    if (targetElement) {
+                        // Get the offset position (accounting for sticky header)
+                        const offsetTop = targetElement.offsetTop - 80; // 80px offset for header height
+
+                        window.scrollTo({
+                            top: offsetTop,
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+
+            // Active navigation indicator based on scroll position
+            function updateActiveNav() {
+                const sections = ['stats', 'programs', 'tutorial'];
+                const navLinks = {
+                    'stats': document.getElementById('nav-stats'),
+                    'programs': document.getElementById('nav-programs'),
+                    'tutorial': document.getElementById('nav-tutorial')
+                };
+
+                // Remove active class from all nav links
+                Object.values(navLinks).forEach(link => {
+                    if (link) {
+                        link.classList.remove('active');
+                    }
+                });
+
+                // Determine which section is currently in view
+                let currentSection = null;
+
+                // Create an array of sections with their positions
+                const sectionPositions = [];
+                for (const sectionId of sections) {
+                    const element = document.getElementById(sectionId);
+                    if (element) {
+                        const position = {
+                            id: sectionId,
+                            top: element.offsetTop - 80, // Adjust for header
+                            bottom: element.offsetTop + element.offsetHeight - 80
+                        };
+                        sectionPositions.push(position);
+                    }
+                }
+
+                // Find which section the user is currently viewing
+                const scrollPosition = window.scrollY;
+                for (let i = sectionPositions.length - 1; i >= 0; i--) {
+                    if (scrollPosition >= sectionPositions[i].top) {
+                        currentSection = sectionPositions[i].id;
+                        break;
+                    }
+                }
+
+                // If scrolled to top, no section should be active
+                if (window.scrollY === 0) {
+                    currentSection = null;
+                }
+
+                // Add active class to the current section's nav link
+                if (currentSection && navLinks[currentSection]) {
+                    const activeLink = navLinks[currentSection];
+                    activeLink.classList.add('active');
+                }
+            }
+
+            // Initial update and add scroll event listener
+            updateActiveNav();
+            window.addEventListener('scroll', updateActiveNav);
         });
     </script>
 
@@ -522,5 +638,14 @@
             animation: spin 1s linear infinite;
         }
         @keyframes spin { 0%{ transform: rotate(0);} 100%{ transform: rotate(360deg);} }
+
+        /* Active navigation link styles */
+        .nav-link.active {
+            color: #1e40af !important; /* unib-blue-800 */
+            background-color: white !important;
+        }
+        .nav-link.active span.absolute {
+            opacity: 0.3 !important;
+        }
     </style>
 </x-app-layout>
