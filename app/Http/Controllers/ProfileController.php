@@ -43,7 +43,7 @@ class ProfileController extends Controller
             $rules['npm'] = [
                 'required',
                 'string',
-                'max:20', // Increased limit to accommodate format like G1A0XXYYY
+                'max:9', // Changed to 9 characters as per requirement
                 'regex:/^[A-Za-z0-9]+$/',
                 Rule::unique('users', 'npm')->ignore($user->id),
             ];
@@ -67,6 +67,23 @@ class ProfileController extends Controller
             }
             $path = $request->file('avatar')->store('avatars', 'public');
             $data['avatar'] = $path;
+        }
+
+        // Jika user adalah mahasiswa dan mengupdate NPM, pastikan 3 karakter awal tidak berubah
+        if ($user->role === 'user' && isset($data['npm'])) {
+            $originalNpm = $user->npm;
+            $newNpm = $data['npm'];
+
+            // Jika NPM asli memiliki setidaknya 3 karakter, pastikan 3 karakter awal tidak berubah
+            if (strlen($originalNpm) >= 3 && strlen($newNpm) >= 3) {
+                $firstThreeOriginal = substr($originalNpm, 0, 3);
+                $firstThreeNew = substr($newNpm, 0, 3);
+
+                // Jika 3 karakter awal berbeda, ganti dengan 3 karakter awal asli
+                if ($firstThreeOriginal !== $firstThreeNew) {
+                    $data['npm'] = $firstThreeOriginal . substr($newNpm, 3);
+                }
+            }
         }
 
         $user->update($data);

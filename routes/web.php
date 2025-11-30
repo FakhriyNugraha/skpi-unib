@@ -226,6 +226,11 @@ Route::middleware(['auth', 'role:superadmin'])
         // Approve/Reject oleh superadmin
         Route::post('/skpi/{skpi}/approve', [SuperAdminController::class, 'approveSkpi'])->name('approve-skpi')->whereNumber('skpi');
         Route::post('/skpi/{skpi}/reject', [SuperAdminController::class, 'rejectSkpi'])->name('reject-skpi')->whereNumber('skpi');
+
+        // Drive verification for superadmin
+        Route::post('/skpi/{skpi}/verify-drive', [\App\Http\Controllers\DriveVerificationController::class, 'verifyDriveContents'])
+            ->name('skpi.verify-drive-superadmin')
+            ->whereNumber('skpi');
     });
 
 // Temporary test route to verify statistics

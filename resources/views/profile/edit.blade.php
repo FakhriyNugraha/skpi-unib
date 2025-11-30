@@ -143,7 +143,10 @@
                                         <label for="npm" class="block text-sm font-medium text-gray-700 mb-2">NPM</label>
                                         <input id="npm" name="npm" type="text"
                                                class="input-field @error('npm') border-red-500 @enderror"
-                                               value="{{ old('npm', $user->npm) }}">
+                                               value="{{ old('npm', $user->npm) }}"
+                                               maxlength="9"
+                                               pattern="[A-Za-z0-9]{1,9}"
+                                               title="NPM harus berupa huruf dan angka, maksimal 9 karakter">
                                         @error('npm') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                                     </div>
                                 @elseif(in_array($user->role, ['admin', 'superadmin']))
@@ -151,7 +154,11 @@
                                         <label for="nip" class="block text-sm font-medium text-gray-700 mb-2">NIP</label>
                                         <input id="nip" name="nip" type="text"
                                                class="input-field @error('nip') border-red-500 @enderror"
-                                               value="{{ old('nip', $user->nip) }}">
+                                               value="{{ old('nip', $user->nip) }}"
+                                               inputmode="numeric"
+                                               maxlength="20"
+                                               pattern="[0-9]{1,20}"
+                                               title="NIP harus berupa angka, maksimal 20 karakter">
                                         @error('nip') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                                     </div>
                                 @endif
@@ -688,6 +695,67 @@
                     if (!passwordModal.classList.contains('hidden')) closePasswordModal();
                 }
             });
+
+            // Prevent changes to first 3 characters of NPM
+            const npmInput = document.getElementById('npm');
+            if (npmInput) {
+                let lastNotificationTime = 0;
+                const NOTIFICATION_INTERVAL = 10000; // 10 detik dalam milidetik
+
+                // Fungsi untuk menampilkan notifikasi dengan throttling
+                function showThrottledNotification(message) {
+                    const currentTime = Date.now();
+                    if (currentTime - lastNotificationTime >= NOTIFICATION_INTERVAL) {
+                        lastNotificationTime = currentTime;
+                        if (window.showToast) {
+                            showToast(message, 'info', 'Peringatan');
+                        }
+                    }
+                }
+
+                npmInput.addEventListener('input', function(e) {
+                    const currentValue = e.target.value;
+                    const originalValue = e.target.defaultValue;
+
+                    // If the input has at least 3 characters and differs from original in first 3 chars
+                    if (currentValue.length >= 3 && originalValue.length >= 3) {
+                        const firstThreeOriginal = originalValue.substring(0, 3);
+                        const firstThreeCurrent = currentValue.substring(0, 3);
+
+                        // If first 3 characters have been changed
+                        if (firstThreeCurrent !== firstThreeOriginal) {
+                            // Reset to original first 3 characters + remaining current characters
+                            e.target.value = firstThreeOriginal + currentValue.substring(3);
+
+                            // Show a notification to the user with throttling
+                            showThrottledNotification('Tiga karakter awal NPM tidak dapat diubah.');
+                        }
+                    }
+                });
+
+                // Also prevent selection and deletion of first 3 characters
+                npmInput.addEventListener('keydown', function(e) {
+                    const start = e.target.selectionStart;
+                    const end = e.target.selectionEnd;
+                    const originalValue = e.target.defaultValue;
+
+                    // Prevent deleting or changing first 3 characters if selected
+                    if (originalValue.length >= 3 && start < 3) {
+                        // If selecting across first 3 characters and another position
+                        if (end > 3) {
+                            e.preventDefault();
+                            // Maintain cursor position after first 3 original characters
+                            e.target.setSelectionRange(3, 3);
+                            showThrottledNotification('Tiga karakter awal NPM tidak dapat diubah.');
+                        }
+                        // If trying to delete when cursor is in first 3 positions
+                        else if (start < 3 && (e.key === 'Backspace' || e.key === 'Delete')) {
+                            e.preventDefault();
+                            showThrottledNotification('Tiga karakter awal NPM tidak dapat dihapus.');
+                        }
+                    }
+                });
+            }
         });
     </script>
 

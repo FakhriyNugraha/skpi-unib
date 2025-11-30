@@ -65,9 +65,32 @@ class SkpiController extends Controller
             'nama_lengkap'          => 'required|string|max:255',
             'npm'                   => 'required|string|max:50',
             'tempat_lahir'          => 'required|string|max:255',
-            'tanggal_lahir'         => 'required|date',
+            'tanggal_lahir'         => [
+                'required',
+                'date',
+                function ($attribute, $value, $fail) {
+                    $birthDate = \Carbon\Carbon::parse($value);
+                    $currentDate = now();
+                    $age = $birthDate->diffInYears($currentDate);
+
+                    if ($age < 17) {
+                        $fail('Masukkan Tanggal Lahir yang valid');
+                    }
+                },
+            ],
             'nomor_ijazah'          => 'required|string|max:255',
-            'tanggal_lulus'         => 'required|date',
+            'tanggal_lulus'         => [
+                'required',
+                'date',
+                function ($attribute, $value, $fail) {
+                    $graduationDate = \Carbon\Carbon::parse($value);
+                    $currentDate = now();
+
+                    if ($graduationDate->gt($currentDate)) {
+                        $fail('Masukkan Tanggal Lulus yang valid');
+                    }
+                },
+            ],
             'gelar'                 => 'required|string|max:50',
             'program_studi'         => 'required|string|max:255',
             'jurusan_id'            => 'required|exists:jurusans,id',
@@ -168,9 +191,32 @@ class SkpiController extends Controller
             'nama_lengkap'          => 'required|string|max:255',
             'npm'                   => 'required|string|max:50',
             'tempat_lahir'          => 'required|string|max:255',
-            'tanggal_lahir'         => 'required|date',
+            'tanggal_lahir'         => [
+                'required',
+                'date',
+                function ($attribute, $value, $fail) {
+                    $birthDate = \Carbon\Carbon::parse($value);
+                    $currentDate = now();
+                    $age = $birthDate->diffInYears($currentDate);
+
+                    if ($age < 17) {
+                        $fail('Masukkan Tanggal Lahir yang valid');
+                    }
+                },
+            ],
             'nomor_ijazah'          => 'required|string|max:255',
-            'tanggal_lulus'         => 'required|date',
+            'tanggal_lulus'         => [
+                'required',
+                'date',
+                function ($attribute, $value, $fail) {
+                    $graduationDate = \Carbon\Carbon::parse($value);
+                    $currentDate = now();
+
+                    if ($graduationDate->gt($currentDate)) {
+                        $fail('Masukkan Tanggal Lulus yang valid');
+                    }
+                },
+            ],
             'gelar'                 => 'required|string|max:50',
             'program_studi'         => 'required|string|max:255',
             'jurusan_id'            => 'required|exists:jurusans,id',

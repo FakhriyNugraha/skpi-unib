@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Google\Client;
 use Google\Service\Drive;
 use OpenAI\Laravel\Facades\OpenAI;
+use Illuminate\Support\Facades\Gate;
 
 class DriveVerificationController extends Controller
 {
@@ -17,8 +18,13 @@ class DriveVerificationController extends Controller
     {
         $skpi = SkpiData::with(['user', 'jurusan'])->findOrFail($skpiId);
 
-        // Validasi izin akses (opsional)
-        // $request->user()->can('view', $skpi);
+        // Validasi izin akses - menggunakan Gate untuk authorization
+        if (!Gate::allows('view', $skpi)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Anda tidak memiliki izin untuk mengakses data ini.'
+            ]);
+        }
 
         if (!$skpi->drive_link) {
             return response()->json([

@@ -281,7 +281,7 @@
                         <p class="mt-1">Data akan disimpan sebagai draft dan dapat diedit sebelum disubmit untuk review.</p>
                     </div>
                     <div class="flex flex-col sm:flex-row sm:items-center sm:gap-3 space-y-3 sm:space-y-0">
-                        <a href="{{ route('skpi.index') }}" class="btn-outline inline-flex items-center justify-center">
+                        <a href="{{ route('skpi.index') }}" class="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 shadow-sm inline-flex items-center justify-center transition duration-300 ease-out hover:scale-105 hover:-translate-y-0.5 hover:shadow-lg">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                             </svg>
@@ -314,7 +314,7 @@
                     </p>
                     <div class="mt-6 flex flex-col sm:flex-row justify-center sm:gap-3 gap-2">
                         <button type="button" id="cancelConfirm"
-                                class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 inline-flex items-center justify-center">
+                                class="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 shadow-sm inline-flex items-center justify-center transition duration-300 ease-out hover:scale-105 hover:-translate-y-0.5 hover:shadow-lg">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                             </svg>

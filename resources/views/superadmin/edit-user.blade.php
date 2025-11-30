@@ -175,11 +175,17 @@
                         <p><span class="text-red-500">*</span> Field wajib diisi</p>
                         <p class="mt-1">Terakhir diupdate: {{ $user->updated_at->format('d M Y H:i') }}</p>
                     </div>
-                    <div class="flex space-x-4">
-                        <a href="{{ route('superadmin.users') }}" class="btn-outline">
+                    <div class="flex items-center justify-end space-x-3">
+                        <a href="{{ route('superadmin.users') }}" class="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 shadow-sm inline-flex items-center justify-center transition duration-300 ease-out hover:scale-105 hover:-translate-y-0.5 hover:shadow-lg">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
                             Batal
                         </a>
-                        <button type="button" class="btn-primary" onclick="submitFormWithConfirmation()">
+                        <button type="button" class="btn-primary inline-flex items-center justify-center" onclick="submitFormWithConfirmation()">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
                             Update User
                         </button>
                     </div>

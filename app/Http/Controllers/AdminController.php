@@ -50,22 +50,26 @@ class AdminController extends Controller
             $query->where('jurusan_id', $user->jurusan_id);
         }
 
-        // Apply filters
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
+        // Apply filters - use request input (preserved from redirects) or query parameters
+        $status = $request->input('status', $request->query('status'));
+        $periode_wisuda = $request->input('periode_wisuda', $request->query('periode_wisuda'));
+        $jurusan = $request->input('jurusan', $request->query('jurusan'));
+        $search = $request->input('search', $request->query('search'));
+
+        if ($status) {
+            $query->where('status', $status);
         }
 
         // Add period filter
-        if ($request->filled('periode_wisuda') && $request->periode_wisuda !== 'all') {
-            $query->where('periode_wisuda', $request->periode_wisuda);
+        if ($periode_wisuda && $periode_wisuda !== 'all') {
+            $query->where('periode_wisuda', $periode_wisuda);
         }
 
-        if ($request->filled('jurusan') && $user->role === 'superadmin') {
-            $query->where('jurusan_id', $request->jurusan);
+        if ($jurusan && $user->role === 'superadmin') {
+            $query->where('jurusan_id', $jurusan);
         }
 
-        if ($request->filled('search')) {
-            $search = $request->search;
+        if ($search) {
             $query->where(function($q) use ($search) {
                 $q->where('nama_lengkap', 'LIKE', '%' . $search . '%')
                   ->orWhere('npm', 'LIKE', '%' . $search . '%');
@@ -96,9 +100,14 @@ class AdminController extends Controller
             ->values();
 
         // Preserve query parameters in pagination
-        $skpiList->appends($request->query());
+        $skpiList->appends($request->query())->appends([
+            'status' => $status,
+            'periode_wisuda' => $periode_wisuda,
+            'jurusan' => $jurusan,
+            'search' => $search
+        ]);
 
-        return view('admin.skpi-list', compact('skpiList', 'availablePeriods'));
+        return view('admin.skpi-list', compact('skpiList', 'availablePeriods', 'status', 'periode_wisuda', 'jurusan', 'search'));
     }
 
     public function reviewSkpi(SkpiData $skpi)
@@ -116,12 +125,12 @@ class AdminController extends Controller
     public function approveSkpi(Request $request, SkpiData $skpi)
     {
         $user = Auth::user();
-        
+
         // Admin hanya bisa approve data dari jurusan mereka
         if ($user->role === 'admin' && $user->jurusan_id && $skpi->jurusan_id !== $user->jurusan_id) {
             abort(403, 'Anda tidak dapat mengakses data dari jurusan lain.');
         }
-        
+
         if (!$skpi->canBeApproved()) {
             return redirect()->route('admin.skpi-list')->with('error', 'Data SKPI tidak dapat disetujui.');
         }
@@ -132,7 +141,7 @@ class AdminController extends Controller
         ]);
 
         $status = $request->action === 'approve' ? 'approved' : 'rejected';
-        
+
         $skpi->update([
             'status' => $status,
             'catatan_reviewer' => $request->catatan_reviewer,
@@ -143,8 +152,23 @@ class AdminController extends Controller
         ]);
 
         $message = $request->action === 'approve' ? 'Data SKPI berhasil disetujui.' : 'Data SKPI ditolak.';
-        
-        return redirect()->route('admin.skpi-list')->with('success', $message);
+
+        // Preserve filter parameters when redirecting
+        $redirect = redirect()->route('admin.skpi-list');
+        if ($request->filled('status')) {
+            $redirect = $redirect->withInput(['status' => $request->status]);
+        }
+        if ($request->filled('periode_wisuda')) {
+            $redirect = $redirect->withInput(['periode_wisuda' => $request->periode_wisuda]);
+        }
+        if ($request->filled('jurusan')) {
+            $redirect = $redirect->withInput(['jurusan' => $request->jurusan]);
+        }
+        if ($request->filled('search')) {
+            $redirect = $redirect->withInput(['search' => $request->search]);
+        }
+
+        return $redirect->with('success', $message);
     }
 
     public function printSkpi(SkpiData $skpi)
